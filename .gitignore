@@ -1,0 +1,22 @@
+# Rust / Cargo
+physics_core/target/
+**/*.rs.bk
+
+# Unreal Engine Core
+UE5Project/Binaries/
+UE5Project/Build/
+UE5Project/DerivedDataCache/
+UE5Project/Intermediate/
+UE5Project/Saved/
+
+# Unreal Engine Plugin generated files
+UE5Project/Plugins/DronePhysicsBridge/Binaries/
+UE5Project/Plugins/DronePhysicsBridge/Intermediate/
+
+# IDE / OS Files
+.idea/
+.vscode/
+.vs/
+*.sln
+*.suo
+*.DS_Store

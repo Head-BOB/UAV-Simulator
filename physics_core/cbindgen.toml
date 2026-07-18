@@ -1,0 +1,2 @@
+language = "C"
+include_guard = "DRONE_FFI_H"

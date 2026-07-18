@@ -1,0 +1,16 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Drone Physics Bridge",
+	"Description": "FFI Bridge to the Rust RK4 Physics Core",
+	"Category": "Physics",
+	"CreatedBy": "Lead Architect",
+	"Modules": [
+		{
+			"Name": "DronePhysicsBridge",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

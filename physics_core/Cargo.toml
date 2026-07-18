@@ -1,0 +1,13 @@
+[package]
+name = "physics_core"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[build-dependencies]
+cbindgen = "0.29.4"
+
+[profile.release]
+panic = "abort"
