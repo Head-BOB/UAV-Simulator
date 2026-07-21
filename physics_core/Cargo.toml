@@ -11,3 +11,6 @@ cbindgen = "0.29.4"
 
 [profile.release]
 panic = "abort"
+
+[dependencies]
+glam = "0.33.2"
