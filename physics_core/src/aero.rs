@@ -71,6 +71,112 @@ pub fn get_drag(state: &DroneState, altitude: f32) -> [f32; 3] {
     drag_world.to_array()
 }
 
+
+/* #[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::DroneState;
+
+    fn create_test_state(vel: [f32; 3]) -> DroneState {
+        DroneState {
+            position: [0.0, 0.0, 0.0],
+            velocity: vel,
+            orientation: [0.0, 0.0, 0.0, 1.0],
+            angular_velocity: [0.0, 0.0, 0.0],
+        }
+    }
+
+    // GROUP B: ISA Air Density Tests
+    #[test]
+    fn test_b1_sea_level_density() {
+        let d = compute_air_density(0.0);
+        // Sea level density should be approximately 1.225
+        assert!((d - 1.225).abs() < 0.01, "Expected ~1.225, but got {}", d);
+    }
+
+    #[test]
+    fn test_b3_density_decreases_with_altitude() {
+        // Density should be lower at 500m than 0m, and lower at 1000m than 500m
+        assert!(compute_air_density(500.0) < compute_air_density(0.0));
+        assert!(compute_air_density(1000.0) < compute_air_density(500.0));
+    }
+
+    // GROUP C: Drag Force Tests
+    #[test]
+    fn test_c1_zero_velocity() {
+        let state = create_test_state([0.0, 0.0, 0.0]);
+        let drag = get_drag(&state, 0.0);
+        assert_eq!(drag, [0.0, 0.0, 0.0], "Zero velocity must produce zero drag");
+    }
+
+    #[test]
+    fn test_c2_drag_opposes_motion() {
+        // Moving positive on X axis should produce negative drag on X axis
+        let state_x = create_test_state([5.0, 0.0, 0.0]);
+        let drag_x = get_drag(&state_x, 0.0);
+        assert!(drag_x[0] < 0.0, "Drag on X axis is not opposing motion!");
+        assert_eq!(drag_x[1], 0.0);
+        assert_eq!(drag_x[2], 0.0);
+    }
+
+    #[test]
+    fn test_c3_drag_scales_with_velocity_squared() {
+        let state_5 = create_test_state([5.0, 0.0, 0.0]);
+        let state_10 = create_test_state([10.0, 0.0, 0.0]);
+
+        let drag_5 = get_drag(&state_5, 0.0)[0].abs();
+        let drag_10 = get_drag(&state_10, 0.0)[0].abs();
+
+        // Speed is doubled (5 to 10), so drag should roughly quadruple (x4)
+        assert!((drag_10 - (drag_5 * 4.0)).abs() < 0.1, "Drag did not scale by v-squared");
+    }
+
+    // GROUP D: Propeller Thrust Tests
+    #[test]
+    fn test_d1_zero_throttle() {
+        assert_eq!(get_thrust(0.0), 0.0, "Zero throttle must produce zero thrust");
+    }
+
+    #[test]
+    fn test_d2_thrust_scales_with_throttle_squared() {
+        let t_025 = get_thrust(0.25);
+        let t_050 = get_thrust(0.5);
+        // Throttle is doubled, RPS is doubled, so thrust should roughly quadruple (x4)
+        assert!((t_050 - (t_025 * 4.0)).abs() < 0.1, "Thrust did not scale correctly");
+    }
+
+    #[test]
+    fn test_d5_throttle_clamping() {
+        // Out of range throttles (-0.5 and 1.5) should be clamped to 0.0 and 1.0
+        assert_eq!(get_thrust(-0.5), get_thrust(0.0), "Negative throttle not clamped");
+        assert_eq!(get_thrust(1.5), get_thrust(1.0), "Excessive throttle not clamped");
+    }
+
+    #[test]
+    fn test_b2_altitude_500m() {
+        let d = compute_air_density(500.0);
+        // PDF Document says: Approximately 1.167 at 500 meters
+        assert!((d - 1.167).abs() < 0.005, "500m density should be ~1.167, got {}", d);
+    }
+
+    #[test]
+    fn test_b4_troposphere_limit() {
+        let d = compute_air_density(11000.0);
+        // Checking if formula breaks at max height (11,000m)
+        assert!(d > 0.0 && d < 1.225, "11000m density must be positive but less than sea level");
+        assert!(!d.is_nan(), "Density calculation resulted in NaN (Not a Number)");
+    }
+
+    #[test]
+    fn test_c4_different_axes_different_drag() {
+        // Checking if Z axis (Up/Down) gives more drag than X axis (Forward)
+        // because we set DRAG_COEFF_Z to 1.5 and DRAG_COEFF_X to 1.0
+        let drag_x = get_drag(&create_test_state([10.0, 0.0, 0.0]), 0.0)[0].abs();
+        let drag_z = get_drag(&create_test_state([0.0, 0.0, 10.0]), 0.0)[2].abs();
+        assert!(drag_z > drag_x, "Z axis should have more drag than X axis based on our constants");
+    }
+} */
+
 pub fn get_thrust(throttle: f32) -> f32 {
     // 1. Get air density. Since altitude is not passed to this specific function signature,
     // we assume sea-level altitude (0.0 meters) for the propeller thrust calculation in Phase 1.
