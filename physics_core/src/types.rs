@@ -34,3 +34,40 @@ pub struct ControlInputs {
     /// Commanded yaw input, range -1.0 to 1.0
     pub yaw: f32,
 }
+
+/// Telemetry data exposed exclusively for UE5 On-Screen Display (OSD) and debug visualization.
+/// Must be synced every physics tick.
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct DebugTelemetry {
+    /// Net thrust vector across all motors in world space (Newtons)
+    pub net_thrust: [f32; 3],
+
+    /// Aerodynamic drag force vector in world space (Newtons)
+    pub aero_drag: [f32; 3],
+
+    /// Gravity vector applied to the drone (Newtons)
+    pub gravity: [f32; 3],
+
+    /// Resulting net force vector (Newtons)
+    pub net_force: [f32; 3],
+
+    /// Individual motor thrust outputs (Newtons)
+    pub motor_thrusts: [f32; 4],
+
+    /// Individual motor RPMs
+    pub motor_rpms: [f32; 4],
+}
+
+impl DebugTelemetry {
+    pub const fn new() -> Self {
+        Self {
+            net_thrust: [0.0, 0.0, 0.0],
+            aero_drag: [0.0, 0.0, 0.0],
+            gravity: [0.0, 0.0, 0.0],
+            net_force: [0.0, 0.0, 0.0],
+            motor_thrusts: [0.0, 0.0, 0.0, 0.0],
+            motor_rpms: [0.0, 0.0, 0.0, 0.0],
+        }
+    }
+}

@@ -52,12 +52,45 @@ typedef struct ControlInputs {
 } ControlInputs;
 
 /**
+ * Telemetry data exposed exclusively for UE5 On-Screen Display (OSD) and debug visualization.
+ * Must be synced every physics tick.
+ */
+typedef struct DebugTelemetry {
+  /**
+   * Net thrust vector across all motors in world space (Newtons)
+   */
+  float net_thrust[3];
+  /**
+   * Aerodynamic drag force vector in world space (Newtons)
+   */
+  float aero_drag[3];
+  /**
+   * Gravity vector applied to the drone (Newtons)
+   */
+  float gravity[3];
+  /**
+   * Resulting net force vector (Newtons)
+   */
+  float net_force[3];
+  /**
+   * Individual motor thrust outputs (Newtons)
+   */
+  float motor_thrusts[4];
+  /**
+   * Individual motor RPMs
+   */
+  float motor_rpms[4];
+} DebugTelemetry;
+
+/**
  * ffi_get_interface_version
+ * Returns the current layout version to UE5 to prevent memory corruption on mismatch.
  */
 int32_t ffi_get_interface_version(void);
 
 /**
  * ffi_get_drone_state_size
+ * Allows UE5 to verify the byte size of DroneState during module initialization.
  */
 int32_t ffi_get_drone_state_size(void);
 
@@ -73,7 +106,14 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
 
 /**
  * ffi_step_physics
+ * Main execution block for the fixed-timestep RK4 physics pipeline.
  */
 int32_t ffi_step_physics(struct DroneState *state, const struct ControlInputs *controls, float dt);
+
+/**
+ * ffi_get_debug_telemetry
+ * Retrieves the most recent physics telemetry data for the UE5 OSD.
+ */
+int32_t ffi_get_debug_telemetry(struct DebugTelemetry *out_telemetry);
 
 #endif  /* DRONE_FFI_H */

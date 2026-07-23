@@ -13,4 +13,4 @@ cbindgen = "0.29.4"
 panic = "abort"
 
 [dependencies]
-glam = "0.24"
+glam = "0.33.2"
