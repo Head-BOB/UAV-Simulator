@@ -1,34 +1,36 @@
-#ifndef DRONE_FFI_H
-#define DRONE_FFI_H
+#pragma once
 
-#include <stdarg.h>
-#include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
+#include <stdbool.h>
 
-/**
- * ffi_get_interface_version
- */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct DroneState {
+	float position[3];
+	float velocity[3];
+	float orientation[4];
+	float angular_velocity[3];
+} DroneState;
+
+typedef struct ControlInputs {
+	float throttle;
+	float roll;
+	float pitch;
+	float yaw;
+} ControlInputs;
+
 int32_t ffi_get_interface_version(void);
 
-/**
- * ffi_get_drone_state_size
- */
 int32_t ffi_get_drone_state_size(void);
 
-/**
- * ffi_create_default_drone_state
- */
 DroneState ffi_create_default_drone_state(void);
 
-/**
- * ffi_reset_drone_state
- */
 int32_t ffi_reset_drone_state(DroneState *state);
 
-/**
- * ffi_step_physics
- */
 int32_t ffi_step_physics(DroneState *state, const ControlInputs *controls, float dt);
 
-#endif  /* DRONE_FFI_H */
+#ifdef __cplusplus
+}
+#endif
