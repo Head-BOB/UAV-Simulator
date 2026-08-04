@@ -65,7 +65,9 @@ pub extern "C" fn ffi_step_physics(state: *mut DroneState, controls: *const Cont
         let thrust = aero::get_thrust(current_controls.throttle);
         let thrusts = [thrust, thrust, thrust, thrust];
 
-        let (net_force, net_torque) = mixer::calculate_net_forces(thrusts, drag, 9.81);
+        // 3. Call Mixer Module (Passing orientation and a placeholder mass of 1.0)
+        // 3. Call Mixer Module 
+        let (net_force, net_torque, net_thrust) = mixer::calculate_net_forces(thrusts, drag, current_state.orientation, 1.0);
 
         let new_state = integrator::step_rk4(&current_state, net_force, net_torque, 1.0, 1.0, dt);
 
@@ -78,8 +80,7 @@ pub extern "C" fn ffi_step_physics(state: *mut DroneState, controls: *const Cont
             telemetry.net_force = net_force;
             telemetry.gravity = [0.0, 0.0, -9.81];
 
-            // TODO(Dev C): Mixer module currently returns a combined net_force.
-            // Expand mixer output to isolate net_thrust and populate `telemetry.net_thrust` here.
+            telemetry.net_thrust = net_thrust;
         }
     }
 
