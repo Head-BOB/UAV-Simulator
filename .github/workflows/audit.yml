@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    # check every Monday at 06:00 UTC for newly published CVEs
     - cron: '0 6 * * 1'
 
 jobs:
@@ -23,10 +22,10 @@ jobs:
       - name: Install pinned Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.82.0
+          toolchain: 1.86.0
 
       - name: Cargo Audit (Vulnerabilities)
-        uses: actions-rs/audit-check@v1
+        uses: rustsec/audit-check@v2.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
