@@ -1,0 +1,11 @@
+[licenses]
+# strict allow-list DONOT TOUCH!!
+allow = ["MIT", "Apache-2.0", "BSD-3-Clause", "Unlicense"]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
