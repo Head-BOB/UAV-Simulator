@@ -10,27 +10,20 @@ on:
 
 jobs:
   audit:
-    name: Security and License Audit
+    name: cargo audit
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: physics_core
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Install pinned Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.94.0
+          toolchain: 1.96.0
 
-      - name: Cargo Audit (Vulnerabilities)
-        uses: rustsec/audit-check@v2.0.0
+      - uses: actions-rs/audit-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Cargo Deny
-        run: cargo install --locked cargo-deny
-
-      - name: Cargo Deny Check (Licenses and Sources)
-        run: cargo deny check
+      - name: Run Cargo Deny
+        run: cargo install cargo-deny && cargo deny check
