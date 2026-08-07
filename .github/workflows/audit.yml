@@ -22,7 +22,7 @@ jobs:
       - name: Install pinned Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.86.0
+          toolchain: 1.94.0
 
       - name: Cargo Audit (Vulnerabilities)
         uses: rustsec/audit-check@v2.0.0
