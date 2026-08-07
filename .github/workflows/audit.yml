@@ -10,20 +10,24 @@ on:
 
 jobs:
   audit:
-    name: cargo audit
+    name: Security and License Audit
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: physics_core
     steps:
       - uses: actions/checkout@v4
+
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.96.0
 
-      - uses: actions-rs/audit-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run Cargo Audit
+        run: |
+          cargo install cargo-audit --locked
+          cargo audit
 
       - name: Run Cargo Deny
-        run: cargo install cargo-deny && cargo deny check
+        run: |
+          cargo install cargo-deny --locked
+          cargo deny check
