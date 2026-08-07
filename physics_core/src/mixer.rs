@@ -1,8 +1,8 @@
-use glam::{Vec3, Quat}; // For vector math
+use glam::{Quat, Vec3}; // For vector math
 
 // Motor positions relative to center of gravity (X, Y, Z in meters)
 // Standard "X" quadcopter layout
-const MOTOR_FL_POS: Vec3 = Vec3::new(0.2, 0.2, 0.0);  // Front-Left
+const MOTOR_FL_POS: Vec3 = Vec3::new(0.2, 0.2, 0.0); // Front-Left
 const MOTOR_FR_POS: Vec3 = Vec3::new(0.2, -0.2, 0.0); // Front-Right
 const MOTOR_BL_POS: Vec3 = Vec3::new(-0.2, 0.2, 0.0); // Back-Left
 const MOTOR_BR_POS: Vec3 = Vec3::new(-0.2, -0.2, 0.0); // Back-Right
@@ -20,14 +20,12 @@ const REACTION_TORQUE_COEFF: f32 = 0.05;
 // Gravity constant
 const GRAVITY: f32 = 9.80665;
 
-
 pub fn calculate_net_forces(
     thrusts: [f32; 4],
     drag: [f32; 3],
     orientation: [f32; 4],
-    mass: f32
-) -> ([f32; 3], [f32; 3], [f32; 3]) { 
-
+    mass: f32,
+) -> ([f32; 3], [f32; 3], [f32; 3]) {
     let drag_vec = Vec3::from_array(drag);
     let rot_world = Quat::from_array(orientation);
 
@@ -52,6 +50,9 @@ pub fn calculate_net_forces(
 
     net_torque.z += yaw_reaction;
 
-
-    (net_force.to_array(), net_torque.to_array(), thrust_world.to_array())
+    (
+        net_force.to_array(),
+        net_torque.to_array(),
+        thrust_world.to_array(),
+    )
 }

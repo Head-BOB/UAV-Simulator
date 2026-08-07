@@ -1,5 +1,5 @@
-use glam::{Vec3, Quat};
 use crate::types::DroneState;
+use glam::{Quat, Vec3};
 
 /// Internal helper to calculate rates of change
 fn compute_derivative(
@@ -51,7 +51,10 @@ pub fn step_rk4(
         v0 + dv1 * dt * 0.5,
         q0 + dq1 * dt * 0.5,
         w0 + dw1 * dt * 0.5,
-        f, t, mass, i
+        f,
+        t,
+        mass,
+        i,
     );
 
     // Step k3
@@ -59,16 +62,15 @@ pub fn step_rk4(
         v0 + dv2 * dt * 0.5,
         q0 + dq2 * dt * 0.5,
         w0 + dw2 * dt * 0.5,
-        f, t, mass, i
+        f,
+        t,
+        mass,
+        i,
     );
 
     // Step k4
-    let (dp4, dv4, dq4, dw4) = compute_derivative(
-        v0 + dv3 * dt,
-        q0 + dq3 * dt,
-        w0 + dw3 * dt,
-        f, t, mass, i
-    );
+    let (dp4, dv4, dq4, dw4) =
+        compute_derivative(v0 + dv3 * dt, q0 + dq3 * dt, w0 + dw3 * dt, f, t, mass, i);
 
     // Combine results - FIX: Put scalars (dt / 6.0) at the end of multiplications
     let p_final = p0 + (dp1 + dp2 * 2.0 + dp3 * 2.0 + dp4) * (dt / 6.0);

@@ -1,5 +1,5 @@
 use crate::types::DroneState;
-use glam::{Vec3, Quat};
+use glam::{Quat, Vec3};
 
 // Drag Coefficients (Unitless - how draggy the shape is)
 const DRAG_COEFF_X: f32 = 1.0;
@@ -70,7 +70,6 @@ pub fn get_drag(state: &DroneState, altitude: f32) -> [f32; 3] {
     // 9. Return as a standard array expected by the FFI boundary
     drag_world.to_array()
 }
-
 
 /* #[cfg(test)]
 mod tests {
@@ -193,4 +192,3 @@ pub fn get_thrust(throttle: f32) -> f32 {
     // Thrust = Ct * rho * n^2 * D^4 (where n is RPS)
     THRUST_COEFF * density * rps.powi(2) * PROP_DIAMETER.powi(4)
 }
-
