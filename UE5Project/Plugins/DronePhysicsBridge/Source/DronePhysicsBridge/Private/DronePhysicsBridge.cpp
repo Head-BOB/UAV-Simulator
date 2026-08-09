@@ -53,15 +53,3 @@ bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, const ControlInpu
 
     return ffi_step_physics(State, Inputs, DeltaTime) == 0;
 }
-
-bool FDronePhysicsBridgeModule::GetDebugTelemetry(DebugTelemetry* OutTelemetry)
-{
-    if (!OutTelemetry)
-    {
-        return false;
-    }
-
-    // Returns 0 on successful lock and read from the Rust FFI boundary
-    return ffi_get_debug_telemetry(OutTelemetry) == 0;
-}
-

@@ -19,7 +19,7 @@ public class DronePhysicsBridge : ModuleRules
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine" });
 
         // Get the path to compiled Rust library
-        string RustLibPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "../../../../physics_core/target/release"));
+        string RustLibPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "../../../../../physics_core/target/release"));
 
         if (Target.Platform == UnrealTargetPlatform.Win64)
         {

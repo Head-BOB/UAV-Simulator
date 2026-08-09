@@ -31,6 +31,18 @@ int32_t ffi_reset_drone_state(DroneState *state);
 
 int32_t ffi_step_physics(DroneState *state, const ControlInputs *controls, float dt);
 
+typedef struct DebugTelemetry {
+	float net_thrust[3];
+	float aero_drag[3];
+	float gravity[3];
+	float net_force[3];
+	float motor_thrusts[4];
+	float motor_rpms[4];
+} DebugTelemetry;
+
+int32_t ffi_get_debug_telemetry(DebugTelemetry *out_telemetry);
+
+
 #ifdef __cplusplus
 }
 #endif
