@@ -27,7 +27,7 @@ jobs:
         shell: cmd
         run: |
           "%UE5_PATH%\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun ^
-          -project="%CD%\UE5Project\UAVSimulator.uproject" ^
+          -project="%CD%\UE5Project\UAV_Simulator.uproject" ^
           -platform=Win64 -configuration=Development ^
           -build -cook -stage -package 
 
