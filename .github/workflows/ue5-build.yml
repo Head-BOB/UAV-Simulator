@@ -1,0 +1,34 @@
+name: UE5 Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: gpu-laptop-exclusive
+  cancel-in-progress: false
+
+jobs:
+  build-ue5:
+    name: Package UE5 Project
+    runs-on: [self-hosted, windows, gpu-laptop]
+    timeout-minutes: 360
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Run UAT BuildCookRun
+        shell: cmd
+        run: |
+          "%UE5_PATH%\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun ^
+          -project="%CD%\UE5Project\UAV_Simulator.uproject" ^
+          -platform=Win64 -configuration=Development ^
+          -build -cook -stage -package 
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ue5-build-output
+          path: UE5Project/Saved/StagedBuilds/
