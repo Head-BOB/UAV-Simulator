@@ -19,11 +19,15 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
+      - name: Build Rust Physics Core
+        working-directory: physics_core
+        run: cargo build --release
+
       - name: Run UAT BuildCookRun
         shell: cmd
         run: |
           "%UE5_PATH%\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun ^
-          -project="%CD%\UE5Project\UAV_Simulator.uproject" ^
+          -project="%CD%\UE5Project\UAVSimulator.uproject" ^
           -platform=Win64 -configuration=Development ^
           -build -cook -stage -package 
 
