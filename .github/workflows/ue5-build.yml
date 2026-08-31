@@ -26,6 +26,7 @@ jobs:
       - name: Run UAT BuildCookRun
         shell: cmd
         run: |
+          set PATH=%CD%\physics_core\target\release;%PATH%
           "%UE5_PATH%\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun ^
           -project="%CD%\UE5Project\UAV_Simulator.uproject" ^
           -platform=Win64 -configuration=Development ^
