@@ -131,4 +131,3 @@ mod tests {
         assert_eq!(next_state.velocity[2], 0.0);
     }
 }
-

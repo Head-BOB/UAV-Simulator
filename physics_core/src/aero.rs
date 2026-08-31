@@ -109,7 +109,11 @@ mod tests {
     fn test_c1_zero_velocity() {
         let state = create_test_state([0.0, 0.0, 0.0]);
         let drag = get_drag(&state, 0.0);
-        assert_eq!(drag, [0.0, 0.0, 0.0], "Zero velocity must produce zero drag");
+        assert_eq!(
+            drag,
+            [0.0, 0.0, 0.0],
+            "Zero velocity must produce zero drag"
+        );
     }
 
     #[test]
@@ -129,44 +133,75 @@ mod tests {
         let drag_5 = get_drag(&state_5, 0.0)[0].abs();
         let drag_10 = get_drag(&state_10, 0.0)[0].abs();
 
-        assert!((drag_10 - (drag_5 * 4.0)).abs() < 0.1, "Drag did not scale by v-squared");
+        assert!(
+            (drag_10 - (drag_5 * 4.0)).abs() < 0.1,
+            "Drag did not scale by v-squared"
+        );
     }
 
     #[test]
     fn test_d1_zero_throttle() {
-        assert_eq!(get_thrust(0.0), 0.0, "Zero throttle must produce zero thrust");
+        assert_eq!(
+            get_thrust(0.0),
+            0.0,
+            "Zero throttle must produce zero thrust"
+        );
     }
 
     #[test]
     fn test_d2_thrust_scales_with_throttle_squared() {
         let t_025 = get_thrust(0.25);
         let t_050 = get_thrust(0.5);
-        assert!((t_050 - (t_025 * 4.0)).abs() < 0.1, "Thrust did not scale correctly");
+        assert!(
+            (t_050 - (t_025 * 4.0)).abs() < 0.1,
+            "Thrust did not scale correctly"
+        );
     }
 
     #[test]
     fn test_d5_throttle_clamping() {
-        assert_eq!(get_thrust(-0.5), get_thrust(0.0), "Negative throttle not clamped");
-        assert_eq!(get_thrust(1.5), get_thrust(1.0), "Excessive throttle not clamped");
+        assert_eq!(
+            get_thrust(-0.5),
+            get_thrust(0.0),
+            "Negative throttle not clamped"
+        );
+        assert_eq!(
+            get_thrust(1.5),
+            get_thrust(1.0),
+            "Excessive throttle not clamped"
+        );
     }
 
     #[test]
     fn test_b2_altitude_500m() {
         let d = compute_air_density(500.0);
-        assert!((d - 1.167).abs() < 0.005, "500m density should be ~1.167, got {}", d);
+        assert!(
+            (d - 1.167).abs() < 0.005,
+            "500m density should be ~1.167, got {}",
+            d
+        );
     }
 
     #[test]
     fn test_b4_troposphere_limit() {
         let d = compute_air_density(11000.0);
-        assert!(d > 0.0 && d < 1.225, "11000m density must be positive but less than sea level");
-        assert!(!d.is_nan(), "Density calculation resulted in NaN (Not a Number)");
+        assert!(
+            d > 0.0 && d < 1.225,
+            "11000m density must be positive but less than sea level"
+        );
+        assert!(
+            !d.is_nan(),
+            "Density calculation resulted in NaN (Not a Number)"
+        );
     }
 
     #[test]
     fn test_c4_different_axes_different_drag() {
         let drag_x = get_drag(&create_test_state([10.0, 0.0, 0.0]), 0.0)[0].abs();
         let drag_z = get_drag(&create_test_state([0.0, 0.0, 10.0]), 0.0)[2].abs();
-        assert!(drag_z > drag_x, "Z axis should have more drag than X axis based on our constants");
+        assert!(
+            drag_z > drag_x,
+            "Z axis should have more drag than X axis based on our constants"
+        );
     }
 }
