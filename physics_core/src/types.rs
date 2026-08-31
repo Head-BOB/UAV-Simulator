@@ -121,3 +121,9 @@ impl DebugTelemetry {
         }
     }
 }
+
+impl Default for DebugTelemetry {
+    fn default() -> Self {
+        Self::new()
+    }
+}

@@ -46,7 +46,7 @@ pub extern "C" fn ffi_create_default_drone_state() -> DroneState {
 /// * `state` must be a valid, aligned, and mutable pointer to a DroneState instance.
 /// * The memory must not be concurrently accessed by another thread.
 #[unsafe(no_mangle)]
-pub extern "C" fn ffi_reset_drone_state(state: *mut DroneState) -> i32 {
+pub unsafe extern "C" fn ffi_reset_drone_state(state: *mut DroneState) -> i32 {
     if state.is_null() {
         return 1;
     }
@@ -67,7 +67,7 @@ pub extern "C" fn ffi_reset_drone_state(state: *mut DroneState) -> i32 {
 /// * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
 /// * Pointers must not alias or be subject to concurrent mutation.
 #[unsafe(no_mangle)]
-pub extern "C" fn ffi_step_physics(
+pub unsafe extern "C" fn ffi_step_physics(
     state: *mut DroneState,
     controls: *const ControlInputs,
     dt: f32,
@@ -119,7 +119,7 @@ pub extern "C" fn ffi_step_physics(
 /// # Safety
 /// * `out_telemetry` must be a valid, aligned, and mutable pointer to a DebugTelemetry struct.
 #[unsafe(no_mangle)]
-pub extern "C" fn ffi_get_debug_telemetry(out_telemetry: *mut DebugTelemetry) -> i32 {
+pub unsafe extern "C" fn ffi_get_debug_telemetry(out_telemetry: *mut DebugTelemetry) -> i32 {
     if out_telemetry.is_null() {
         return 1;
     }
