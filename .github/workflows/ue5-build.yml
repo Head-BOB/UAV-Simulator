@@ -23,6 +23,12 @@ jobs:
         working-directory: physics_core
         run: cargo build --release
 
+      - name: Stage Rust DLL for Unreal Engine
+        shell: cmd
+        run: |
+          mkdir "%CD%\UE5Project\Binaries\Win64" 2>nul
+          copy /Y "%CD%\physics_core\target\release\physics_core.dll" "%CD%\UE5Project\Binaries\Win64\"
+
       - name: Run UAT BuildCookRun
         shell: cmd
         run: |

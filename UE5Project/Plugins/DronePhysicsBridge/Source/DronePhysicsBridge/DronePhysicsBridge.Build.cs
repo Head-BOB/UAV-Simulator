@@ -25,7 +25,7 @@ public class DronePhysicsBridge : ModuleRules
         {
             // Windows needs the .dll.lib to build, and the .dll to run
             PublicAdditionalLibraries.Add(Path.Combine(RustLibPath, "physics_core.dll.lib"));
-            RuntimeDependencies.Add(Path.Combine(RustLibPath, "physics_core.dll"));
+            RuntimeDependencies.Add("$(TargetOutputDir)/physics_core.dll");
         }
         else if (Target.Platform == UnrealTargetPlatform.Linux)
         {
