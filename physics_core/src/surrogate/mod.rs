@@ -28,9 +28,7 @@ static INIT_ORT: Once = Once::new();
 /// * `GeometryMismatch` - The embedded hash does not match `CURRENT_GEOMETRY_HASH`.
 pub fn load_surrogate(path: &str) -> Result<SurrogateHandle, SurrogateLoadError> {
     INIT_ORT.call_once(|| {
-        let _ = ort::init()
-            .with_name("UAV_Simulator_Physics")
-            .commit();
+        let _ = ort::init().with_name("UAV_Simulator_Physics").commit();
     });
 
     let session = Session::builder()

@@ -65,6 +65,29 @@ pub struct ControlInputs {
     pub yaw: f32,
 }
 
+/// Standardized return payload for any trained surrogate model query.
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct SurrogateQueryResult {
+    /// The primary output of the surrogate model (e.g., drag vector or scalar safety margin).
+    ///
+    /// # Units
+    /// Context-dependent based on the specific model queried.
+    pub predicted_values: [f32; 3],
+
+    /// Statistical confidence metric from the Gaussian Process Regression.
+    ///
+    /// # Units
+    /// Context-dependent variance.
+    pub uncertainty: f32,
+
+    /// Evaluates if the queried condition fell within the model's training data envelope.
+    ///
+    /// # Units
+    /// Unitless boolean flag (1 for true, 0 for false).
+    pub in_validated_envelope: i32,
+}
+
 /// Telemetry data exposed exclusively for UE5 On-Screen Display (OSD) and debug visualization.
 ///
 /// Must be synced every physics tick.
@@ -106,10 +129,27 @@ pub struct DebugTelemetry {
     /// # Units
     /// Revolutions per minute.
     pub motor_rpms: [f32; 4],
+
+    /// Temperature of each motor winding.
+    ///
+    /// # Units
+    /// Degrees Celsius.
+    pub motor_temperatures_c: [f32; 4],
+
+    /// Structural failure margin from the FEA surrogate.
+    ///
+    /// # Units
+    /// Unitless multiplier. Values strictly less than 1.0 indicate structural failure.
+    pub structural_safety_margin: f32,
+
+    /// Aggregated envelope validation flag for all surrogate queries in the current tick.
+    ///
+    /// # Units
+    /// Unitless boolean flag (1 if all queries are valid, 0 if any query extrapolated).
+    pub is_validated_envelope: i32,
 }
 
 impl DebugTelemetry {
-    /// Instantiates a default, zeroed telemetry block.
     pub const fn new() -> Self {
         Self {
             net_thrust: [0.0, 0.0, 0.0],
@@ -118,6 +158,9 @@ impl DebugTelemetry {
             net_force: [0.0, 0.0, 0.0],
             motor_thrusts: [0.0, 0.0, 0.0, 0.0],
             motor_rpms: [0.0, 0.0, 0.0, 0.0],
+            motor_temperatures_c: [20.0, 20.0, 20.0, 20.0],
+            structural_safety_margin: 10.0,
+            is_validated_envelope: 1,
         }
     }
 }

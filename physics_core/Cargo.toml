@@ -1,6 +1,6 @@
 [package]
 name = "physics_core"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 publish = false
 
@@ -18,3 +18,4 @@ panic = "abort"
 [dependencies]
 glam = "0.33.2"
 ort = { version = "2.0.0-rc.9", features = ["download-binaries"] }
+ndarray = "0.15.6"

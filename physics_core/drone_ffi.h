@@ -131,6 +131,27 @@ typedef struct DebugTelemetry {
    * Revolutions per minute.
    */
   float motor_rpms[4];
+  /**
+   * Temperature of each motor winding.
+   *
+   * # Units
+   * Degrees Celsius.
+   */
+  float motor_temperatures_c[4];
+  /**
+   * Structural failure margin from the FEA surrogate.
+   *
+   * # Units
+   * Unitless multiplier. Values strictly less than 1.0 indicate structural failure.
+   */
+  float structural_safety_margin;
+  /**
+   * Aggregated envelope validation flag for all surrogate queries in the current tick.
+   *
+   * # Units
+   * Unitless boolean flag (1 if all queries are valid, 0 if any query extrapolated).
+   */
+  int32_t is_validated_envelope;
 } DebugTelemetry;
 
 /**
