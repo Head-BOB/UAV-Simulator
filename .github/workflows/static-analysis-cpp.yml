@@ -1,0 +1,43 @@
+name: C++ Static Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  clang-tidy:
+    runs-on: [self-hosted, windows, gpu-laptop]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run clang-tidy (ratcheted)
+        run: |
+          clang-tidy UE5Project/Plugins/DronePhysicsBridge/Source/**/*.cpp `
+            -- -std=c++20 > tidy_output.txt
+          $count = (Select-String -Path tidy_output.txt -Pattern 'warning:').Count
+          Write-Host "clang-tidy findings: $count"
+          $baseline = (Get-Content static_analysis_baseline.json | ConvertFrom-Json).clang_tidy_baseline
+          if ($count -gt $baseline) {
+            Write-Error "clang-tidy findings increased ($count > $baseline)"
+            exit 1
+          }
+
+  cppcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cppcheck
+        run: sudo apt-get install -y cppcheck
+      - name: Run cppcheck
+        run: |
+          cppcheck --enable=all --std=c++20 --error-exitcode=0 \
+            UE5Project/Plugins/DronePhysicsBridge/Source/ 2> cppcheck_output.txt
+          cat cppcheck_output.txt
+          COUNT=$(grep -c '\[.*\]' cppcheck_output.txt || true)
+          echo "cppcheck findings: $COUNT"
+          BASELINE=$(jq '.cppcheck_baseline' static_analysis_baseline.json)
+          if [ "$COUNT" -gt "$BASELINE" ]; then
+            echo "::error::cppcheck findings increased ($COUNT > $BASELINE)"
+            exit 1
+          fi
