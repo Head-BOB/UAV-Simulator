@@ -142,7 +142,7 @@ pub unsafe extern "C" fn ffi_get_debug_telemetry(out_telemetry: *mut DebugTeleme
 /// * `1` - Null pointer provided or Invalid UTF-8 path
 /// * `2` - Missing provenance metadata
 /// * `3` - Geometry hash mismatch
-///
+/// * '4' - ONNX runtime engine failure
 /// # Safety
 /// * `path` must be a valid, null-terminated C string.
 /// * The memory referenced by `path` must not be mutated during this call.
@@ -164,5 +164,6 @@ pub unsafe extern "C" fn ffi_load_surrogate_model(path: *const std::ffi::c_char)
         Err(surrogate::SurrogateLoadError::IoError) => 1,
         Err(surrogate::SurrogateLoadError::MissingProvenance) => 2,
         Err(surrogate::SurrogateLoadError::GeometryMismatch { .. }) => 3,
+        Err(surrogate::SurrogateLoadError::EngineError(_)) => 4,
     }
 }

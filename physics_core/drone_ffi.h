@@ -195,7 +195,7 @@ int32_t ffi_get_debug_telemetry(struct DebugTelemetry *out_telemetry);
  * * `1` - Null pointer provided or Invalid UTF-8 path
  * * `2` - Missing provenance metadata
  * * `3` - Geometry hash mismatch
- *
+ * * '4' - ONNX runtime engine failure
  * # Safety
  * * `path` must be a valid, null-terminated C string.
  * * The memory referenced by `path` must not be mutated during this call.
