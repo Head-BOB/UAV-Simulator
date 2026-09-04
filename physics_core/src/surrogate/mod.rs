@@ -16,6 +16,13 @@ impl SurrogateHandle {
     }
 }
 
+impl Default for SurrogateHandle {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[allow(dead_code)]
 const CURRENT_GEOMETRY_HASH: &str = env!("GEOMETRY_HASH");
 
 /// Validates ONNX metadata against the compiled canonical geometry hash.
