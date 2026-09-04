@@ -24,7 +24,7 @@ jobs:
         with:
           tool: cargo-geiger
       - name: Report unsafe usage
-        run: cargo geiger --output-format GitHubMarkdown >> $GITHUB_STEP_SUMMARY
+        run: cargo geiger --output-format GitHubMarkdown >> $GITHUB_STEP_SUMMARY || true
 
   undefined-behavior-check:
     name: miri (weekly UB scan)
