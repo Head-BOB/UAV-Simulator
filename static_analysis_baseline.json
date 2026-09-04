@@ -1,7 +1,7 @@
 {
-  "clippy_pedantic_baseline": 47,
+  "clippy_pedantic_baseline": 0,
   "clang_tidy_baseline": 112,
-  "cppcheck_baseline": 8,
+  "cppcheck_baseline": 4,
   "last_updated": "2026-09-04",
   "note": "These numbers only go down. Lowering the baseline requires",
   "note2": "actually fixing findings, not editing this file."
