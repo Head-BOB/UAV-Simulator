@@ -15,24 +15,24 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	if (!bIsPhysicsInitialized)
 	{
-		PhysicsState = ffi_create_default_drone_state();
+		PhysicsState = FDronePhysicsBridgeModule::CreateDefaultState();
 		bIsPhysicsInitialized = true;
 	}
 
 	ControlInputs TestInputs;
-	TestInputs.throttle = 0.4095f; 
+	TestInputs.throttle = 0.4095f;
 	TestInputs.roll = 0.0f;
 	TestInputs.pitch = 0.0f;
 	TestInputs.yaw = 0.0f;
 
-	ffi_step_physics(&PhysicsState, &TestInputs, DeltaTime);
-	
+	FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &TestInputs, nullptr, DeltaTime);
+
 	FVector NewPos = FDronePhysicsBridgeModule::NedToUnrealWorld(PhysicsState.position);
 	FQuat NewRot(PhysicsState.orientation[0], PhysicsState.orientation[1], PhysicsState.orientation[2], PhysicsState.orientation[3]);
 	GetOwner()->SetActorLocationAndRotation(NewPos, NewRot);
-	
+
 	DebugTelemetry Telemetry;
-	if (ffi_get_debug_telemetry(&Telemetry) != 0) return;
+	if (!FDronePhysicsBridgeModule::GetDebugTelemetry(&Telemetry)) return;
 
 	FVector ActorLocation = GetOwner()->GetActorLocation();
 	const float ForceScale = 10.0f; 

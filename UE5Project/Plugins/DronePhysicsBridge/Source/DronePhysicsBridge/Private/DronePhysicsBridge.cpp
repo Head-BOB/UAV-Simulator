@@ -47,11 +47,10 @@ bool FDronePhysicsBridgeModule::ResetState(DroneState* State)
     return ffi_reset_drone_state(State) == 0;
 }
 
-bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, const ControlInputs* Inputs, float DeltaTime)
+bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, const ControlInputs* Inputs, SurrogateHandle* AeroHandle, float DeltaTime)
 {
     if (!State || !Inputs) return false;
-
-    return ffi_step_physics(State, Inputs, DeltaTime) == 0;
+    return ffi_step_physics(State, Inputs, AeroHandle, DeltaTime) == 0;
 }
 
 FVector FDronePhysicsBridgeModule::NedToUnrealWorld(const double NedPosition[3])

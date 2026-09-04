@@ -1,0 +1,10 @@
+## AI Assistance Disclosure
+- [ ] This PR contains AI-generated or AI-assisted code/comments/docs
+- Tool/model used: ______________________
+- Gates completed (check all that applied to this Tier):
+  - [ ] Gate 1: Compile/Build
+  - [ ] Gate 2: API Existence & Version Verification
+  - [ ] Gate 3: Physical/Logical Correctness (test run + result recorded)
+  - [ ] Gate 4: Citation Verification (if any standards/specs referenced)
+  - [ ] Gate 5: Intent Match (re-read against original requirement)
+  - [ ] Gate 6: Independent Human Review (reviewer confirms understanding, not just absence of visible problems)

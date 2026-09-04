@@ -67,11 +67,13 @@ pub unsafe extern "C" fn ffi_reset_drone_state(state: *mut DroneState) -> i32 {
 /// # Safety
 /// * `state` must be a valid, aligned, mutable pointer to a DroneState.
 /// * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
+/// * `aero_handle` may be null. If non-null, it must be a valid pointer to a SurrogateHandle.
 /// * Pointers must not alias or be subject to concurrent mutation.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn ffi_step_physics(
     state: *mut DroneState,
     controls: *const ControlInputs,
+    aero_handle: *mut surrogate::SurrogateHandle,
     dt: f32,
 ) -> i32 {
     if state.is_null() || controls.is_null() {
@@ -83,8 +85,14 @@ pub unsafe extern "C" fn ffi_step_physics(
         let current_state = *state;
         let current_controls = *controls;
 
+        let aero_opt = if aero_handle.is_null() {
+            None
+        } else {
+            Some(&mut *aero_handle)
+        };
+
         let altitude = (-current_state.position[2]) as f32;
-        let drag = aero::get_drag(&current_state, altitude);
+        let (drag, aero_result) = aero::get_drag_with_fallback(&current_state, altitude, aero_opt);
 
         let t = current_controls.throttle;
         let r = current_controls.roll * 0.2;
@@ -111,6 +119,10 @@ pub unsafe extern "C" fn ffi_step_physics(
             telemetry.net_force = net_force;
             telemetry.gravity = [0.0, 0.0, 9.80665];
             telemetry.net_thrust = net_thrust;
+
+            if let Some(res) = aero_result {
+                telemetry.is_validated_envelope = res.in_validated_envelope;
+            }
         }
     }
 

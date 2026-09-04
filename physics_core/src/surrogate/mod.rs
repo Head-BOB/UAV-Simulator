@@ -1,3 +1,4 @@
+pub mod aero_surrogate;
 use crate::types::SurrogateQueryResult;
 use ort::session::Session;
 use std::sync::Once;
@@ -29,9 +30,7 @@ static INIT_ORT: Once = Once::new();
 /// * `GeometryMismatch` - The embedded hash does not match `CURRENT_GEOMETRY_HASH`.
 pub fn load_surrogate(path: &str) -> Result<SurrogateHandle, SurrogateLoadError> {
     INIT_ORT.call_once(|| {
-        let _ = ort::init()
-            .with_name("UAV_Simulator_Physics")
-            .commit();
+        let _ = ort::init().with_name("UAV_Simulator_Physics").commit();
     });
 
     let session = Session::builder()
@@ -85,7 +84,6 @@ pub fn query_model(
     handle: &mut SurrogateHandle,
     inputs: &[f32],
 ) -> Result<SurrogateQueryResult, SurrogateLoadError> {
-
     // We pass a tuple of ([shape], data) directly to ort, bypassing ndarray entirely
     let input_tensor = ort::value::Tensor::from_array(([1, inputs.len()], inputs.to_vec()))
         .map_err(|e| SurrogateLoadError::EngineError(e.to_string()))?;
