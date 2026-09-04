@@ -187,4 +187,19 @@ int32_t ffi_step_physics(struct DroneState *state, const struct ControlInputs *c
  */
 int32_t ffi_get_debug_telemetry(struct DebugTelemetry *out_telemetry);
 
+/**
+ * Loads a trained ONNX surrogate model and verifies its geometry provenance.
+ *
+ * # Returns
+ * * `0` - Success
+ * * `1` - Null pointer provided or Invalid UTF-8 path
+ * * `2` - Missing provenance metadata
+ * * `3` - Geometry hash mismatch
+ *
+ * # Safety
+ * * `path` must be a valid, null-terminated C string.
+ * * The memory referenced by `path` must not be mutated during this call.
+ */
+int32_t ffi_load_surrogate_model(const char *path);
+
 #endif  /* DRONE_FFI_H */

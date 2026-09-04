@@ -1,6 +1,7 @@
 pub mod aero;
 pub mod integrator;
 pub mod mixer;
+pub mod surrogate;
 pub mod types;
 
 use std::sync::Mutex;
@@ -132,4 +133,36 @@ pub unsafe extern "C" fn ffi_get_debug_telemetry(out_telemetry: *mut DebugTeleme
     }
 
     2
+}
+
+/// Loads a trained ONNX surrogate model and verifies its geometry provenance.
+///
+/// # Returns
+/// * `0` - Success
+/// * `1` - Null pointer provided or Invalid UTF-8 path
+/// * `2` - Missing provenance metadata
+/// * `3` - Geometry hash mismatch
+///
+/// # Safety
+/// * `path` must be a valid, null-terminated C string.
+/// * The memory referenced by `path` must not be mutated during this call.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ffi_load_surrogate_model(path: *const std::ffi::c_char) -> i32 {
+    if path.is_null() {
+        return 1;
+    }
+
+    // SAFETY: Caller guarantees path is null-terminated per # Safety contract.
+    let c_str = unsafe { std::ffi::CStr::from_ptr(path) };
+    let path_str = match c_str.to_str() {
+        Ok(s) => s,
+        Err(_) => return 1,
+    };
+
+    match surrogate::load_surrogate(path_str) {
+        Ok(_) => 0,
+        Err(surrogate::SurrogateLoadError::IoError) => 1,
+        Err(surrogate::SurrogateLoadError::MissingProvenance) => 2,
+        Err(surrogate::SurrogateLoadError::GeometryMismatch { .. }) => 3,
+    }
 }
