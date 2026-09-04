@@ -53,3 +53,9 @@ bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, const ControlInpu
 
     return ffi_step_physics(State, Inputs, DeltaTime) == 0;
 }
+
+FVector FDronePhysicsBridgeModule::NedToUnrealWorld(const double NedPosition[3])
+{
+    // Convert meters to centimeters, and map NED (North-East-Down) to UE5 (X-Forward, Y-Right, Z-Up)
+    return FVector(NedPosition[0] * 100.0, NedPosition[1] * 100.0, -NedPosition[2] * 100.0);
+}

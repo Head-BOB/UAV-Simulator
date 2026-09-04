@@ -7,11 +7,6 @@ UDroneTelemetryComponent::UDroneTelemetryComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-FVector UDroneTelemetryComponent::NedToUnrealWorld(const double NedPosition[3])
-{
-	return FVector(NedPosition[0] * 100.0, NedPosition[1] * 100.0, -NedPosition[2] * 100.0);
-}
-
 void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -32,7 +27,7 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	ffi_step_physics(&PhysicsState, &TestInputs, DeltaTime);
 	
-	FVector NewPos = NedToUnrealWorld(PhysicsState.position);
+	FVector NewPos = FDronePhysicsBridgeModule::NedToUnrealWorld(PhysicsState.position);
 	FQuat NewRot(PhysicsState.orientation[0], PhysicsState.orientation[1], PhysicsState.orientation[2], PhysicsState.orientation[3]);
 	GetOwner()->SetActorLocationAndRotation(NewPos, NewRot);
 	
