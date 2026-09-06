@@ -1,4 +1,4 @@
-use crate::surrogate::{query_model, SurrogateHandle, SurrogateLoadError};
+use crate::surrogate::{SurrogateHandle, SurrogateLoadError, query_model};
 use crate::types::{DroneState, SurrogateQueryResult};
 use glam::{Quat, Vec3};
 

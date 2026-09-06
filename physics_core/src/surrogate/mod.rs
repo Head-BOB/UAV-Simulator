@@ -1,4 +1,6 @@
 pub mod aero_surrogate;
+pub mod fea_surrogate;
+
 use crate::types::SurrogateQueryResult;
 use ort::session::Session;
 use std::sync::Once;

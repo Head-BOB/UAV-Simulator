@@ -1,8 +1,8 @@
-use crate::types::DroneState;
-use glam::{Quat, Vec3};
-use crate::surrogate::aero_surrogate::query_aero;
 use crate::surrogate::SurrogateHandle;
+use crate::surrogate::aero_surrogate::query_aero;
+use crate::types::DroneState;
 use crate::types::SurrogateQueryResult;
+use glam::{Quat, Vec3};
 
 const DRAG_COEFF_X: f32 = 1.0;
 const DRAG_COEFF_Y: f32 = 1.0;

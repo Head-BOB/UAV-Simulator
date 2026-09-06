@@ -1,9 +1,12 @@
 pub mod aero;
 pub mod integrator;
 pub mod mixer;
+pub mod structural;
 pub mod surrogate;
+pub mod thermal;
 pub mod types;
 
+use glam::Vec3;
 use std::sync::Mutex;
 use types::{ControlInputs, DebugTelemetry, DroneState, SurrogateQueryResult};
 
@@ -61,19 +64,22 @@ pub unsafe extern "C" fn ffi_reset_drone_state(state: *mut DroneState) -> i32 {
 
 /// Main execution block for the fixed-timestep RK4 physics pipeline.
 ///
+/// Executes modules in strict order: Aero -> Structural -> Thermal -> Mixer -> Integrator.
+///
 /// # Units
 /// * `dt` - Timestep in seconds.
 ///
 /// # Safety
 /// * `state` must be a valid, aligned, mutable pointer to a DroneState.
 /// * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
-/// * `aero_handle` may be null. If non-null, it must be a valid pointer to a SurrogateHandle.
+/// * `aero_handle` and `fea_handle` may be null. If non-null, must be valid SurrogateHandles.
 /// * Pointers must not alias or be subject to concurrent mutation.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn ffi_step_physics(
     state: *mut DroneState,
     controls: *const ControlInputs,
     aero_handle: *mut surrogate::SurrogateHandle,
+    fea_handle: *mut surrogate::SurrogateHandle,
     dt: f32,
 ) -> i32 {
     if state.is_null() || controls.is_null() {
@@ -90,8 +96,16 @@ pub unsafe extern "C" fn ffi_step_physics(
         } else {
             Some(&mut *aero_handle)
         };
+        let fea_opt = if fea_handle.is_null() {
+            None
+        } else {
+            Some(&mut *fea_handle)
+        };
 
         let altitude = (-current_state.position[2]) as f32;
+        let airspeed = Vec3::from_array(current_state.velocity).length();
+
+        // 1. Aero Surrogate Query
         let (drag, aero_result) = aero::get_drag_with_fallback(&current_state, altitude, aero_opt);
 
         let t = current_controls.throttle;
@@ -106,23 +120,50 @@ pub unsafe extern "C" fn ffi_step_physics(
             aero::get_thrust((t + p - r - y).clamp(0.0, 1.0)),
         ];
 
+        // 2. Structural Surrogate Query
+        let load_proxy = thrusts.iter().sum::<f32>() + Vec3::from_array(drag).length();
+        let (safety_margin, fea_result) =
+            structural::get_safety_margin_with_fallback(load_proxy, fea_opt);
+
+        // 3. Thermal Module
+        let current_temps = if let Ok(telemetry) = TELEMETRY_CACHE.lock() {
+            telemetry.motor_temperatures_c
+        } else {
+            [20.0; 4]
+        };
+        let new_temps = thermal::update_temperatures(&thrusts, &current_temps, airspeed, dt);
+
+        // 4. Mixer
         let (net_force, net_torque, net_thrust) =
             mixer::calculate_net_forces(thrusts, drag, current_state.orientation, 1.0);
 
+        // 5. Integrator
         let new_state = integrator::step_rk4(&current_state, net_force, net_torque, 1.0, 1.0, dt);
 
         *state = new_state;
 
+        // Synchronize OSD Telemetry
         if let Ok(mut telemetry) = TELEMETRY_CACHE.lock() {
             telemetry.aero_drag = drag;
             telemetry.motor_thrusts = thrusts;
             telemetry.net_force = net_force;
             telemetry.gravity = [0.0, 0.0, 9.80665];
             telemetry.net_thrust = net_thrust;
+            telemetry.motor_temperatures_c = new_temps;
+            telemetry.structural_safety_margin = safety_margin;
 
+            let mut all_valid = 1;
             if let Some(res) = aero_result {
-                telemetry.is_validated_envelope = res.in_validated_envelope;
+                if res.in_validated_envelope == 0 {
+                    all_valid = 0;
+                }
             }
+            if let Some(res) = fea_result {
+                if res.in_validated_envelope == 0 {
+                    all_valid = 0;
+                }
+            }
+            telemetry.is_validated_envelope = all_valid;
         }
     }
 
