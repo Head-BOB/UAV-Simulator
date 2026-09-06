@@ -35,7 +35,7 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	if (!FDronePhysicsBridgeModule::GetDebugTelemetry(&Telemetry)) return;
 
 	FVector ActorLocation = GetOwner()->GetActorLocation();
-	const float ForceScale = 10.0f; 
+	const float ForceScale = 10.0f;
 
 	FVector NetThrust(Telemetry.net_thrust[0], Telemetry.net_thrust[1], -Telemetry.net_thrust[2]);
 	FVector AeroDrag(Telemetry.aero_drag[0], Telemetry.aero_drag[1], -Telemetry.aero_drag[2]);
@@ -58,12 +58,28 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 			"Altitude: %.2f m\n"
 			"Roll: %.1f, Pitch: %.1f, Yaw: %.1f\n"
 			"Angular Vel (X,Y,Z): %.3f, %.3f, %.3f\n"
+			"--- PHASE 2 TELEMETRY ---\n"
+			"Structural Safety Margin: %.2f\n"
+			"Motor Temps (C): [%.1f, %.1f, %.1f, %.1f]\n"
 		),
-		RustVelocity.Length(), 
+		RustVelocity.Length(),
 		-PhysicsState.position[2],
 		Rotation.Roll, Rotation.Pitch, Rotation.Yaw,
-		PhysicsState.angular_velocity[0], PhysicsState.angular_velocity[1], PhysicsState.angular_velocity[2]); 
+		PhysicsState.angular_velocity[0], PhysicsState.angular_velocity[1], PhysicsState.angular_velocity[2],
+		Telemetry.structural_safety_margin,
+		Telemetry.motor_temperatures_c[0], Telemetry.motor_temperatures_c[1],
+		Telemetry.motor_temperatures_c[2], Telemetry.motor_temperatures_c[3]);
 
 		GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Cyan, OSDText);
+
+		if (Telemetry.is_validated_envelope == 0)
+		{
+			GEngine->AddOnScreenDebugMessage(2, 0.0f, FColor::Orange, TEXT("WARNING: OUT OF VALIDATED ENVELOPE - EXTRAPOLATING"));
+		}
+
+		if (Telemetry.structural_safety_margin < 1.0f)
+		{
+			GEngine->AddOnScreenDebugMessage(3, 0.0f, FColor::Red, TEXT("CRITICAL: STRUCTURAL FAILURE IMMINENT"));
+		}
 	}
 }
