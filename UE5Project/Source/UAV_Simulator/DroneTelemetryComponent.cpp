@@ -25,7 +25,7 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	TestInputs.pitch = 0.0f;
 	TestInputs.yaw = 0.0f;
 
-	FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &TestInputs, nullptr, DeltaTime);
+	FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &TestInputs, nullptr, nullptr, DeltaTime);
 
 	FVector NewPos = FDronePhysicsBridgeModule::NedToUnrealWorld(PhysicsState.position);
 	FQuat NewRot(PhysicsState.orientation[0], PhysicsState.orientation[1], PhysicsState.orientation[2], PhysicsState.orientation[3]);
