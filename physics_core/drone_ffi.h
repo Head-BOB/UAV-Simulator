@@ -7,6 +7,11 @@
 #include <stdlib.h>
 
 /**
+ * Handle to an active ONNX surrogate model session.
+ */
+typedef struct SurrogateHandle SurrogateHandle;
+
+/**
  * Represents the drone's current physical condition.
  *
  * #[repr(C)] guarantees this struct has the exact same memory layout on
@@ -155,6 +160,33 @@ typedef struct DebugTelemetry {
 } DebugTelemetry;
 
 /**
+ * Standardized return payload for any trained surrogate model query.
+ */
+typedef struct SurrogateQueryResult {
+  /**
+   * The primary output of the surrogate model (e.g., drag vector or scalar safety margin).
+   *
+   * # Units
+   * Context-dependent based on the specific model queried.
+   */
+  float predicted_values[3];
+  /**
+   * Statistical confidence metric from the Gaussian Process Regression.
+   *
+   * # Units
+   * Context-dependent variance.
+   */
+  float uncertainty;
+  /**
+   * Evaluates if the queried condition fell within the model's training data envelope.
+   *
+   * # Units
+   * Unitless boolean flag (1 for true, 0 for false).
+   */
+  int32_t in_validated_envelope;
+} SurrogateQueryResult;
+
+/**
  * Returns the current layout version to UE5 to prevent memory corruption on mismatch.
  *
  * # Safety
@@ -190,15 +222,22 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
 /**
  * Main execution block for the fixed-timestep RK4 physics pipeline.
  *
+ * Executes modules in strict order: Aero -> Structural -> Thermal -> Mixer -> Integrator.
+ *
  * # Units
  * * `dt` - Timestep in seconds.
  *
  * # Safety
  * * `state` must be a valid, aligned, mutable pointer to a DroneState.
  * * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
+ * * `aero_handle` and `fea_handle` may be null. If non-null, must be valid SurrogateHandles.
  * * Pointers must not alias or be subject to concurrent mutation.
  */
-int32_t ffi_step_physics(struct DroneState *state, const struct ControlInputs *controls, float dt);
+int32_t ffi_step_physics(struct DroneState *state,
+                         const struct ControlInputs *controls,
+                         struct SurrogateHandle *aero_handle,
+                         struct SurrogateHandle *fea_handle,
+                         float dt);
 
 /**
  * Retrieves the most recent physics telemetry data for the UE5 OSD.
@@ -209,18 +248,46 @@ int32_t ffi_step_physics(struct DroneState *state, const struct ControlInputs *c
 int32_t ffi_get_debug_telemetry(struct DebugTelemetry *out_telemetry);
 
 /**
- * Loads a trained ONNX surrogate model and verifies its geometry provenance.
+ * Loads a trained ONNX surrogate model and returns an opaque handle to C++.
  *
  * # Returns
  * * `0` - Success
  * * `1` - Null pointer provided or Invalid UTF-8 path
  * * `2` - Missing provenance metadata
  * * `3` - Geometry hash mismatch
- * * '4' - ONNX runtime engine failure
+ * * `4` - Engine/ONNX initialization failure
+ *
  * # Safety
  * * `path` must be a valid, null-terminated C string.
- * * The memory referenced by `path` must not be mutated during this call.
+ * * `out_handle` must be a valid, aligned, mutable pointer to a pointer.
  */
-int32_t ffi_load_surrogate_model(const char *path);
+int32_t ffi_load_surrogate_model(const char *path, struct SurrogateHandle **out_handle);
+
+/**
+ * Queries a loaded surrogate model.
+ *
+ * # Returns
+ * * `0` - Success
+ * * `1` - Null pointer or invalid array length provided
+ * * `4` - Engine/ONNX inference error
+ *
+ * # Safety
+ * * `handle` must be a valid pointer created by `ffi_load_surrogate_model`.
+ * * `inputs` must point to an array of exactly `input_count` floats.
+ * * `out_result` must be a valid, aligned pointer.
+ */
+int32_t ffi_query_surrogate(struct SurrogateHandle *handle,
+                            const float *inputs,
+                            int32_t input_count,
+                            struct SurrogateQueryResult *out_result);
+
+/**
+ * Unloads a surrogate model and frees its memory.
+ *
+ * # Safety
+ * * `handle` must be a valid pointer created by `ffi_load_surrogate_model`.
+ * * `handle` must not be accessed after this function returns.
+ */
+void ffi_unload_surrogate_model(struct SurrogateHandle *handle);
 
 #endif  /* DRONE_FFI_H */

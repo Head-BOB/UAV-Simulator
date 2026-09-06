@@ -1,0 +1,6 @@
+{
+  "design_revision": 1,
+  "frame_type": "Quad-X",
+  "propeller": "UIUC_Master_10x4.5",
+  "notes": "Initial base geometry for Phase 2 bootstrap cases"
+}

@@ -14,7 +14,10 @@ fn main() {
         .expect("Unable to generate bindings")
         .write_to_file("drone_ffi.h");
 
-    let geometry_path = Path::new(&crate_dir).join("canonical_geometry.txt");
+    let geometry_path = Path::new(&crate_dir)
+        .parent()
+        .unwrap()
+        .join("offline_pipeline/geometry/current_geometry.json");
 
     let geometry_data = fs::read(&geometry_path).unwrap_or_else(|_| {
         panic!(
@@ -29,6 +32,6 @@ fn main() {
     let hash_hex = hex::encode(hash_result);
 
     println!("cargo:rustc-env=GEOMETRY_HASH={}", hash_hex);
-    println!("cargo:rerun-if-changed=canonical_geometry.txt");
+    println!("cargo:rerun-if-changed=current_geometry.json");
     println!("cargo:rerun-if-changed=build.rs");
 }
