@@ -26,10 +26,10 @@ static INIT_ORT: Once = Once::new();
 /// Validates ONNX metadata against the compiled canonical geometry hash and loads the ML session.
 ///
 /// # Errors
-/// * `EngineError` - The ONNX runtime failed to initialize or parse the model.
-/// * `IoError` - The file cannot be read from the filesystem.
-/// * `MissingProvenance` - The ONNX file lacks a `geometry_hash` property.
-/// * `GeometryMismatch` - The embedded hash does not match `CURRENT_GEOMETRY_HASH`.
+///  `EngineError` - The ONNX runtime failed to initialize or parse the model.
+///  `IoError` - The file cannot be read from the filesystem.
+///  `MissingProvenance` - The ONNX file lacks a `geometry_hash` property.
+///  `GeometryMismatch` - The embedded hash does not match `CURRENT_GEOMETRY_HASH`.
 pub fn load_surrogate(path: &str) -> Result<SurrogateHandle, SurrogateLoadError> {
     INIT_ORT.call_once(|| {
         let _ = ort::init().with_name("UAV_Simulator_Physics").commit();
@@ -63,21 +63,21 @@ pub fn load_surrogate(path: &str) -> Result<SurrogateHandle, SurrogateLoadError>
 /// Queries the loaded ONNX surrogate model generically.
 ///
 /// # Units
-/// * `inputs` - Context-dependent flat array of floats.
+///  `inputs` - Context-dependent flat array of floats.
 ///
 /// # Errors
-/// * `EngineError` - If tensor creation, execution, or extraction fails.
+///  `EngineError` - If tensor creation, execution, or extraction fails.
 /// Queries the loaded ONNX surrogate model generically.
 ///
 /// # Units
-/// * `inputs` - Context-dependent flat array of floats.
+///  `inputs` - Context-dependent flat array of floats.
 ///
 /// # Errors
-/// * `EngineError` - If tensor creation, execution, or extraction fails.
+///  `EngineError` - If tensor creation, execution, or extraction fails.
 /// Queries the loaded ONNX surrogate model generically.
 ///
 /// # Errors
-/// * `EngineError` - If tensor creation, execution, or extraction fails.
+///  `EngineError` - If tensor creation, execution, or extraction fails.
 /// Queries the loaded ONNX surrogate model generically.
 ///
 /// # Errors
