@@ -2,12 +2,14 @@
 name = "physics_core"
 version = "0.1.0"
 edition = "2024"
+publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
 [build-dependencies]
 cbindgen = "0.29.4"
+sha2 = "0.10"
 
 [profile.release]
 panic = "abort"

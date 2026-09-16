@@ -1,0 +1,33 @@
+name: Dependency Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'
+
+jobs:
+  audit:
+    name: Security and License Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: physics_core
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.96.0
+
+      - name: Run Cargo Audit
+        run: |
+          cargo install cargo-audit --locked
+          cargo audit
+
+      - name: Run Cargo Deny
+        run: |
+          cargo install cargo-deny --locked
+          cargo deny check

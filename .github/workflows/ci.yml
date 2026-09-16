@@ -1,0 +1,54 @@
+name: Rust CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build, Test, Lint, and SBOM
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: physics_core
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Install pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.96.0
+          components: clippy, rustfmt
+
+      - name: Cache cargo dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: physics_core
+
+      - name: Check formatting
+        run: cargo fmt --check
+
+      - name: Run clippy (deny warnings)
+        run: cargo clippy --release -- -D warnings
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Run tests
+        run: cargo test --release
+
+      # Task 7: Generate SBOM
+      - name: Install cargo-cyclonedx
+        run: cargo install cargo-cyclonedx
+
+      - name: Generate SBOM
+        run: cargo cyclonedx -f json --all
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-sbom
+          path: physics_core/bom.json
