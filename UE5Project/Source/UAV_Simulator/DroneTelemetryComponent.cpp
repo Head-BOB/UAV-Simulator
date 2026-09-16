@@ -9,6 +9,7 @@ UDroneTelemetryComponent::UDroneTelemetryComponent()
 
 FVector UDroneTelemetryComponent::NedToUnrealWorld(const double NedPosition[3])
 {
+	// NED +Z is Down, UE5 +Z is Up. Scale factor 100.0 converts physics meters to rendering centimeters.
 	return FVector(NedPosition[0] * 100.0, NedPosition[1] * 100.0, -NedPosition[2] * 100.0);
 }
 
@@ -18,13 +19,16 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	if (!bShowOSD || !GetOwner()) return;
 
-	if (!bIsPhysicsInitialized)
+	// --- BEGIN INTEGRATION TEST BLOCK (H4 & M1) ---
+	// Isolated hover test logic. Remove or comment out when connecting real player inputs.
+	/*if (!bIsPhysicsInitialized)
 	{
 		PhysicsState = ffi_create_default_drone_state();
 		bIsPhysicsInitialized = true;
 	}
 
 	ControlInputs TestInputs;
+	// 0.4095f precisely balances gravity (9.80665) against the Phase 1 placeholder thrust coefficient.
 	TestInputs.throttle = 0.4095f; 
 	TestInputs.roll = 0.0f;
 	TestInputs.pitch = 0.0f;
@@ -34,14 +38,18 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	
 	FVector NewPos = NedToUnrealWorld(PhysicsState.position);
 	FQuat NewRot(PhysicsState.orientation[0], PhysicsState.orientation[1], PhysicsState.orientation[2], PhysicsState.orientation[3]);
-	GetOwner()->SetActorLocationAndRotation(NewPos, NewRot);
+	GetOwner()->SetActorLocationAndRotation(NewPos, NewRot);*/
+	// --- END INTEGRATION TEST BLOCK ---
 	
 	DebugTelemetry Telemetry;
 	if (ffi_get_debug_telemetry(&Telemetry) != 0) return;
 
 	FVector ActorLocation = GetOwner()->GetActorLocation();
+	
+	// Constant scale limits unbounded line lengths from Newton values directly rendering in UE5 units.
 	const float ForceScale = 10.0f; 
 
+	// Vectors must be inverted on Z to match UE5's left-handed Z-up frame.
 	FVector NetThrust(Telemetry.net_thrust[0], Telemetry.net_thrust[1], -Telemetry.net_thrust[2]);
 	FVector AeroDrag(Telemetry.aero_drag[0], Telemetry.aero_drag[1], -Telemetry.aero_drag[2]);
 	FVector Gravity(Telemetry.gravity[0], Telemetry.gravity[1], -Telemetry.gravity[2]);
@@ -69,6 +77,7 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		Rotation.Roll, Rotation.Pitch, Rotation.Yaw,
 		PhysicsState.angular_velocity[0], PhysicsState.angular_velocity[1], PhysicsState.angular_velocity[2]); 
 
+		// Key '1' prevents log spam by overwriting the same message block every frame.
 		GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Cyan, OSDText);
 	}
 }
