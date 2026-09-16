@@ -220,10 +220,10 @@ pub fn get_drag_with_fallback(
     altitude: f32,
     aero_handle: Option<&mut SurrogateHandle>,
 ) -> ([f32; 3], Option<SurrogateQueryResult>) {
-    if let Some(handle) = aero_handle {
-        if let Ok(result) = query_aero(handle, state) {
-            return (result.predicted_values, Some(result));
-        }
+    if let Some(handle) = aero_handle
+        && let Ok(result) = query_aero(handle, state)
+    {
+        return (result.predicted_values, Some(result));
     }
 
     (get_drag(state, altitude), None)

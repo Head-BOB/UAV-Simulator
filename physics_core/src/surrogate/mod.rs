@@ -81,7 +81,7 @@ pub fn load_surrogate(path: &str) -> Result<SurrogateHandle, SurrogateLoadError>
 /// Queries the loaded ONNX surrogate model generically.
 ///
 /// # Errors
-/// * `EngineError` - If tensor creation, execution, or extraction fails.
+/// Returns `EngineError` if tensor creation, execution, or extraction fails.
 pub fn query_model(
     handle: &mut SurrogateHandle,
     inputs: &[f32],

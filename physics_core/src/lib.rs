@@ -153,15 +153,15 @@ pub unsafe extern "C" fn ffi_step_physics(
             telemetry.structural_safety_margin = safety_margin;
 
             let mut all_valid = 1;
-            if let Some(res) = aero_result {
-                if res.in_validated_envelope == 0 {
-                    all_valid = 0;
-                }
+            if let Some(res) = aero_result
+                && res.in_validated_envelope == 0
+            {
+                all_valid = 0;
             }
-            if let Some(res) = fea_result {
-                if res.in_validated_envelope == 0 {
-                    all_valid = 0;
-                }
+            if let Some(res) = fea_result
+                && res.in_validated_envelope == 0
+            {
+                all_valid = 0;
             }
             telemetry.is_validated_envelope = all_valid;
         }
