@@ -1,91 +1,293 @@
-#pragma once
+#ifndef DRONE_FFI_H
+#define DRONE_FFI_H
 
-#include <stdint.h>
+#include <stdarg.h>
 #include <stdbool.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stdint.h>
+#include <stdlib.h>
 
 /**
- * \brief Represents the drone's current physical condition.
+ * Handle to an active ONNX surrogate model session.
+ */
+typedef struct SurrogateHandle SurrogateHandle;
+
+/**
+ * Represents the drone's current physical condition.
  *
+ * #[repr(C)] guarantees this struct has the exact same memory layout on
+ * both sides of the FFI boundary.
+ *
+ * COORDINATE FRAME (see ADR-001, Section 1.3 of the Standards Framework):
  * position is expressed in a local North-East-Down (NED) frame, in meters,
- * relative to a fixed WGS84 geodetic origin.
+ * relative to a fixed WGS84 geodetic origin defined once per simulation
+ * scenario. Do not reinterpret this as UE5 world-space — conversion
+ * happens ONLY inside the wrapper class described in Section 1.4.
  */
 typedef struct DroneState {
-	double position[3];
-	float velocity[3];
-	float orientation[4];
-	float angular_velocity[3];
+  /**
+   * North-East-Down position relative to the scenario's WGS84 origin.
+   *
+   * # Units
+   * Meters. f64: see ADR-001 — f32 loses sub-meter precision at realistic mission ranges.
+   */
+  double position[3];
+  /**
+   * Local-frame linear velocity.
+   *
+   * # Units
+   * Meters per second. f32 is sufficient: magnitude never grows large enough to lose useful precision.
+   */
+  float velocity[3];
+  /**
+   * Rotation as a unit quaternion, stored in order (w, x, y, z).
+   *
+   * # Units
+   * Unitless quaternion. f32 is sufficient: components are always within [-1.0, 1.0].
+   */
+  float orientation[4];
+  /**
+   * Angular velocity in the body frame.
+   *
+   * # Units
+   * Radians per second. f32 is sufficient for the same reason as velocity.
+   */
+  float angular_velocity[3];
 } DroneState;
 
 /**
- * \brief Represents what the pilot/controller is commanding.
+ * Represents what the pilot/controller is commanding.
  */
 typedef struct ControlInputs {
-	float throttle;
-	float roll;
-	float pitch;
-	float yaw;
+  /**
+   * Commanded throttle.
+   *
+   * # Units
+   * Normalized range 0.0 (none) to 1.0 (full).
+   */
+  float throttle;
+  /**
+   * Commanded roll input.
+   *
+   * # Units
+   * Normalized range -1.0 to 1.0.
+   */
+  float roll;
+  /**
+   * Commanded pitch input.
+   *
+   * # Units
+   * Normalized range -1.0 to 1.0.
+   */
+  float pitch;
+  /**
+   * Commanded yaw input.
+   *
+   * # Units
+   * Normalized range -1.0 to 1.0.
+   */
+  float yaw;
 } ControlInputs;
 
 /**
- * \brief Returns the current layout version to UE5.
- * \return Integer version number.
+ * Telemetry data exposed exclusively for UE5 On-Screen Display (OSD) and debug visualization.
+ *
+ * Must be synced every physics tick.
+ */
+typedef struct DebugTelemetry {
+  /**
+   * Net thrust vector across all motors in world space.
+   *
+   * # Units
+   * Newtons.
+   */
+  float net_thrust[3];
+  /**
+   * Aerodynamic drag force vector in world space.
+   *
+   * # Units
+   * Newtons.
+   */
+  float aero_drag[3];
+  /**
+   * Gravity vector applied to the drone.
+   *
+   * # Units
+   * Newtons.
+   */
+  float gravity[3];
+  /**
+   * Resulting net force vector.
+   *
+   * # Units
+   * Newtons.
+   */
+  float net_force[3];
+  /**
+   * Individual motor thrust outputs.
+   *
+   * # Units
+   * Newtons.
+   */
+  float motor_thrusts[4];
+  /**
+   * Individual motor RPMs.
+   *
+   * # Units
+   * Revolutions per minute.
+   */
+  float motor_rpms[4];
+  /**
+   * Temperature of each motor winding.
+   *
+   * # Units
+   * Degrees Celsius.
+   */
+  float motor_temperatures_c[4];
+  /**
+   * Structural failure margin from the FEA surrogate.
+   *
+   * # Units
+   * Unitless multiplier. Values strictly less than 1.0 indicate structural failure.
+   */
+  float structural_safety_margin;
+  /**
+   * Aggregated envelope validation flag for all surrogate queries in the current tick.
+   *
+   * # Units
+   * Unitless boolean flag (1 if all queries are valid, 0 if any query extrapolated).
+   */
+  int32_t is_validated_envelope;
+} DebugTelemetry;
+
+/**
+ * Standardized return payload for any trained surrogate model query.
+ */
+typedef struct SurrogateQueryResult {
+  /**
+   * The primary output of the surrogate model (e.g., drag vector or scalar safety margin).
+   *
+   * # Units
+   * Context-dependent based on the specific model queried.
+   */
+  float predicted_values[3];
+  /**
+   * Statistical confidence metric from the Gaussian Process Regression.
+   *
+   * # Units
+   * Context-dependent variance.
+   */
+  float uncertainty;
+  /**
+   * Evaluates if the queried condition fell within the model's training data envelope.
+   *
+   * # Units
+   * Unitless boolean flag (1 for true, 0 for false).
+   */
+  int32_t in_validated_envelope;
+} SurrogateQueryResult;
+
+/**
+ * Returns the current layout version to UE5 to prevent memory corruption on mismatch.
+ *
+ * # Safety
+ * Safe to call at any time.
  */
 int32_t ffi_get_interface_version(void);
 
 /**
- * \brief Returns the byte size of DroneState.
- * \return Size in bytes.
+ * Allows UE5 to verify the byte size of DroneState during module initialization.
+ *
+ * # Safety
+ * Safe to call at any time.
  */
 int32_t ffi_get_drone_state_size(void);
 
 /**
- * \brief Instantiates a default, zeroed drone state.
- * \return A DroneState struct with identity orientation.
+ * Instantiates a default, zeroed drone state with an identity quaternion.
+ *
+ * # Safety
+ * Safe to call at any time.
  */
-DroneState ffi_create_default_drone_state(void);
+struct DroneState ffi_create_default_drone_state(void);
 
 /**
- * \brief Resets the provided state to default values.
- * \param state Pointer to the DroneState to reset.
- * \return 0 on success, 1 on null pointer.
- * \pre state must be non-null and previously validated by the caller.
+ * Resets the provided state to default values.
+ *
+ * # Safety
+ * * `state` must be a valid, aligned, and mutable pointer to a DroneState instance.
+ * * The memory must not be concurrently accessed by another thread.
  */
-int32_t ffi_reset_drone_state(DroneState *state);
+int32_t ffi_reset_drone_state(struct DroneState *state);
 
 /**
- * \brief Main execution block for the fixed-timestep RK4 physics pipeline.
- * \param state Pointer to the current DroneState.
- * \param controls Pointer to the current ControlInputs.
- * \param dt Timestep in seconds.
- * \return 0 on success, 1 on null pointer.
- * \pre state and controls must be non-null and previously validated by the caller.
+ * Main execution block for the fixed-timestep RK4 physics pipeline.
+ *
+ * Executes modules in strict order: Aero -> Structural -> Thermal -> Mixer -> Integrator.
+ *
+ * # Units
+ * * `dt` - Timestep in seconds.
+ *
+ * # Safety
+ * * `state` must be a valid, aligned, mutable pointer to a DroneState.
+ * * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
+ * * `aero_handle` and `fea_handle` may be null. If non-null, must be valid SurrogateHandles.
+ * * Pointers must not alias or be subject to concurrent mutation.
  */
-int32_t ffi_step_physics(DroneState *state, const ControlInputs *controls, float dt);
+int32_t ffi_step_physics(struct DroneState *state,
+                         const struct ControlInputs *controls,
+                         struct SurrogateHandle *aero_handle,
+                         struct SurrogateHandle *fea_handle,
+                         float dt);
 
 /**
- * \brief Telemetry data exposed exclusively for UE5 On-Screen Display (OSD).
+ * Retrieves the most recent physics telemetry data for the UE5 OSD.
+ *
+ * # Safety
+ * * `out_telemetry` must be a valid, aligned, and mutable pointer to a DebugTelemetry struct.
  */
-typedef struct DebugTelemetry {
-	float net_thrust[3];
-	float aero_drag[3];
-	float gravity[3];
-	float net_force[3];
-	float motor_thrusts[4];
-	float motor_rpms[4];
-} DebugTelemetry;
+int32_t ffi_get_debug_telemetry(struct DebugTelemetry *out_telemetry);
 
 /**
- * \brief Retrieves the most recent physics telemetry data.
- * \param out_telemetry Pointer to the DebugTelemetry struct to populate.
- * \return 0 on success, 1 on null pointer.
- * \pre out_telemetry must be non-null.
+ * Loads a trained ONNX surrogate model and returns an opaque handle to C++.
+ *
+ * # Returns
+ * * `0` - Success
+ * * `1` - Null pointer provided or Invalid UTF-8 path
+ * * `2` - Missing provenance metadata
+ * * `3` - Geometry hash mismatch
+ * * `4` - Engine/ONNX initialization failure
+ *
+ * # Safety
+ * * `path` must be a valid, null-terminated C string.
+ * * `out_handle` must be a valid, aligned, mutable pointer to a pointer.
  */
-int32_t ffi_get_debug_telemetry(DebugTelemetry *out_telemetry);
+int32_t ffi_load_surrogate_model(const char *path, struct SurrogateHandle **out_handle);
 
-#ifdef __cplusplus
-}
-#endif
+/**
+ * Queries a loaded surrogate model.
+ *
+ * # Returns
+ * * `0` - Success
+ * * `1` - Null pointer or invalid array length provided
+ * * `4` - Engine/ONNX inference error
+ *
+ * # Safety
+ * * `handle` must be a valid pointer created by `ffi_load_surrogate_model`.
+ * * `inputs` must point to an array of exactly `input_count` floats.
+ * * `out_result` must be a valid, aligned pointer.
+ */
+int32_t ffi_query_surrogate(struct SurrogateHandle *handle,
+                            const float *inputs,
+                            int32_t input_count,
+                            struct SurrogateQueryResult *out_result);
+
+/**
+ * Unloads a surrogate model and frees its memory.
+ *
+ * # Safety
+ * * `handle` must be a valid pointer created by `ffi_load_surrogate_model`.
+ * * `handle` must not be accessed after this function returns.
+ */
+void ffi_unload_surrogate_model(struct SurrogateHandle *handle);
+
+#endif  /* DRONE_FFI_H */

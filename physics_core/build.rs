@@ -7,12 +7,17 @@ use std::path::Path;
 fn main() {
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
+    let out_path = Path::new(&crate_dir)
+        .parent()
+        .unwrap()
+        .join("UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public/Generated/drone_ffi.h");
+
     cbindgen::Builder::new()
         .with_crate(&crate_dir)
         .with_config(cbindgen::Config::from_file("cbindgen.toml").unwrap())
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file("drone_ffi.h");
+        .write_to_file(out_path);
 
     let geometry_path = Path::new(&crate_dir)
         .parent()
@@ -32,6 +37,6 @@ fn main() {
     let hash_hex = hex::encode(hash_result);
 
     println!("cargo:rustc-env=GEOMETRY_HASH={}", hash_hex);
-    println!("cargo:rerun-if-changed=current_geometry.json");
+    println!("cargo:rerun-if-changed=../offline_pipeline/geometry/current_geometry.json");
     println!("cargo:rerun-if-changed=build.rs");
 }

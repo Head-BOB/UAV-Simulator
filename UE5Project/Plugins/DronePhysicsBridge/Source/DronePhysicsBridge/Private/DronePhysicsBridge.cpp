@@ -1,20 +1,15 @@
 #include "DronePhysicsBridge.h"
 #include "Modules/ModuleManager.h"
 
-// Tells Unreal Engine this is the main class for the plugin module
 IMPLEMENT_MODULE(FDronePhysicsBridgeModule, DronePhysicsBridge)
 
 void FDronePhysicsBridgeModule::StartupModule()
 {
-    // Task 10 Requirement: Safety Checks!
-    // This is the most important code in the wrapper. It prevents silent memory corruption.
-
-    int32 ExpectedVersion = 1; // This matches the 1 we returned in lib.rs
+    int32 ExpectedVersion = 1;
     int32 RustVersion = ffi_get_interface_version();
 
     if (RustVersion != ExpectedVersion)
     {
-        // Fatal error crashes the engine on purpose. Better to crash than silently corrupt data!
         UE_LOG(LogTemp, Fatal, TEXT("Rust FFI Version Mismatch! Expected %d, got %d"), ExpectedVersion, RustVersion);
     }
 
@@ -31,7 +26,6 @@ void FDronePhysicsBridgeModule::StartupModule()
 
 void FDronePhysicsBridgeModule::ShutdownModule()
 {
-    // Called when the engine shuts down. We don't need to do anything here for now.
 }
 
 DroneState FDronePhysicsBridgeModule::CreateDefaultState()
@@ -42,8 +36,6 @@ DroneState FDronePhysicsBridgeModule::CreateDefaultState()
 bool FDronePhysicsBridgeModule::ResetState(DroneState* State)
 {
     if (!State) return false;
-
-    // Returns 0 on success (based on our Rust implementation)
     return ffi_reset_drone_state(State) == 0;
 }
 
@@ -53,8 +45,13 @@ bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, const ControlInpu
     return ffi_step_physics(State, Inputs, AeroHandle, FeaHandle, DeltaTime) == 0;
 }
 
+bool FDronePhysicsBridgeModule::GetDebugTelemetry(DebugTelemetry* OutTelemetry)
+{
+    if (!OutTelemetry) return false;
+    return ffi_get_debug_telemetry(OutTelemetry) == 0;
+}
+
 FVector FDronePhysicsBridgeModule::NedToUnrealWorld(const double NedPosition[3])
 {
-    // Convert meters to centimeters, and map NED (North-East-Down) to UE5 (X-Forward, Y-Right, Z-Up)
     return FVector(NedPosition[0] * 100.0, NedPosition[1] * 100.0, -NedPosition[2] * 100.0);
 }
