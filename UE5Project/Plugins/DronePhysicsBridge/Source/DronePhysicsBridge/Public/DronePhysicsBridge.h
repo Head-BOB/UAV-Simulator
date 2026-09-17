@@ -13,5 +13,7 @@ public:
 
     static DroneState CreateDefaultState();
     static bool ResetState(DroneState* State);
-    static bool StepPhysics(DroneState* State, const ControlInputs* Inputs, float DeltaTime);
+    static bool StepPhysics(DroneState* State, const ControlInputs* Inputs, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, float DeltaTime);
+    static FVector NedToUnrealWorld(const double NedPosition[3]);
+
 };

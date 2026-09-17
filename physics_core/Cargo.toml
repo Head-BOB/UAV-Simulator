@@ -1,6 +1,6 @@
 [package]
 name = "physics_core"
-version = "0.1.0"
+version = "0.3.0"
 edition = "2024"
 publish = false
 
@@ -9,9 +9,12 @@ crate-type = ["cdylib", "rlib"]
 
 [build-dependencies]
 cbindgen = "0.29.4"
+sha2 = "0.10.8"
+hex = "0.4.3"
 
 [profile.release]
 panic = "abort"
 
 [dependencies]
 glam = "0.33.2"
+ort = { version = "2.0.0-rc.13", features = ["download-binaries"] }

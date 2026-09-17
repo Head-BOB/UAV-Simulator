@@ -7,11 +7,6 @@ UDroneTelemetryComponent::UDroneTelemetryComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-FVector UDroneTelemetryComponent::NedToUnrealWorld(const double NedPosition[3])
-{
-	return FVector(NedPosition[0] * 100.0, NedPosition[1] * 100.0, -NedPosition[2] * 100.0);
-}
-
 void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -20,27 +15,27 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	if (!bIsPhysicsInitialized)
 	{
-		PhysicsState = ffi_create_default_drone_state();
+		PhysicsState = FDronePhysicsBridgeModule::CreateDefaultState();
 		bIsPhysicsInitialized = true;
 	}
 
 	ControlInputs TestInputs;
-	TestInputs.throttle = 0.4095f; 
+	TestInputs.throttle = 0.4095f;
 	TestInputs.roll = 0.0f;
 	TestInputs.pitch = 0.0f;
 	TestInputs.yaw = 0.0f;
 
-	ffi_step_physics(&PhysicsState, &TestInputs, DeltaTime);
-	
-	FVector NewPos = NedToUnrealWorld(PhysicsState.position);
+	FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &TestInputs, nullptr, nullptr, DeltaTime);
+
+	FVector NewPos = FDronePhysicsBridgeModule::NedToUnrealWorld(PhysicsState.position);
 	FQuat NewRot(PhysicsState.orientation[0], PhysicsState.orientation[1], PhysicsState.orientation[2], PhysicsState.orientation[3]);
 	GetOwner()->SetActorLocationAndRotation(NewPos, NewRot);
-	
+
 	DebugTelemetry Telemetry;
-	if (ffi_get_debug_telemetry(&Telemetry) != 0) return;
+	if (!FDronePhysicsBridgeModule::GetDebugTelemetry(&Telemetry)) return;
 
 	FVector ActorLocation = GetOwner()->GetActorLocation();
-	const float ForceScale = 10.0f; 
+	const float ForceScale = 10.0f;
 
 	FVector NetThrust(Telemetry.net_thrust[0], Telemetry.net_thrust[1], -Telemetry.net_thrust[2]);
 	FVector AeroDrag(Telemetry.aero_drag[0], Telemetry.aero_drag[1], -Telemetry.aero_drag[2]);
@@ -63,12 +58,28 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 			"Altitude: %.2f m\n"
 			"Roll: %.1f, Pitch: %.1f, Yaw: %.1f\n"
 			"Angular Vel (X,Y,Z): %.3f, %.3f, %.3f\n"
+			"--- PHASE 2 TELEMETRY ---\n"
+			"Structural Safety Margin: %.2f\n"
+			"Motor Temps (C): [%.1f, %.1f, %.1f, %.1f]\n"
 		),
-		RustVelocity.Length(), 
+		RustVelocity.Length(),
 		-PhysicsState.position[2],
 		Rotation.Roll, Rotation.Pitch, Rotation.Yaw,
-		PhysicsState.angular_velocity[0], PhysicsState.angular_velocity[1], PhysicsState.angular_velocity[2]); 
+		PhysicsState.angular_velocity[0], PhysicsState.angular_velocity[1], PhysicsState.angular_velocity[2],
+		Telemetry.structural_safety_margin,
+		Telemetry.motor_temperatures_c[0], Telemetry.motor_temperatures_c[1],
+		Telemetry.motor_temperatures_c[2], Telemetry.motor_temperatures_c[3]);
 
 		GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Cyan, OSDText);
+
+		if (Telemetry.is_validated_envelope == 0)
+		{
+			GEngine->AddOnScreenDebugMessage(2, 0.0f, FColor::Orange, TEXT("WARNING: OUT OF VALIDATED ENVELOPE - EXTRAPOLATING"));
+		}
+
+		if (Telemetry.structural_safety_margin < 1.0f)
+		{
+			GEngine->AddOnScreenDebugMessage(3, 0.0f, FColor::Red, TEXT("CRITICAL: STRUCTURAL FAILURE IMMINENT"));
+		}
 	}
 }

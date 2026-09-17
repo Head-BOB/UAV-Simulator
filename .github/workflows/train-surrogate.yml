@@ -1,0 +1,30 @@
+name: Train Surrogate Models
+
+on:
+  workflow_dispatch:
+
+jobs:
+  train:
+    name: Train GPR Surrogates
+    runs-on: [self-hosted, windows, gpu-laptop]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Python Dependencies
+        shell: powershell
+        run: pip install -r offline_pipeline/requirements.txt
+
+      - name: Train Aero & FEA Surrogates
+        shell: powershell
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          # Placeholder script call: Python training logic goes here
+          echo "Training surrogate models..."
+          # python offline_pipeline/cfd/train_aero.py
+
+      - name: Upload Trained Models
+        uses: actions/upload-artifact@v4
+        with:
+          name: trained-surrogates
+          path: offline_pipeline/trained_models/

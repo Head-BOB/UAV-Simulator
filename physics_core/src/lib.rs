@@ -1,10 +1,14 @@
 pub mod aero;
 pub mod integrator;
 pub mod mixer;
+pub mod structural;
+pub mod surrogate;
+pub mod thermal;
 pub mod types;
 
+use glam::Vec3;
 use std::sync::Mutex;
-use types::{ControlInputs, DebugTelemetry, DroneState};
+use types::{ControlInputs, DebugTelemetry, DroneState, SurrogateQueryResult};
 
 static TELEMETRY_CACHE: Mutex<DebugTelemetry> = Mutex::new(DebugTelemetry::new());
 
@@ -51,6 +55,7 @@ pub unsafe extern "C" fn ffi_reset_drone_state(state: *mut DroneState) -> i32 {
         return 1;
     }
 
+    // SAFETY: Verified null check. Callers must uphold standard borrowing rules.
     unsafe {
         *state = ffi_create_default_drone_state();
     }
@@ -59,29 +64,49 @@ pub unsafe extern "C" fn ffi_reset_drone_state(state: *mut DroneState) -> i32 {
 
 /// Main execution block for the fixed-timestep RK4 physics pipeline.
 ///
+/// Executes modules in strict order: Aero -> Structural -> Thermal -> Mixer -> Integrator.
+///
 /// # Units
 /// * `dt` - Timestep in seconds.
 ///
 /// # Safety
 /// * `state` must be a valid, aligned, mutable pointer to a DroneState.
 /// * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
+/// * `aero_handle` and `fea_handle` may be null. If non-null, must be valid SurrogateHandles.
 /// * Pointers must not alias or be subject to concurrent mutation.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn ffi_step_physics(
     state: *mut DroneState,
     controls: *const ControlInputs,
+    aero_handle: *mut surrogate::SurrogateHandle,
+    fea_handle: *mut surrogate::SurrogateHandle,
     dt: f32,
 ) -> i32 {
     if state.is_null() || controls.is_null() {
         return 1;
     }
 
+    // SAFETY: Verified null checks.
     unsafe {
         let current_state = *state;
         let current_controls = *controls;
 
+        let aero_opt = if aero_handle.is_null() {
+            None
+        } else {
+            Some(&mut *aero_handle)
+        };
+        let fea_opt = if fea_handle.is_null() {
+            None
+        } else {
+            Some(&mut *fea_handle)
+        };
+
         let altitude = (-current_state.position[2]) as f32;
-        let drag = aero::get_drag(&current_state, altitude);
+        let airspeed = Vec3::from_array(current_state.velocity).length();
+
+        // 1. Aero Surrogate Query
+        let (drag, aero_result) = aero::get_drag_with_fallback(&current_state, altitude, aero_opt);
 
         let t = current_controls.throttle;
         let r = current_controls.roll * 0.2;
@@ -95,19 +120,50 @@ pub unsafe extern "C" fn ffi_step_physics(
             aero::get_thrust((t + p - r - y).clamp(0.0, 1.0)),
         ];
 
+        // 2. Structural Surrogate Query
+        let load_proxy = thrusts.iter().sum::<f32>() + Vec3::from_array(drag).length();
+        let (safety_margin, fea_result) =
+            structural::get_safety_margin_with_fallback(load_proxy, fea_opt);
+
+        // 3. Thermal Module
+        let current_temps = if let Ok(telemetry) = TELEMETRY_CACHE.lock() {
+            telemetry.motor_temperatures_c
+        } else {
+            [20.0; 4]
+        };
+        let new_temps = thermal::update_temperatures(&thrusts, &current_temps, airspeed, dt);
+
+        // 4. Mixer
         let (net_force, net_torque, net_thrust) =
             mixer::calculate_net_forces(thrusts, drag, current_state.orientation, 1.0);
 
+        // 5. Integrator
         let new_state = integrator::step_rk4(&current_state, net_force, net_torque, 1.0, 1.0, dt);
 
         *state = new_state;
 
+        // Synchronize OSD Telemetry
         if let Ok(mut telemetry) = TELEMETRY_CACHE.lock() {
             telemetry.aero_drag = drag;
             telemetry.motor_thrusts = thrusts;
             telemetry.net_force = net_force;
             telemetry.gravity = [0.0, 0.0, 9.80665];
             telemetry.net_thrust = net_thrust;
+            telemetry.motor_temperatures_c = new_temps;
+            telemetry.structural_safety_margin = safety_margin;
+
+            let mut all_valid = 1;
+            if let Some(res) = aero_result
+                && res.in_validated_envelope == 0
+            {
+                all_valid = 0;
+            }
+            if let Some(res) = fea_result
+                && res.in_validated_envelope == 0
+            {
+                all_valid = 0;
+            }
+            telemetry.is_validated_envelope = all_valid;
         }
     }
 
@@ -125,6 +181,7 @@ pub unsafe extern "C" fn ffi_get_debug_telemetry(out_telemetry: *mut DebugTeleme
     }
 
     if let Ok(telemetry) = TELEMETRY_CACHE.lock() {
+        // SAFETY: Pointer is null-checked.
         unsafe {
             *out_telemetry = *telemetry;
         }
@@ -132,4 +189,99 @@ pub unsafe extern "C" fn ffi_get_debug_telemetry(out_telemetry: *mut DebugTeleme
     }
 
     2
+}
+
+/// Loads a trained ONNX surrogate model and returns an opaque handle to C++.
+///
+/// # Returns
+/// * `0` - Success
+/// * `1` - Null pointer provided or Invalid UTF-8 path
+/// * `2` - Missing provenance metadata
+/// * `3` - Geometry hash mismatch
+/// * `4` - Engine/ONNX initialization failure
+///
+/// # Safety
+/// * `path` must be a valid, null-terminated C string.
+/// * `out_handle` must be a valid, aligned, mutable pointer to a pointer.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ffi_load_surrogate_model(
+    path: *const std::ffi::c_char,
+    out_handle: *mut *mut surrogate::SurrogateHandle,
+) -> i32 {
+    if path.is_null() || out_handle.is_null() {
+        return 1;
+    }
+
+    // SAFETY: Caller guarantees path is null-terminated per # Safety contract.
+    let c_str = unsafe { std::ffi::CStr::from_ptr(path) };
+    let path_str = match c_str.to_str() {
+        Ok(s) => s,
+        Err(_) => return 1,
+    };
+
+    match surrogate::load_surrogate(path_str) {
+        Ok(handle) => {
+            // SAFETY: out_handle null check validated above.
+            unsafe {
+                *out_handle = Box::into_raw(Box::new(handle));
+            }
+            0
+        }
+        Err(surrogate::SurrogateLoadError::IoError) => 1,
+        Err(surrogate::SurrogateLoadError::MissingProvenance) => 2,
+        Err(surrogate::SurrogateLoadError::GeometryMismatch { .. }) => 3,
+        Err(surrogate::SurrogateLoadError::EngineError(_)) => 4,
+    }
+}
+
+/// Queries a loaded surrogate model.
+///
+/// # Returns
+/// * `0` - Success
+/// * `1` - Null pointer or invalid array length provided
+/// * `4` - Engine/ONNX inference error
+///
+/// # Safety
+/// * `handle` must be a valid pointer created by `ffi_load_surrogate_model`.
+/// * `inputs` must point to an array of exactly `input_count` floats.
+/// * `out_result` must be a valid, aligned pointer.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ffi_query_surrogate(
+    handle: *mut surrogate::SurrogateHandle,
+    inputs: *const f32,
+    input_count: i32,
+    out_result: *mut SurrogateQueryResult,
+) -> i32 {
+    if handle.is_null() || inputs.is_null() || out_result.is_null() || input_count < 0 {
+        return 1;
+    }
+
+    // SAFETY: Caller guarantees pointers and array length.
+    let handle_ref = unsafe { &mut *handle };
+    let input_slice = unsafe { std::slice::from_raw_parts(inputs, input_count as usize) };
+
+    match surrogate::query_model(handle_ref, input_slice) {
+        Ok(res) => {
+            unsafe {
+                *out_result = res;
+            }
+            0
+        }
+        Err(_) => 4,
+    }
+}
+
+/// Unloads a surrogate model and frees its memory.
+///
+/// # Safety
+/// * `handle` must be a valid pointer created by `ffi_load_surrogate_model`.
+/// * `handle` must not be accessed after this function returns.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ffi_unload_surrogate_model(handle: *mut surrogate::SurrogateHandle) {
+    if !handle.is_null() {
+        // SAFETY: Takes ownership of the raw pointer and drops it, freeing memory.
+        unsafe {
+            let _ = Box::from_raw(handle);
+        }
+    }
 }

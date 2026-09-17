@@ -22,15 +22,9 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	/**
-	 * \brief Converts a position from the physics core's NED frame to Unreal Engine's world frame.
-	 * \param NedPosition Array containing X (North), Y (East), Z (Down) in meters (double precision).
-	 * \return FVector containing the translated position in centimeters for UE5.
-	 */
-	static FVector NedToUnrealWorld(const double NedPosition[3]);
-
-	/**
 	 * \brief Controls the visibility of the On-Screen Display (OSD) and debug vectors.
 	 */
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Telemetry")
 	bool bShowOSD = true;
 
