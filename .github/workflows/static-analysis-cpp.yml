@@ -30,6 +30,8 @@ jobs:
             Write-Error "clang-tidy findings increased ($count > $baseline)"
             exit 1
           }
+          
+          exit 0
 
   cppcheck:
     runs-on: ubuntu-latest
