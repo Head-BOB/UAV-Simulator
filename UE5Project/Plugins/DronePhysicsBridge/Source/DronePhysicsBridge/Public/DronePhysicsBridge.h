@@ -3,7 +3,7 @@
 #include "Modules/ModuleManager.h"
 #include "Generated/drone_ffi.h"
 
-class FDronePhysicsBridgeModule : public IModuleInterface
+class DRONEPHYSICSBRIDGE_API FDronePhysicsBridgeModule : public IModuleInterface
 {
 public:
     virtual void StartupModule() override;
