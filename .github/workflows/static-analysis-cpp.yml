@@ -12,9 +12,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run clang-tidy (ratcheted)
+        shell: powershell
         run: |
-          clang-tidy UE5Project/Plugins/DronePhysicsBridge/Source/**/*.cpp `
-            -- -std=c++20 > tidy_output.txt
+          if (!(Get-Command clang-tidy -ErrorAction SilentlyContinue)) {
+            Write-Host "::warning::clang-tidy is not installed on the GPU laptop. Skipping check until Dev A/B installs LLVM."
+            exit 0
+          }
+          
+          # FIX: Use PowerShell to find all .cpp files instead of the Linux ** wildcard
+          $cppFiles = Get-ChildItem -Path "UE5Project/Plugins/DronePhysicsBridge/Source" -Recurse -Filter "*.cpp" | ForEach-Object { $_.FullName }
+          
+          clang-tidy $cppFiles -- -std=c++20 > tidy_output.txt
           $count = (Select-String -Path tidy_output.txt -Pattern 'warning:').Count
           Write-Host "clang-tidy findings: $count"
           $baseline = (Get-Content static_analysis_baseline.json | ConvertFrom-Json).clang_tidy_baseline
