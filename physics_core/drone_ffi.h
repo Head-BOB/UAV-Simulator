@@ -7,6 +7,26 @@
 #include <stdlib.h>
 
 /**
+ * Formally validated operational envelope boundaries (from Task 8)
+ */
+#define G_LOAD_MIN 0.5
+
+#define G_LOAD_MAX 8.0
+
+#define VIB_FREQ_MIN 100.0
+
+#define VIB_FREQ_MAX 600.0
+
+#define LOAD_ANGLE_MIN 0.0
+
+#define LOAD_ANGLE_MAX 45.0
+
+/**
+ * Ultimate tensile strength of carbon-fiber laminate (Pa)
+ */
+#define SIGMA_T_ULT_PA 1.50e9
+
+/**
  * Represents the drone's current physical condition.
  *
  * #[repr(C)] guarantees this struct has the exact same memory layout on

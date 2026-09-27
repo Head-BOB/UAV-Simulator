@@ -121,3 +121,15 @@ impl DebugTelemetry {
         }
     }
 }
+
+/// Result of querying an offline-trained surrogate model across FFI.
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SurrogateQueryResult {
+    /// Best-guess prediction value (e.g. structural safety margin)
+    pub predicted_value: f32,
+    /// Estimated uncertainty (standard deviation / confidence)
+    pub uncertainty: f32,
+    /// Flag indicating whether the query point falls within the validated envelope (1 = true, 0 = false)
+    pub in_validated_envelope: i32,
+}

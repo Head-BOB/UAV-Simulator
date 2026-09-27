@@ -133,3 +133,6 @@ pub extern "C" fn ffi_get_debug_telemetry(out_telemetry: *mut DebugTelemetry) ->
 
     2
 }
+
+pub mod structural;
+pub mod surrogate;

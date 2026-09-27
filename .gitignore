@@ -20,3 +20,8 @@ UE5Project/Plugins/DronePhysicsBridge/Intermediate/
 *.sln
 *.suo
 *.DS_Store
+# Python Virtual Environment and Cache
+venv/
+.venv/
+__pycache__/
+*.pyc
