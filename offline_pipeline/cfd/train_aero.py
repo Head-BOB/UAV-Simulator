@@ -1,7 +1,7 @@
 import os
 import json
 import hashlib
-from datetime import datetime
+from datetime import datetime, UTC
 import numpy as np
 import onnx
 from onnx import helper, TensorProto
@@ -62,10 +62,14 @@ def generate_aero_surrogate():
 
     model_def.metadata_props.add(key="geometry_hash", value=geo_hash)
     model_def.metadata_props.add(key="design_revision", value=design_rev)
-    model_def.metadata_props.add(key="trained_at_utc", value=datetime.utcnow().isoformat())
+    model_def.metadata_props.add(key="trained_at_utc", value=datetime.now(UTC).isoformat())
     model_def.metadata_props.add(key="trained_by", value=os.environ.get("GITHUB_SHA", "local_dev"))
 
     out_path = os.path.join(base_dir, 'trained_models', 'aero_surrogate.onnx')
+
+    # FIX: Ensure the target directory exists before saving!
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
     onnx.save(model_def, out_path)
 
 if __name__ == '__main__':
