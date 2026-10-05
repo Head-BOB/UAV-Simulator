@@ -186,6 +186,10 @@ typedef struct SurrogateQueryResult {
   int32_t in_validated_envelope;
 } SurrogateQueryResult;
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
 /**
  * Returns the current layout version to UE5 to prevent memory corruption on mismatch.
  *
@@ -289,5 +293,9 @@ int32_t ffi_query_surrogate(struct SurrogateHandle *handle,
  * * `handle` must not be accessed after this function returns.
  */
 void ffi_unload_surrogate_model(struct SurrogateHandle *handle);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  /* DRONE_FFI_H */
