@@ -1,10 +1,18 @@
 #include "DroneTelemetryComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/Engine.h"
+#include "Misc/Paths.h"
 
 UDroneTelemetryComponent::UDroneTelemetryComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+}
+
+void UDroneTelemetryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (AeroHandle) ffi_unload_surrogate_model(AeroHandle);
+	if (FeaHandle) ffi_unload_surrogate_model(FeaHandle);
+	Super::EndPlay(EndPlayReason);
 }
 
 void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -16,6 +24,23 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	if (!bIsPhysicsInitialized)
 	{
 		PhysicsState = FDronePhysicsBridgeModule::CreateDefaultState();
+
+		FString BasePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()) + TEXT("trained_models/");
+		FString AeroPath = BasePath + TEXT("aero_surrogate.onnx");
+		FString FeaPath = BasePath + TEXT("fea_surrogate.onnx");
+
+		int32 AeroStatus = ffi_load_surrogate_model(TCHAR_TO_UTF8(*AeroPath), &AeroHandle);
+		if (AeroStatus != 0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Aero Surrogate failed to load. Status: %d"), AeroStatus);
+		}
+
+		int32 FeaStatus = ffi_load_surrogate_model(TCHAR_TO_UTF8(*FeaPath), &FeaHandle);
+		if (FeaStatus != 0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("FEA Surrogate failed to load. Status: %d"), FeaStatus);
+		}
+
 		bIsPhysicsInitialized = true;
 	}
 
@@ -25,7 +50,7 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	TestInputs.pitch = 0.0f;
 	TestInputs.yaw = 0.0f;
 
-	FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &TestInputs, nullptr, nullptr, DeltaTime);
+	FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &TestInputs, AeroHandle, FeaHandle, DeltaTime);
 
 	FVector NewPos = FDronePhysicsBridgeModule::NedToUnrealWorld(PhysicsState.position);
 	FQuat NewRot(PhysicsState.orientation[0], PhysicsState.orientation[1], PhysicsState.orientation[2], PhysicsState.orientation[3]);
