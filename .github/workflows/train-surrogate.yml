@@ -19,9 +19,8 @@ jobs:
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          # Placeholder script call: Python training logic goes here
-          echo "Training surrogate models..."
-          # python offline_pipeline/cfd/train_aero.py
+          python offline_pipeline/cfd/train_aero.py
+          python offline_pipeline/fea/train_fea.py
 
       - name: Upload Trained Models
         uses: actions/upload-artifact@v4
