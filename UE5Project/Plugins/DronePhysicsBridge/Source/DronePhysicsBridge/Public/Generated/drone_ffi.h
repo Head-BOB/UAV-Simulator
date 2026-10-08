@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define MAX_MOTOR_RPM 10000.0
+
 /**
  * Handle to an active ONNX surrogate model session.
  */
@@ -260,6 +262,7 @@ int32_t ffi_get_debug_telemetry(struct DebugTelemetry *out_telemetry);
  * * `2` - Missing provenance metadata
  * * `3` - Geometry hash mismatch
  * * `4` - Engine/ONNX initialization failure
+ * * `5` - Stub model rejected (allow_stub_models feature not enabled)
  *
  * # Safety
  * * `path` must be a valid, null-terminated C string.

@@ -130,4 +130,49 @@ mod tests {
         assert_eq!(next_state.position[2], 10.0);
         assert_eq!(next_state.velocity[2], 0.0);
     }
+
+    #[test]
+    fn test_c3_quaternion_norm() {
+        // Initial state with unit quaternion orientation.
+        let mut state = DroneState {
+            position: [0.0f64, 0.0, 0.0],
+            velocity: [0.0, 0.0, 0.0],
+            orientation: [0.0, 0.0, 0.0, 1.0],
+            angular_velocity: [0.0, 0.0, 0.0],
+        };
+
+        let mass = 1.5;
+        let inertia_scalar = 0.025;
+        let dt = 0.005;
+
+        // Verify that after 10,000 consecutive RK4 integration steps under
+        // dynamically varying angular velocity, quaternion length remains
+        // strictly within 1e-6 of 1.0 per requirement C3 in TRACEABILITY.md.
+        for step_idx in 0..10_000 {
+            let t_sec = step_idx as f32 * dt;
+            let dynamic_torque = [
+                (t_sec * 2.0).sin() * 0.1,
+                (t_sec * 3.0).cos() * 0.1,
+                (t_sec * 1.5).sin() * 0.05,
+            ];
+            let zero_force = [0.0, 0.0, 0.0];
+
+            state = step_rk4(&state, zero_force, dynamic_torque, mass, inertia_scalar, dt);
+
+            let q = state.orientation;
+            let norm = (q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]).sqrt();
+            assert!(
+                (norm - 1.0).abs() <= 1e-6,
+                "Quaternion norm deviated beyond tolerance at step {step_idx}: norm = {norm}"
+            );
+        }
+
+        // Verify angular rates were non-trivial during integration.
+        let w = state.angular_velocity;
+        let ang_speed_sq = w[0] * w[0] + w[1] * w[1] + w[2] * w[2];
+        assert!(
+            ang_speed_sq > 1e-4,
+            "Angular velocity must be non-zero to validate dynamic quaternion integration"
+        );
+    }
 }

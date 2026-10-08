@@ -66,14 +66,14 @@ def generate_fea_surrogate():
 
     model_def = helper.make_model(graph_def, producer_name='uav-simulator-fea')
 
+    model_def.metadata_props.add(key="kind", value="stub")
     model_def.metadata_props.add(key="geometry_hash", value=geo_hash)
     model_def.metadata_props.add(key="design_revision", value=design_rev)
     model_def.metadata_props.add(key="trained_at_utc", value=datetime.now(UTC).isoformat())
     model_def.metadata_props.add(key="trained_by", value=os.environ.get("GITHUB_SHA", "local_dev"))
 
-    out_path = os.path.join(base_dir, 'trained_models', 'fea_surrogate.onnx')
+    out_path = os.path.join(base_dir, 'trained_models', 'fea_stub.onnx')
 
-    # FIX: Ensure the target directory exists before saving!
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
     onnx.save(model_def, out_path)

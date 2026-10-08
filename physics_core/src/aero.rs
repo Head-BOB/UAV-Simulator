@@ -4,17 +4,41 @@ use crate::types::DroneState;
 use crate::types::SurrogateQueryResult;
 use glam::{Quat, Vec3};
 
+// PLACEHOLDER: body-frame X-axis drag coefficient — not measured from real
+// hardware yet. See Dev 3 Phase 1 guide, Task 3.
 const DRAG_COEFF_X: f32 = 1.0;
+
+// PLACEHOLDER: body-frame Y-axis drag coefficient — not measured from real
+// hardware yet. See Dev 3 Phase 1 guide, Task 3.
 const DRAG_COEFF_Y: f32 = 1.0;
+
+// PLACEHOLDER: body-frame Z-axis drag coefficient — not measured from real
+// hardware yet. See Dev 3 Phase 1 guide, Task 3.
 const DRAG_COEFF_Z: f32 = 1.5;
 
+// PLACEHOLDER: body-frame X-axis frontal area (m^2) — not measured from real
+// hardware yet. See Dev 3 Phase 1 guide, Task 3.
 const FRONTAL_AREA_X: f32 = 0.02;
+
+// PLACEHOLDER: body-frame Y-axis frontal area (m^2) — not measured from real
+// hardware yet. See Dev 3 Phase 1 guide, Task 3.
 const FRONTAL_AREA_Y: f32 = 0.02;
+
+// PLACEHOLDER: body-frame Z-axis frontal area (m^2) — not measured from real
+// hardware yet. See Dev 3 Phase 1 guide, Task 3.
 const FRONTAL_AREA_Z: f32 = 0.08;
 
+// PLACEHOLDER: propeller diameter (m) — not measured from real
+// hardware yet. See Dev 3 Phase 1 guide, Task 3.
 const PROP_DIAMETER: f32 = 0.25;
+
+// PLACEHOLDER: propeller thrust coefficient — not measured from real
+// hardware yet. See Dev 3 Phase 1 guide, Task 3.
 const THRUST_COEFF: f32 = 0.11;
-const MAX_MOTOR_RPM: f32 = 10000.0;
+
+// PLACEHOLDER: maximum motor RPM at full throttle — not measured from real
+// hardware yet. See Dev 3 Phase 1 guide, Task 3.
+pub const MAX_MOTOR_RPM: f32 = 10000.0;
 
 const STD_TEMP: f32 = 288.15;
 const STD_PRESSURE: f32 = 101325.0;
@@ -81,6 +105,37 @@ pub fn get_thrust(throttle: f32) -> f32 {
 
     THRUST_COEFF * density * rps.powi(2) * PROP_DIAMETER.powi(4)
 }
+
+/// Computes individual motor rotational speed in RPM from commanded throttle.
+///
+/// # Units
+/// * `throttle` - Normalized command input [0.0, 1.0].
+/// * Returns motor speed in Revolutions Per Minute (RPM).
+pub fn get_motor_rpm(throttle: f32) -> f32 {
+    throttle.clamp(0.0, 1.0) * MAX_MOTOR_RPM
+}
+
+/// Calculates aerodynamic drag, utilizing the surrogate model if available,
+/// or falling back to the Phase 1 analytical ISA model.
+///
+/// # Units
+/// * `altitude` - Meters
+/// * Returns - `([Drag X, Drag Y, Drag Z], Optional Surrogate Metadata)`
+pub fn get_drag_with_fallback(
+    state: &DroneState,
+    altitude: f32,
+    aero_handle: Option<&mut SurrogateHandle>,
+) -> ([f32; 3], Option<SurrogateQueryResult>) {
+    if let Some(handle) = aero_handle
+        && let Ok(result) = query_aero(handle, state)
+    {
+        return (result.predicted_values, Some(result));
+    }
+
+    (get_drag(state, altitude), None)
+}
+
+//TEST MODULES
 
 #[cfg(test)]
 mod tests {
@@ -207,24 +262,4 @@ mod tests {
             "Z axis should have more drag than X axis based on our constants"
         );
     }
-}
-
-/// Calculates aerodynamic drag, utilizing the surrogate model if available,
-/// or falling back to the Phase 1 analytical ISA model.
-///
-/// # Units
-/// * `altitude` - Meters
-/// * Returns - `([Drag X, Drag Y, Drag Z], Optional Surrogate Metadata)`
-pub fn get_drag_with_fallback(
-    state: &DroneState,
-    altitude: f32,
-    aero_handle: Option<&mut SurrogateHandle>,
-) -> ([f32; 3], Option<SurrogateQueryResult>) {
-    if let Some(handle) = aero_handle
-        && let Ok(result) = query_aero(handle, state)
-    {
-        return (result.predicted_values, Some(result));
-    }
-
-    (get_drag(state, altitude), None)
 }

@@ -1,5 +1,5 @@
 [licenses]
-# strict allow-list DONOT TOUCH!!
+# Change only through a reviewed PR. Each license has a reason below.
 # MPL-2.0: required by cbindgen (build-time only). Permissive/weak-copyleft. Vetted 2026-09.
 # Unicode-3.0: required by unicode-ident (proc-macro). Permissive. Vetted 2026-09.
 # ISC: required by hmac-sha256 via ort-sys. Permissive. Vetted 2026-09.

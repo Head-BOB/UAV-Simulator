@@ -10,6 +10,7 @@ pub enum SurrogateLoadError {
     IoError,
     MissingProvenance,
     GeometryMismatch { expected: String, found: String },
+    StubModel,
     EngineError(String),
 }
 
@@ -18,7 +19,6 @@ pub struct SurrogateHandle {
     pub session: Session,
 }
 
-#[allow(dead_code)]
 const CURRENT_GEOMETRY_HASH: &str = env!("GEOMETRY_HASH");
 
 static INIT_ORT: Once = Once::new();
@@ -26,10 +26,11 @@ static INIT_ORT: Once = Once::new();
 /// Validates ONNX metadata against the compiled canonical geometry hash and loads the ML session.
 ///
 /// # Errors
-///  `EngineError` - The ONNX runtime failed to initialize or parse the model.
-///  `IoError` - The file cannot be read from the filesystem.
-///  `MissingProvenance` - The ONNX file lacks a `geometry_hash` property.
-///  `GeometryMismatch` - The embedded hash does not match `CURRENT_GEOMETRY_HASH`.
+/// Returns EngineError if the ONNX runtime failed to initialize or parse the model.
+/// Returns IoError if the file cannot be read from the filesystem.
+/// Returns MissingProvenance if the ONNX file lacks a geometry_hash or kind property.
+/// Returns GeometryMismatch if the embedded hash does not match CURRENT_GEOMETRY_HASH.
+/// Returns StubModel if the model is a stub and the allow_stub_models feature is not enabled.
 pub fn load_surrogate(path: &str) -> Result<SurrogateHandle, SurrogateLoadError> {
     INIT_ORT.call_once(|| {
         let _ = ort::init().with_name("UAV_Simulator_Physics").commit();
@@ -44,6 +45,14 @@ pub fn load_surrogate(path: &str) -> Result<SurrogateHandle, SurrogateLoadError>
         let metadata = session
             .metadata()
             .map_err(|e| SurrogateLoadError::EngineError(e.to_string()))?;
+
+        let kind = metadata
+            .custom("kind")
+            .ok_or(SurrogateLoadError::MissingProvenance)?;
+
+        if kind != "trained" && !cfg!(feature = "allow_stub_models") {
+            return Err(SurrogateLoadError::StubModel);
+        }
 
         let embedded_hash = metadata
             .custom("geometry_hash")
@@ -63,30 +72,14 @@ pub fn load_surrogate(path: &str) -> Result<SurrogateHandle, SurrogateLoadError>
 /// Queries the loaded ONNX surrogate model generically.
 ///
 /// # Units
-///  `inputs` - Context-dependent flat array of floats.
+/// * `inputs` - Context-dependent flat array of floats.
 ///
 /// # Errors
-///  `EngineError` - If tensor creation, execution, or extraction fails.
-/// Queries the loaded ONNX surrogate model generically.
-///
-/// # Units
-///  `inputs` - Context-dependent flat array of floats.
-///
-/// # Errors
-///  `EngineError` - If tensor creation, execution, or extraction fails.
-/// Queries the loaded ONNX surrogate model generically.
-///
-/// # Errors
-///  `EngineError` - If tensor creation, execution, or extraction fails.
-/// Queries the loaded ONNX surrogate model generically.
-///
-/// # Errors
-/// Returns `EngineError` if tensor creation, execution, or extraction fails.
+/// Returns EngineError if tensor creation, execution, or extraction fails.
 pub fn query_model(
     handle: &mut SurrogateHandle,
     inputs: &[f32],
 ) -> Result<SurrogateQueryResult, SurrogateLoadError> {
-    // We pass a tuple of ([shape], data) directly to ort, bypassing ndarray entirely
     let input_tensor = ort::value::Tensor::from_array(([1, inputs.len()], inputs.to_vec()))
         .map_err(|e| SurrogateLoadError::EngineError(e.to_string()))?;
 

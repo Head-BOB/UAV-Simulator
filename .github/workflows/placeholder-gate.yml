@@ -1,0 +1,16 @@
+name: Placeholder Constant Gate
+
+on:
+  pull_request:
+    branches: [release-candidate]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Fail if placeholder constants remain
+        run: python scripts/check_placeholders.py --path physics_core/src --fail-on-match

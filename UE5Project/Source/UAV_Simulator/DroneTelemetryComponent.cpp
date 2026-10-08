@@ -62,10 +62,10 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	FVector ActorLocation = GetOwner()->GetActorLocation();
 	const float ForceScale = 10.0f;
 
-	FVector NetThrust(Telemetry.net_thrust[0], Telemetry.net_thrust[1], -Telemetry.net_thrust[2]);
-	FVector AeroDrag(Telemetry.aero_drag[0], Telemetry.aero_drag[1], -Telemetry.aero_drag[2]);
-	FVector Gravity(Telemetry.gravity[0], Telemetry.gravity[1], -Telemetry.gravity[2]);
-	FVector NetForce(Telemetry.net_force[0], Telemetry.net_force[1], -Telemetry.net_force[2]);
+	FVector NetThrust = FDronePhysicsBridgeModule::NedForceToUnreal(Telemetry.net_thrust);
+	FVector AeroDrag = FDronePhysicsBridgeModule::NedForceToUnreal(Telemetry.aero_drag);
+	FVector Gravity = FDronePhysicsBridgeModule::NedForceToUnreal(Telemetry.gravity);
+	FVector NetForce = FDronePhysicsBridgeModule::NedForceToUnreal(Telemetry.net_force);
 
 	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (NetThrust * ForceScale), 50.0f, FColor::Blue, false, -1.0f, 0, 2.0f);
 	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (AeroDrag * ForceScale), 50.0f, FColor::Red, false, -1.0f, 0, 2.0f);
@@ -74,7 +74,7 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	if (GEngine)
 	{
-		FVector RustVelocity(PhysicsState.velocity[0], PhysicsState.velocity[1], -PhysicsState.velocity[2]);
+		FVector RustVelocity = FDronePhysicsBridgeModule::NedForceToUnreal(PhysicsState.velocity);
 		FRotator Rotation = NewRot.Rotator();
 
 		FString OSDText = FString::Printf(TEXT(

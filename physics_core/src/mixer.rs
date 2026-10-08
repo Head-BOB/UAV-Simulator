@@ -1,8 +1,19 @@
 use glam::{Quat, Vec3};
 
+// PLACEHOLDER: front-left motor position relative to CG (m) — not measured from real
+// hardware yet. See Dev 4 Phase 1 guide, Task 3.
 const MOTOR_FL_POS: Vec3 = Vec3::new(0.2, 0.2, 0.0);
+
+// PLACEHOLDER: front-right motor position relative to CG (m) — not measured from real
+// hardware yet. See Dev 4 Phase 1 guide, Task 3.
 const MOTOR_FR_POS: Vec3 = Vec3::new(0.2, -0.2, 0.0);
+
+// PLACEHOLDER: back-left motor position relative to CG (m) — not measured from real
+// hardware yet. See Dev 4 Phase 1 guide, Task 3.
 const MOTOR_BL_POS: Vec3 = Vec3::new(-0.2, 0.2, 0.0);
+
+// PLACEHOLDER: back-right motor position relative to CG (m) — not measured from real
+// hardware yet. See Dev 4 Phase 1 guide, Task 3.
 const MOTOR_BR_POS: Vec3 = Vec3::new(-0.2, -0.2, 0.0);
 
 const MOTOR_FL_SPIN: f32 = 1.0;
@@ -10,6 +21,8 @@ const MOTOR_BR_SPIN: f32 = 1.0;
 const MOTOR_FR_SPIN: f32 = -1.0;
 const MOTOR_BL_SPIN: f32 = -1.0;
 
+// PLACEHOLDER: reaction torque coefficient — not measured from real
+// hardware yet. See Dev 4 Phase 1 guide, Task 3.
 const REACTION_TORQUE_COEFF: f32 = 0.05;
 const GRAVITY: f32 = 9.80665;
 

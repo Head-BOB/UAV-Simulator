@@ -1,11 +1,30 @@
-// Phase 2 placeholder values. To be replaced with real measured component specs later.
-const BATT_INTERNAL_RESISTANCE: f32 = 0.02; // Ohms
-const ESC_RESISTANCE: f32 = 0.01; // Ohms
-const MOTOR_WINDING_RESISTANCE: f32 = 0.05; // Ohms
-const BATT_VOLTAGE_NOMINAL: f32 = 22.2; // Volts (6S LiPo)
-const COOLING_COEFFICIENT: f32 = 0.5; // W/(m/s * C)
-const AMBIENT_TEMP: f32 = 20.0; // Celsius
-const THERMAL_MASS: f32 = 50.0; // Joules/Celsius
+// PLACEHOLDER: battery internal resistance (Ohms) — not measured from real
+// hardware yet. See Dev 4 Phase 2 guide, Task 2.
+const BATT_INTERNAL_RESISTANCE: f32 = 0.02;
+
+// PLACEHOLDER: ESC internal resistance (Ohms) — not measured from real
+// hardware yet. See Dev 4 Phase 2 guide, Task 2.
+const ESC_RESISTANCE: f32 = 0.01;
+
+// PLACEHOLDER: motor winding resistance (Ohms) — not measured from real
+// hardware yet. See Dev 4 Phase 2 guide, Task 2.
+const MOTOR_WINDING_RESISTANCE: f32 = 0.05;
+
+// PLACEHOLDER: nominal battery pack voltage (Volts, 6S LiPo) — not measured from real
+// hardware yet. See Dev 4 Phase 2 guide, Task 2.
+const BATT_VOLTAGE_NOMINAL: f32 = 22.2;
+
+// PLACEHOLDER: convective cooling coefficient (W/(m/s * C)) — not measured from real
+// hardware yet. See Dev 4 Phase 2 guide, Task 2.
+const COOLING_COEFFICIENT: f32 = 0.5;
+
+// PLACEHOLDER: ambient operating temperature (Celsius) — not measured from real
+// hardware yet. See Dev 4 Phase 2 guide, Task 2.
+const AMBIENT_TEMP: f32 = 20.0;
+
+// PLACEHOLDER: lumped motor thermal mass (Joules/Celsius) — not measured from real
+// hardware yet. See Dev 4 Phase 2 guide, Task 2.
+const THERMAL_MASS: f32 = 50.0;
 
 /// Calculates the new motor temperatures based on electrical heating and aerodynamic cooling.
 ///

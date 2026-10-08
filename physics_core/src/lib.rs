@@ -113,11 +113,25 @@ pub unsafe extern "C" fn ffi_step_physics(
         let p = current_controls.pitch * 0.2;
         let y = current_controls.yaw * 0.2;
 
+        let motor_throttles = [
+            (t - p + r - y).clamp(0.0, 1.0),
+            (t - p - r + y).clamp(0.0, 1.0),
+            (t + p + r + y).clamp(0.0, 1.0),
+            (t + p - r - y).clamp(0.0, 1.0),
+        ];
+
         let thrusts = [
-            aero::get_thrust((t - p + r - y).clamp(0.0, 1.0)),
-            aero::get_thrust((t - p - r + y).clamp(0.0, 1.0)),
-            aero::get_thrust((t + p + r + y).clamp(0.0, 1.0)),
-            aero::get_thrust((t + p - r - y).clamp(0.0, 1.0)),
+            aero::get_thrust(motor_throttles[0]),
+            aero::get_thrust(motor_throttles[1]),
+            aero::get_thrust(motor_throttles[2]),
+            aero::get_thrust(motor_throttles[3]),
+        ];
+
+        let motor_rpms = [
+            aero::get_motor_rpm(motor_throttles[0]),
+            aero::get_motor_rpm(motor_throttles[1]),
+            aero::get_motor_rpm(motor_throttles[2]),
+            aero::get_motor_rpm(motor_throttles[3]),
         ];
 
         // 2. Structural Surrogate Query
@@ -146,6 +160,7 @@ pub unsafe extern "C" fn ffi_step_physics(
         if let Ok(mut telemetry) = TELEMETRY_CACHE.lock() {
             telemetry.aero_drag = drag;
             telemetry.motor_thrusts = thrusts;
+            telemetry.motor_rpms = motor_rpms;
             telemetry.net_force = net_force;
             telemetry.gravity = [0.0, 0.0, 9.80665];
             telemetry.net_thrust = net_thrust;
@@ -199,6 +214,7 @@ pub unsafe extern "C" fn ffi_get_debug_telemetry(out_telemetry: *mut DebugTeleme
 /// * `2` - Missing provenance metadata
 /// * `3` - Geometry hash mismatch
 /// * `4` - Engine/ONNX initialization failure
+/// * `5` - Stub model rejected (allow_stub_models feature not enabled)
 ///
 /// # Safety
 /// * `path` must be a valid, null-terminated C string.
@@ -231,6 +247,7 @@ pub unsafe extern "C" fn ffi_load_surrogate_model(
         Err(surrogate::SurrogateLoadError::MissingProvenance) => 2,
         Err(surrogate::SurrogateLoadError::GeometryMismatch { .. }) => 3,
         Err(surrogate::SurrogateLoadError::EngineError(_)) => 4,
+        Err(surrogate::SurrogateLoadError::StubModel) => 5, // WP-0 Step 2 Compliance
     }
 }
 

@@ -55,3 +55,8 @@ FVector FDronePhysicsBridgeModule::NedToUnrealWorld(const double NedPosition[3])
 {
     return FVector(NedPosition[0] * 100.0, NedPosition[1] * 100.0, -NedPosition[2] * 100.0);
 }
+
+FVector FDronePhysicsBridgeModule::NedForceToUnreal(const float NedVector[3])
+{
+    return FVector(NedVector[0], NedVector[1], -NedVector[2]);
+}
