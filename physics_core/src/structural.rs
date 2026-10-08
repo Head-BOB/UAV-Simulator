@@ -18,5 +18,6 @@ pub fn get_safety_margin_with_fallback(
         return (result.predicted_values[0], Some(result));
     }
 
-    (10.0, None)
+    // WP-7 Step D.5: No model means no number. Return NaN, not a fake 10.0 safe margin.
+    (f32::NAN, None)
 }

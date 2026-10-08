@@ -283,3 +283,23 @@ impl Default for DebugTelemetry {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::mem::offset_of;
+
+    #[test]
+    fn test_ffi_offsets_and_sizes() {
+        // DroneState layout verification
+        assert_eq!(std::mem::size_of::<DroneState>(), 64);
+        assert_eq!(offset_of!(DroneState, position), 0);
+        assert_eq!(offset_of!(DroneState, velocity), 24);
+        assert_eq!(offset_of!(DroneState, orientation), 36);
+        assert_eq!(offset_of!(DroneState, angular_velocity), 52);
+
+        // ThermalState layout verification
+        assert_eq!(std::mem::size_of::<ThermalState>(), 32);
+        assert_eq!(offset_of!(ThermalState, motor_temp_c), 0);
+    }
+}

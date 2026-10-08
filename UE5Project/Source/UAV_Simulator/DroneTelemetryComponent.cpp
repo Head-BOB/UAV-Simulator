@@ -94,9 +94,13 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	FVector ActorLocation = GetOwner()->GetActorLocation();
 	const float ForceScale = 10.0f;
 	FVector NetThrust(Telemetry.net_thrust[0], Telemetry.net_thrust[1], -Telemetry.net_thrust[2]);
+	FVector AeroDrag(Telemetry.aero_drag[0], Telemetry.aero_drag[1], -Telemetry.aero_drag[2]);
+	FVector Gravity(Telemetry.gravity[0], Telemetry.gravity[1], -Telemetry.gravity[2]);
 	FVector NetForce(Telemetry.net_force[0], Telemetry.net_force[1], -Telemetry.net_force[2]);
 
 	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (NetThrust * ForceScale), 50.0f, FColor::Blue, false, -1.0f, 0, 3.0f);
+	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (AeroDrag * ForceScale), 50.0f, FColor::Red, false, -1.0f, 0, 2.0f);
+	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (Gravity * ForceScale), 50.0f, FColor::Yellow, false, -1.0f, 0, 2.0f);
 	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (NetForce * ForceScale), 50.0f, FColor::Green, false, -1.0f, 0, 5.0f);
 
 	UTextRenderComponent* Hologram = GetOwner()->FindComponentByClass<UTextRenderComponent>();
@@ -110,17 +114,19 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		Hologram->SetWorldSize(26.0f);
 	}
 
+	FString MarginString = FMath::IsNaN(Telemetry.structural_safety_margin) ? TEXT("NaN") : FString::Printf(TEXT("%.2f"), Telemetry.structural_safety_margin);
+
 	FString HologramText = FString::Printf(TEXT(
 		"Speed: %.1f m/s\n"
 		"Altitude: %.1f m\n"
-		"Struct Margin: %.2f\n"
+		"Struct Margin: %s\n"
 		"Motor Temp: %.1f C\n"
 		"RPM: %.0f, %.0f, %.0f, %.0f\n"
 		"Dropped Ticks: %d"
 	),
 	(double)(FVector(PhysicsState.velocity[0], PhysicsState.velocity[1], PhysicsState.velocity[2]).Length()),
 	(double)(-PhysicsState.position[2]),
-	(double)(Telemetry.structural_safety_margin),
+	*MarginString,
 	(double)(Telemetry.motor_temperatures_c[0]),
 	(double)(Telemetry.motor_rpms[0]), (double)(Telemetry.motor_rpms[1]), (double)(Telemetry.motor_rpms[2]), (double)(Telemetry.motor_rpms[3]),
 	DroppedTimeEvents);
@@ -146,4 +152,26 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	}
 
 	Hologram->SetText(FText::FromString(HologramText));
+
+	if (GEngine)
+	{
+		if (Telemetry.stub_loaded == 1)
+		{
+			GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Red, TEXT("STUB MODEL LOADED - NOT FOR ANALYSIS"));
+		}
+
+		if (FMath::IsNaN(Telemetry.structural_safety_margin))
+		{
+			GEngine->AddOnScreenDebugMessage(3, 0.0f, FColor::Red, TEXT("STRUCTURE: NO MODEL"));
+		}
+		else if (Telemetry.structural_safety_margin < 1.0f)
+		{
+			GEngine->AddOnScreenDebugMessage(3, 0.0f, FColor::Red, TEXT("CRITICAL: STRUCTURAL FAILURE IMMINENT"));
+		}
+
+		if (Telemetry.is_validated_envelope == 0)
+		{
+			GEngine->AddOnScreenDebugMessage(2, 0.0f, FColor::Orange, TEXT("WARNING: OUT OF VALIDATED ENVELOPE - EXTRAPOLATING"));
+		}
+	}
 }
