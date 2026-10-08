@@ -553,6 +553,8 @@ dependencies = [
  "glam",
  "hex",
  "ort",
+ "serde",
+ "serde_json",
  "sha2",
 ]
 

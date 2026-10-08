@@ -8,6 +8,7 @@
 /// relative to a fixed WGS84 geodetic origin defined once per simulation
 /// scenario. Do not reinterpret this as UE5 world-space — conversion
 /// happens ONLY inside the wrapper class described in Section 1.4.
+use serde::Deserialize;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct DroneState {
@@ -176,4 +177,63 @@ impl Default for DebugTelemetry {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Physical properties and layout of the specific airframe being simulated.
+#[derive(Copy, Clone, Deserialize)]
+#[repr(C)]
+pub struct VehicleConfig {
+    /// Total mass of the vehicle.
+    ///
+    /// # Units
+    /// Kilograms.
+    pub mass_kg: f64,
+
+    /// Moment of inertia about the center of mass (Ixx, Iyy, Izz).
+    ///
+    /// # Units
+    /// Kilogram-square meters.
+    pub inertia_kgm2: [f64; 3],
+
+    /// Positions of the 4 motors in the body frame.
+    ///
+    /// # Units
+    /// Meters.
+    pub motor_pos_m: [[f64; 3]; 4],
+
+    /// Spin direction of each motor (+1.0 or -1.0).
+    ///
+    /// # Units
+    /// Unitless multiplier.
+    pub motor_spin: [f64; 4],
+
+    /// Diameter of the propellers.
+    ///
+    /// # Units
+    /// Meters.
+    pub prop_diameter_m: f64,
+
+    /// Propeller thrust coefficient.
+    ///
+    /// # Units
+    /// Unitless.
+    pub thrust_coeff: f64,
+
+    /// Propeller torque coefficient.
+    ///
+    /// # Units
+    /// Unitless.
+    pub torque_coeff: f64,
+
+    /// Maximum rotational speed of the motors.
+    ///
+    /// # Units
+    /// Revolutions per minute.
+    pub max_rpm: f64,
+
+    /// Throttle level required to maintain steady hover.
+    ///
+    /// # Units
+    /// Normalized range 0.0 to 1.0.
+    pub hover_throttle: f64,
 }

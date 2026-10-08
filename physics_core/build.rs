@@ -1,4 +1,5 @@
 extern crate cbindgen;
+
 use sha2::{Digest, Sha256};
 use std::env;
 use std::fs;
@@ -31,12 +32,28 @@ fn main() {
         );
     });
 
-    let mut hasher = Sha256::new();
-    hasher.update(&geometry_data);
-    let hash_result = hasher.finalize();
-    let hash_hex = hex::encode(hash_result);
+    let mut geo_hasher = Sha256::new();
+    geo_hasher.update(&geometry_data);
+    let geo_hash_result = geo_hasher.finalize();
+    let geo_hash_hex = hex::encode(geo_hash_result);
 
-    println!("cargo:rustc-env=GEOMETRY_HASH={}", hash_hex);
+    let config_path = Path::new(&crate_dir)
+        .parent()
+        .unwrap()
+        .join("offline_pipeline/geometry/vehicle_config.json");
+
+    let config_data = fs::read(&config_path).unwrap_or_else(|_| {
+        panic!("CRITICAL: Vehicle config file missing at {:?}", config_path);
+    });
+
+    let mut config_hasher = Sha256::new();
+    config_hasher.update(&config_data);
+    let config_hash_result = config_hasher.finalize();
+    let config_hash_hex = hex::encode(config_hash_result);
+
+    println!("cargo:rustc-env=GEOMETRY_HASH={}", geo_hash_hex);
+    println!("cargo:rustc-env=CONFIG_HASH={}", config_hash_hex);
     println!("cargo:rerun-if-changed=../offline_pipeline/geometry/current_geometry.json");
+    println!("cargo:rerun-if-changed=../offline_pipeline/geometry/vehicle_config.json");
     println!("cargo:rerun-if-changed=build.rs");
 }

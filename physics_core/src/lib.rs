@@ -1,4 +1,5 @@
 pub mod aero;
+pub mod config;
 pub mod integrator;
 pub mod mixer;
 pub mod structural;
@@ -18,7 +19,7 @@ static TELEMETRY_CACHE: Mutex<DebugTelemetry> = Mutex::new(DebugTelemetry::new()
 /// Safe to call at any time.
 #[unsafe(no_mangle)]
 pub extern "C" fn ffi_get_interface_version() -> i32 {
-    2
+    3
 }
 
 /// Allows UE5 to verify the byte size of DroneState during module initialization.
@@ -284,5 +285,49 @@ pub unsafe extern "C" fn ffi_unload_surrogate_model(handle: *mut surrogate::Surr
         unsafe {
             let _ = Box::from_raw(handle);
         }
+    }
+}
+
+/// Loads a vehicle configuration file.
+///
+/// # Returns
+/// * `0` - Success
+/// * `1` - Null pointer or Invalid UTF-8 path
+/// * `2` - File IO Error
+/// * `3` - JSON Parse Error
+/// * `4` - Invalid Mass
+/// * `5` - Invalid Inertia
+/// * `6` - Invalid Motor Spin
+///
+/// # Safety
+/// * `path` must be a valid, null-terminated C string.
+/// * `out_config` must be a valid, aligned, mutable pointer to a VehicleConfig.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ffi_load_vehicle_config(
+    path: *const std::ffi::c_char,
+    out_config: *mut types::VehicleConfig,
+) -> i32 {
+    if path.is_null() || out_config.is_null() {
+        return 1;
+    }
+
+    let c_str = unsafe { std::ffi::CStr::from_ptr(path) };
+    let path_str = match c_str.to_str() {
+        Ok(s) => s,
+        Err(_) => return 1,
+    };
+
+    match config::load_vehicle_config(path_str) {
+        Ok(cfg) => {
+            unsafe {
+                *out_config = cfg;
+            }
+            0
+        }
+        Err(config::ConfigError::IoError) => 2,
+        Err(config::ConfigError::ParseError) => 3,
+        Err(config::ConfigError::InvalidMass) => 4,
+        Err(config::ConfigError::InvalidInertia) => 5,
+        Err(config::ConfigError::InvalidSpin) => 6,
     }
 }
