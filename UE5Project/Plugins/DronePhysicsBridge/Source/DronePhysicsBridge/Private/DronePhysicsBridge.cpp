@@ -39,7 +39,7 @@ bool FDronePhysicsBridgeModule::ResetState(DroneState* State)
     return ffi_reset_drone_state(State) == 0;
 }
 
-bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, const ControlInputs* Inputs, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, float DeltaTime)
+bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, const ControlInputs* Inputs, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, double DeltaTime)
 {
     if (!State || !Inputs) return false;
     return ffi_step_physics(State, Inputs, AeroHandle, FeaHandle, DeltaTime) == 0;

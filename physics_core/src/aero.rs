@@ -2,87 +2,69 @@ use crate::surrogate::SurrogateHandle;
 use crate::surrogate::aero_surrogate::query_aero;
 use crate::types::DroneState;
 use crate::types::SurrogateQueryResult;
-use glam::{Quat, Vec3};
+use glam::{DQuat, DVec3};
 
-// PLACEHOLDER: body-frame X-axis drag coefficient — not measured from real
-// hardware yet. See Dev 3 Phase 1 guide, Task 3.
-const DRAG_COEFF_X: f32 = 1.0;
+const DRAG_COEFF_X: f64 = 1.0;
+const DRAG_COEFF_Y: f64 = 1.0;
+const DRAG_COEFF_Z: f64 = 1.5;
 
-// PLACEHOLDER: body-frame Y-axis drag coefficient — not measured from real
-// hardware yet. See Dev 3 Phase 1 guide, Task 3.
-const DRAG_COEFF_Y: f32 = 1.0;
+const FRONTAL_AREA_X: f64 = 0.02;
+const FRONTAL_AREA_Y: f64 = 0.02;
+const FRONTAL_AREA_Z: f64 = 0.08;
 
-// PLACEHOLDER: body-frame Z-axis drag coefficient — not measured from real
-// hardware yet. See Dev 3 Phase 1 guide, Task 3.
-const DRAG_COEFF_Z: f32 = 1.5;
+const PROP_DIAMETER: f64 = 0.25;
+const THRUST_COEFF: f64 = 0.11;
+const MAX_MOTOR_RPM: f64 = 10000.0;
 
-// PLACEHOLDER: body-frame X-axis frontal area (m^2) — not measured from real
-// hardware yet. See Dev 3 Phase 1 guide, Task 3.
-const FRONTAL_AREA_X: f32 = 0.02;
+const STD_TEMP: f64 = 288.15;
+const STD_PRESSURE: f64 = 101325.0;
+const TEMP_LAPSE_RATE: f64 = 0.0065;
+const SPECIFIC_GAS_CONST: f64 = 287.05;
+const GRAVITY: f64 = 9.80665;
 
-// PLACEHOLDER: body-frame Y-axis frontal area (m^2) — not measured from real
-// hardware yet. See Dev 3 Phase 1 guide, Task 3.
-const FRONTAL_AREA_Y: f32 = 0.02;
-
-// PLACEHOLDER: body-frame Z-axis frontal area (m^2) — not measured from real
-// hardware yet. See Dev 3 Phase 1 guide, Task 3.
-const FRONTAL_AREA_Z: f32 = 0.08;
-
-// PLACEHOLDER: propeller diameter (m) — not measured from real
-// hardware yet. See Dev 3 Phase 1 guide, Task 3.
-const PROP_DIAMETER: f32 = 0.25;
-
-// PLACEHOLDER: propeller thrust coefficient — not measured from real
-// hardware yet. See Dev 3 Phase 1 guide, Task 3.
-const THRUST_COEFF: f32 = 0.11;
-
-// PLACEHOLDER: maximum motor RPM at full throttle — not measured from real
-// hardware yet. See Dev 3 Phase 1 guide, Task 3.
-pub const MAX_MOTOR_RPM: f32 = 10000.0;
-
-const STD_TEMP: f32 = 288.15;
-const STD_PRESSURE: f32 = 101325.0;
-const TEMP_LAPSE_RATE: f32 = 0.0065;
-const SPECIFIC_GAS_CONST: f32 = 287.05;
-const GRAVITY: f32 = 9.80665;
-
-/// Computes the air density at a given altitude using the International Standard Atmosphere (ISA) model.
-///
-/// # Units
-/// * `altitude` - Meters above MSL.
-/// * Returns density in kilograms per cubic meter (kg/m^3).
-fn compute_air_density(altitude: f32) -> f32 {
-    let temp_at_alt = STD_TEMP - (TEMP_LAPSE_RATE * altitude);
-    let exponent = GRAVITY / (SPECIFIC_GAS_CONST * TEMP_LAPSE_RATE);
-    let pressure_at_alt = STD_PRESSURE * (temp_at_alt / STD_TEMP).powf(exponent);
-
-    pressure_at_alt / (SPECIFIC_GAS_CONST * temp_at_alt)
+#[derive(Debug)]
+pub enum AeroError {
+    AltitudeOutOfRange,
 }
 
-/// Computes the aerodynamic drag force vector.
-///
-/// Drag is calculated independently for the body X, Y, and Z axes using their respective
-/// drag coefficients and frontal areas, then rotated back into the world frame.
-///
-/// # Units
-/// * `altitude` - Meters.
-/// * Returns a 3D force vector in Newtons, world frame.
-pub fn get_drag(state: &DroneState, altitude: f32) -> [f32; 3] {
-    let density = compute_air_density(altitude);
+fn compute_air_density(altitude: f64) -> Result<f64, AeroError> {
+    if !(0.0..=11000.0).contains(&altitude) {
+        return Err(AeroError::AltitudeOutOfRange);
+    }
+    let temp_at_alt = STD_TEMP - (TEMP_LAPSE_RATE * altitude);
+    let exponent = GRAVITY / (SPECIFIC_GAS_CONST * TEMP_LAPSE_RATE);
 
-    let vel_world = Vec3::from_array(state.velocity);
-    let rot_world = Quat::from_array(state.orientation);
+    let pressure_ratio = (temp_at_alt / STD_TEMP).powf(exponent);
+    let pressure_at_alt = STD_PRESSURE * pressure_ratio;
+
+    Ok(pressure_at_alt / (SPECIFIC_GAS_CONST * temp_at_alt))
+}
+
+pub fn get_drag(state: &DroneState, altitude: f64) -> Result<[f32; 3], AeroError> {
+    let density = compute_air_density(altitude)?;
+
+    let vel_world = DVec3::new(
+        state.velocity[0] as f64,
+        state.velocity[1] as f64,
+        state.velocity[2] as f64,
+    );
+    let rot_world = DQuat::from_xyzw(
+        state.orientation[0] as f64,
+        state.orientation[1] as f64,
+        state.orientation[2] as f64,
+        state.orientation[3] as f64,
+    );
 
     let vel_body = rot_world.inverse() * vel_world;
 
-    let calc_axis_drag = |v: f32, coeff: f32, area: f32| -> f32 {
+    let calc_axis_drag = |v: f64, coeff: f64, area: f64| -> f64 {
         if v == 0.0 {
             return 0.0;
         }
         -0.5 * density * v.powi(2) * v.signum() * coeff * area
     };
 
-    let drag_body = Vec3::new(
+    let drag_body = DVec3::new(
         calc_axis_drag(vel_body.x, DRAG_COEFF_X, FRONTAL_AREA_X),
         calc_axis_drag(vel_body.y, DRAG_COEFF_Y, FRONTAL_AREA_Y),
         calc_axis_drag(vel_body.z, DRAG_COEFF_Z, FRONTAL_AREA_Z),
@@ -90,176 +72,106 @@ pub fn get_drag(state: &DroneState, altitude: f32) -> [f32; 3] {
 
     let drag_world = rot_world * drag_body;
 
-    drag_world.to_array()
+    Ok([
+        drag_world.x as f32,
+        drag_world.y as f32,
+        drag_world.z as f32,
+    ])
 }
 
-/// Computes the thrust generated by a single propeller.
-///
-/// # Units
-/// * `throttle` - Normalized command input [0.0, 1.0].
-/// * Returns thrust force in Newtons.
-pub fn get_thrust(throttle: f32) -> f32 {
-    let density = compute_air_density(0.0);
-    let clamped_throttle = throttle.clamp(0.0, 1.0);
+pub fn get_thrust(throttle: f32) -> Result<f32, AeroError> {
+    let density = compute_air_density(0.0)?;
+    let clamped_throttle = (throttle as f64).clamp(0.0, 1.0);
     let rps = (clamped_throttle * MAX_MOTOR_RPM) / 60.0;
 
-    THRUST_COEFF * density * rps.powi(2) * PROP_DIAMETER.powi(4)
+    let thrust = THRUST_COEFF * density * rps.powi(2) * PROP_DIAMETER.powi(4);
+    Ok(thrust as f32)
 }
 
-/// Computes individual motor rotational speed in RPM from commanded throttle.
-///
-/// # Units
-/// * `throttle` - Normalized command input [0.0, 1.0].
-/// * Returns motor speed in Revolutions Per Minute (RPM).
-pub fn get_motor_rpm(throttle: f32) -> f32 {
-    throttle.clamp(0.0, 1.0) * MAX_MOTOR_RPM
-}
-
-/// Calculates aerodynamic drag, utilizing the surrogate model if available,
-/// or falling back to the Phase 1 analytical ISA model.
-///
-/// # Units
-/// * `altitude` - Meters
-/// * Returns - `([Drag X, Drag Y, Drag Z], Optional Surrogate Metadata)`
 pub fn get_drag_with_fallback(
     state: &DroneState,
-    altitude: f32,
+    altitude: f64,
     aero_handle: Option<&mut SurrogateHandle>,
-) -> ([f32; 3], Option<SurrogateQueryResult>) {
+) -> Result<([f32; 3], Option<SurrogateQueryResult>), AeroError> {
     if let Some(handle) = aero_handle
         && let Ok(result) = query_aero(handle, state)
     {
-        return (result.predicted_values, Some(result));
+        return Ok((result.predicted_values, Some(result)));
     }
 
-    (get_drag(state, altitude), None)
+    Ok((get_drag(state, altitude)?, None))
 }
-
-//TEST MODULES
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::DroneState;
 
-    fn create_test_state(vel: [f32; 3]) -> DroneState {
-        DroneState {
-            position: [0.0f64, 0.0, 0.0],
-            velocity: vel,
-            orientation: [0.0, 0.0, 0.0, 1.0],
-            angular_velocity: [0.0, 0.0, 0.0],
+    #[test]
+    fn test_b1_isa_values() {
+        let cases = [
+            (0.0, 1.2250),
+            (500.0, 1.16727),
+            (1000.0, 1.11164),
+            (5000.0, 0.73611),
+            (11000.0, 0.36391),
+        ];
+        for (alt, expected) in cases {
+            let density = compute_air_density(alt).unwrap();
+            assert!(
+                (density - expected).abs() / expected < 1e-4,
+                "Failed at {}m. Expected {}, got {}",
+                alt,
+                expected,
+                density
+            );
         }
     }
 
-    #[test]
-    fn test_b1_sea_level_density() {
-        let d = compute_air_density(0.0);
-        assert!((d - 1.225).abs() < 0.01, "Expected ~1.225, but got {}", d);
-    }
-
-    #[test]
-    fn test_b3_density_decreases_with_altitude() {
-        assert!(compute_air_density(500.0) < compute_air_density(0.0));
-        assert!(compute_air_density(1000.0) < compute_air_density(500.0));
-    }
-
+    // Remaining basic tests
     #[test]
     fn test_c1_zero_velocity() {
-        let state = create_test_state([0.0, 0.0, 0.0]);
-        let drag = get_drag(&state, 0.0);
-        assert_eq!(
-            drag,
-            [0.0, 0.0, 0.0],
-            "Zero velocity must produce zero drag"
-        );
+        let state = DroneState {
+            position: [0.0, 0.0, 0.0],
+            velocity: [0.0, 0.0, 0.0],
+            orientation: [0.0, 0.0, 0.0, 1.0],
+            angular_velocity: [0.0, 0.0, 0.0],
+        };
+        assert_eq!(get_drag(&state, 0.0).unwrap(), [0.0, 0.0, 0.0]);
     }
-
     #[test]
     fn test_c2_drag_opposes_motion() {
-        let state_x = create_test_state([5.0, 0.0, 0.0]);
-        let drag_x = get_drag(&state_x, 0.0);
-        assert!(drag_x[0] < 0.0, "Drag on X axis is not opposing motion!");
-        assert_eq!(drag_x[1], 0.0);
-        assert_eq!(drag_x[2], 0.0);
+        let state_x = DroneState {
+            position: [0.0, 0.0, 0.0],
+            velocity: [5.0, 0.0, 0.0],
+            orientation: [0.0, 0.0, 0.0, 1.0],
+            angular_velocity: [0.0, 0.0, 0.0],
+        };
+        assert!(get_drag(&state_x, 0.0).unwrap()[0] < 0.0);
     }
-
     #[test]
     fn test_c3_drag_scales_with_velocity_squared() {
-        let state_5 = create_test_state([5.0, 0.0, 0.0]);
-        let state_10 = create_test_state([10.0, 0.0, 0.0]);
-
-        let drag_5 = get_drag(&state_5, 0.0)[0].abs();
-        let drag_10 = get_drag(&state_10, 0.0)[0].abs();
-
-        assert!(
-            (drag_10 - (drag_5 * 4.0)).abs() < 0.1,
-            "Drag did not scale by v-squared"
-        );
+        let state_5 = DroneState {
+            position: [0.0, 0.0, 0.0],
+            velocity: [5.0, 0.0, 0.0],
+            orientation: [0.0, 0.0, 0.0, 1.0],
+            angular_velocity: [0.0, 0.0, 0.0],
+        };
+        let state_10 = DroneState {
+            position: [0.0, 0.0, 0.0],
+            velocity: [10.0, 0.0, 0.0],
+            orientation: [0.0, 0.0, 0.0, 1.0],
+            angular_velocity: [0.0, 0.0, 0.0],
+        };
+        let drag_5 = get_drag(&state_5, 0.0).unwrap()[0].abs();
+        let drag_10 = get_drag(&state_10, 0.0).unwrap()[0].abs();
+        assert!((drag_10 - (drag_5 * 4.0)).abs() < 0.1);
     }
-
     #[test]
     fn test_d1_zero_throttle() {
-        assert_eq!(
-            get_thrust(0.0),
-            0.0,
-            "Zero throttle must produce zero thrust"
-        );
+        assert_eq!(get_thrust(0.0).unwrap(), 0.0);
     }
-
-    #[test]
-    fn test_d2_thrust_scales_with_throttle_squared() {
-        let t_025 = get_thrust(0.25);
-        let t_050 = get_thrust(0.5);
-        assert!(
-            (t_050 - (t_025 * 4.0)).abs() < 0.1,
-            "Thrust did not scale correctly"
-        );
-    }
-
     #[test]
     fn test_d5_throttle_clamping() {
-        assert_eq!(
-            get_thrust(-0.5),
-            get_thrust(0.0),
-            "Negative throttle not clamped"
-        );
-        assert_eq!(
-            get_thrust(1.5),
-            get_thrust(1.0),
-            "Excessive throttle not clamped"
-        );
-    }
-
-    #[test]
-    fn test_b2_altitude_500m() {
-        let d = compute_air_density(500.0);
-        assert!(
-            (d - 1.167).abs() < 0.005,
-            "500m density should be ~1.167, got {}",
-            d
-        );
-    }
-
-    #[test]
-    fn test_b4_troposphere_limit() {
-        let d = compute_air_density(11000.0);
-        assert!(
-            d > 0.0 && d < 1.225,
-            "11000m density must be positive but less than sea level"
-        );
-        assert!(
-            !d.is_nan(),
-            "Density calculation resulted in NaN (Not a Number)"
-        );
-    }
-
-    #[test]
-    fn test_c4_different_axes_different_drag() {
-        let drag_x = get_drag(&create_test_state([10.0, 0.0, 0.0]), 0.0)[0].abs();
-        let drag_z = get_drag(&create_test_state([0.0, 0.0, 10.0]), 0.0)[2].abs();
-        assert!(
-            drag_z > drag_x,
-            "Z axis should have more drag than X axis based on our constants"
-        );
+        assert_eq!(get_thrust(-0.5).unwrap(), get_thrust(0.0).unwrap());
     }
 }

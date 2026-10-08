@@ -64,7 +64,7 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		if (PC->IsInputKeyDown(EKeys::D)) LiveInputs.roll = 0.3f;
 	}
 
-	FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &LiveInputs, AeroHandle, FeaHandle, DeltaTime);
+	FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &LiveInputs, AeroHandle, FeaHandle, (double)DeltaTime);
 
 	FVector NewPos = FDronePhysicsBridgeModule::NedToUnrealWorld(PhysicsState.position);
 	FQuat NewRot(PhysicsState.orientation[0], PhysicsState.orientation[1], PhysicsState.orientation[2], PhysicsState.orientation[3]);

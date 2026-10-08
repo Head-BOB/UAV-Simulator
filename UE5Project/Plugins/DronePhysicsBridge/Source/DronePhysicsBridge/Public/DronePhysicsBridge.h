@@ -46,7 +46,7 @@ public:
      * \return bool True if integration succeeded, false if State or Inputs was null or FFI returned an error code.
      * \pre State and Inputs must be non-null and valid.
      */
-    static bool StepPhysics(DroneState* State, const ControlInputs* Inputs, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, float DeltaTime);
+    static bool StepPhysics(DroneState* State, const ControlInputs* Inputs, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, double DeltaTime);
 
     /**
      * \brief Queries the most recent snapshot of intermediate physics forces, moments, and surrogate telemetry.

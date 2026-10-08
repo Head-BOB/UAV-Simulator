@@ -79,7 +79,7 @@ pub unsafe extern "C" fn ffi_step_physics(
     controls: *const ControlInputs,
     aero_handle: *mut surrogate::SurrogateHandle,
     fea_handle: *mut surrogate::SurrogateHandle,
-    dt: f32,
+    dt: f64, // <-- FIX: Changed from f32 to f64
 ) -> i32 {
     if state.is_null() || controls.is_null() {
         return 1;
@@ -100,10 +100,16 @@ pub unsafe extern "C" fn ffi_step_physics(
             Some(&mut *fea_handle)
         };
 
-        let altitude = (-current_state.position[2]) as f32;
-        let airspeed = Vec3::from_array(current_state.velocity).length();
+        let altitude = -current_state.position[2]; // Now natively f64
 
-        let (drag, aero_result) = aero::get_drag_with_fallback(&current_state, altitude, aero_opt);
+        // FIX: Catch Altitude Out of Bounds Error (Returns code 6)
+        let (drag, aero_result) =
+            match aero::get_drag_with_fallback(&current_state, altitude, aero_opt) {
+                Ok(res) => res,
+                Err(_) => return 6,
+            };
+
+        let airspeed = Vec3::from_array(current_state.velocity).length();
 
         let t = current_controls.throttle;
         let r = current_controls.roll * 0.2;
@@ -111,10 +117,10 @@ pub unsafe extern "C" fn ffi_step_physics(
         let y = current_controls.yaw * 0.2;
 
         let thrusts = [
-            aero::get_thrust((t - p + r - y).clamp(0.0, 1.0)),
-            aero::get_thrust((t - p - r + y).clamp(0.0, 1.0)),
-            aero::get_thrust((t + p + r + y).clamp(0.0, 1.0)),
-            aero::get_thrust((t + p - r - y).clamp(0.0, 1.0)),
+            aero::get_thrust((t - p + r - y).clamp(0.0, 1.0)).unwrap_or(0.0),
+            aero::get_thrust((t - p - r + y).clamp(0.0, 1.0)).unwrap_or(0.0),
+            aero::get_thrust((t + p + r + y).clamp(0.0, 1.0)).unwrap_or(0.0),
+            aero::get_thrust((t + p - r - y).clamp(0.0, 1.0)).unwrap_or(0.0),
         ];
 
         let load_proxy = thrusts.iter().sum::<f32>() + Vec3::from_array(drag).length();
@@ -126,7 +132,8 @@ pub unsafe extern "C" fn ffi_step_physics(
         } else {
             [20.0; 4]
         };
-        let new_temps = thermal::update_temperatures(&thrusts, &current_temps, airspeed, dt);
+
+        let new_temps = thermal::update_temperatures(&thrusts, &current_temps, airspeed, dt as f32);
 
         let (net_force, net_torque, net_thrust) =
             mixer::calculate_net_forces(thrusts, drag, current_state.orientation, 1.0);
