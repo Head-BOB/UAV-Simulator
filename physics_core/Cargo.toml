@@ -9,8 +9,7 @@ crate-type = ["cdylib", "rlib"]
 
 [build-dependencies]
 cbindgen = "0.29.4"
-sha2 = "0.10.8"
-hex = "0.4.3"
+sha2 = "0.10"
 
 [profile.release]
 panic = "abort"

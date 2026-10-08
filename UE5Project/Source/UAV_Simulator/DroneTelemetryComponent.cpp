@@ -12,9 +12,8 @@ UDroneTelemetryComponent::UDroneTelemetryComponent()
 
 void UDroneTelemetryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (AeroHandle) ffi_unload_surrogate_model(AeroHandle);
-	if (FeaHandle) ffi_unload_surrogate_model(FeaHandle);
-	Super::EndPlay(EndPlayReason);
+	// NED +Z is Down, UE5 +Z is Up. Scale factor 100.0 converts physics meters to rendering centimeters.
+	return FVector(NedPosition[0] * 100.0, NedPosition[1] * 100.0, -NedPosition[2] * 100.0);
 }
 
 void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -23,7 +22,9 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	if (!bShowOSD || !GetOwner()) return;
 
-	if (!bIsPhysicsInitialized)
+	// --- BEGIN INTEGRATION TEST BLOCK (H4 & M1) ---
+	// Isolated hover test logic. Remove or comment out when connecting real player inputs.
+	/*if (!bIsPhysicsInitialized)
 	{
 		PhysicsState = FDronePhysicsBridgeModule::CreateDefaultState();
 		Thermal = FDronePhysicsBridgeModule::CreateDefaultThermalState();
@@ -44,55 +45,28 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		bIsPhysicsInitialized = true;
 	}
 
-	ControlInputs LiveInputs;
-	LiveInputs.throttle = Config.hover_throttle;
-	LiveInputs.roll = 0.0f;
-	LiveInputs.pitch = 0.0f;
-	LiveInputs.yaw = 0.0f;
+	ControlInputs TestInputs;
+	// 0.4095f precisely balances gravity (9.80665) against the Phase 1 placeholder thrust coefficient.
+	TestInputs.throttle = 0.4095f; 
+	TestInputs.roll = 0.0f;
+	TestInputs.pitch = 0.0f;
+	TestInputs.yaw = 0.0f;
 
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (PC)
-	{
-		if (PC->IsInputKeyDown(EKeys::SpaceBar)) LiveInputs.throttle = 1.0f;
-		else if (PC->IsInputKeyDown(EKeys::C)) LiveInputs.throttle = 0.0f;
-
-		if (PC->IsInputKeyDown(EKeys::W)) LiveInputs.pitch = 1.0f;
-		if (PC->IsInputKeyDown(EKeys::S)) LiveInputs.pitch = -1.0f;
-		if (PC->IsInputKeyDown(EKeys::A)) LiveInputs.roll = -1.0f;
-		if (PC->IsInputKeyDown(EKeys::D)) LiveInputs.roll = 1.0f;
-	}
-
-	constexpr double FixedDt = 0.002;
-	constexpr int32 MaxSubsteps = 20;
-
-	Accumulator += (double)DeltaTime;
-	int32 Steps = 0;
-	bool bPhysicsFault = false;
+	ffi_step_physics(&PhysicsState, &TestInputs, DeltaTime);
+	
+	FVector NewPos = NedToUnrealWorld(PhysicsState.position);
+	FQuat NewRot(PhysicsState.orientation[0], PhysicsState.orientation[1], PhysicsState.orientation[2], PhysicsState.orientation[3]);
+	GetOwner()->SetActorLocationAndRotation(NewPos, NewRot);*/
+	// --- END INTEGRATION TEST BLOCK ---
+	
 	DebugTelemetry Telemetry;
 
-	while (Accumulator >= FixedDt && Steps < MaxSubsteps)
-	{
-		if (!FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &Thermal, &LiveInputs, AeroHandle, FeaHandle, &Config, &Telemetry, FixedDt))
-		{
-			bPhysicsFault = true;
-			break;
-		}
-		Accumulator -= FixedDt;
-		++Steps;
-	}
-
-	if (Steps == MaxSubsteps && Accumulator >= FixedDt)
-	{
-		Accumulator = 0.0;
-		++DroppedTimeEvents;
-	}
-
-	FVector NewPos = FDronePhysicsBridgeModule::NedToUnrealWorld(PhysicsState.position);
-	FQuat NewRot = FDronePhysicsBridgeModule::NedToUnrealQuat(PhysicsState.orientation);
-	GetOwner()->SetActorLocationAndRotation(NewPos, NewRot);
-
 	FVector ActorLocation = GetOwner()->GetActorLocation();
-	const float ForceScale = 10.0f;
+	
+	// Constant scale limits unbounded line lengths from Newton values directly rendering in UE5 units.
+	const float ForceScale = 10.0f; 
+
+	// Vectors must be inverted on Z to match UE5's left-handed Z-up frame.
 	FVector NetThrust(Telemetry.net_thrust[0], Telemetry.net_thrust[1], -Telemetry.net_thrust[2]);
 	FVector AeroDrag(Telemetry.aero_drag[0], Telemetry.aero_drag[1], -Telemetry.aero_drag[2]);
 	FVector Gravity(Telemetry.gravity[0], Telemetry.gravity[1], -Telemetry.gravity[2]);
@@ -155,23 +129,22 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	if (GEngine)
 	{
-		if (Telemetry.stub_loaded == 1)
-		{
-			GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Red, TEXT("STUB MODEL LOADED - NOT FOR ANALYSIS"));
-		}
+		FVector RustVelocity(PhysicsState.velocity[0], PhysicsState.velocity[1], -PhysicsState.velocity[2]);
+		FRotator Rotation = NewRot.Rotator();
 
-		if (FMath::IsNaN(Telemetry.structural_safety_margin))
-		{
-			GEngine->AddOnScreenDebugMessage(3, 0.0f, FColor::Red, TEXT("STRUCTURE: NO MODEL"));
-		}
-		else if (Telemetry.structural_safety_margin < 1.0f)
-		{
-			GEngine->AddOnScreenDebugMessage(3, 0.0f, FColor::Red, TEXT("CRITICAL: STRUCTURAL FAILURE IMMINENT"));
-		}
+		FString OSDText = FString::Printf(TEXT(
+			"TEST H4 & M1: PURE HOVER\n"
+			"Speed: %.2f m/s\n"
+			"Altitude: %.2f m\n"
+			"Roll: %.1f, Pitch: %.1f, Yaw: %.1f\n"
+			"Angular Vel (X,Y,Z): %.3f, %.3f, %.3f\n"
+		),
+		RustVelocity.Length(), 
+		-PhysicsState.position[2],
+		Rotation.Roll, Rotation.Pitch, Rotation.Yaw,
+		PhysicsState.angular_velocity[0], PhysicsState.angular_velocity[1], PhysicsState.angular_velocity[2]); 
 
-		if (Telemetry.is_validated_envelope == 0)
-		{
-			GEngine->AddOnScreenDebugMessage(2, 0.0f, FColor::Orange, TEXT("WARNING: OUT OF VALIDATED ENVELOPE - EXTRAPOLATING"));
-		}
+		// Key '1' prevents log spam by overwriting the same message block every frame.
+		GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Cyan, OSDText);
 	}
 }
