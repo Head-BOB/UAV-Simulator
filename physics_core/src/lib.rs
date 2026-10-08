@@ -9,7 +9,9 @@ pub mod types;
 
 use glam::Vec3;
 use std::sync::Mutex;
-use types::{ControlInputs, DebugTelemetry, DroneState, SurrogateQueryResult};
+use types::{
+    ControlInputs, DebugTelemetry, DroneState, SurrogateQueryResult, ThermalState, VehicleConfig,
+};
 
 static TELEMETRY_CACHE: Mutex<DebugTelemetry> = Mutex::new(DebugTelemetry::new());
 
@@ -19,7 +21,7 @@ static TELEMETRY_CACHE: Mutex<DebugTelemetry> = Mutex::new(DebugTelemetry::new()
 /// Safe to call at any time.
 #[unsafe(no_mangle)]
 pub extern "C" fn ffi_get_interface_version() -> i32 {
-    3
+    4
 }
 
 /// Allows UE5 to verify the byte size of DroneState during module initialization.
@@ -71,24 +73,34 @@ pub unsafe extern "C" fn ffi_reset_drone_state(state: *mut DroneState) -> i32 {
 ///
 /// # Safety
 /// * `state` must be a valid, aligned, mutable pointer to a DroneState.
+/// * `thermal_state` must be a valid, aligned, mutable pointer to a ThermalState.
 /// * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
 /// * `aero_handle` and `fea_handle` may be null. If non-null, must be valid SurrogateHandles.
+/// * `config` must be a valid, aligned, immutable pointer to a VehicleConfig.
 /// * Pointers must not alias or be subject to concurrent mutation.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn ffi_step_physics(
     state: *mut DroneState,
+    thermal_state: *mut ThermalState,
     controls: *const ControlInputs,
     aero_handle: *mut surrogate::SurrogateHandle,
     fea_handle: *mut surrogate::SurrogateHandle,
-    dt: f64, // <-- FIX: Changed from f32 to f64
+    config: *const VehicleConfig,
+    dt: f64,
 ) -> i32 {
-    if state.is_null() || controls.is_null() {
+    if state.is_null() || thermal_state.is_null() || controls.is_null() || config.is_null() {
         return 1;
     }
 
+    if dt <= 0.0 || dt.is_nan() || dt > 0.01 {
+        return 7;
+    }
+
     unsafe {
-        let current_state = *state;
+        let original_state = *state;
+        let original_thermal = *thermal_state;
         let current_controls = *controls;
+        let current_config = *config;
 
         let aero_opt = if aero_handle.is_null() {
             None
@@ -101,68 +113,139 @@ pub unsafe extern "C" fn ffi_step_physics(
             Some(&mut *fea_handle)
         };
 
-        let altitude = -current_state.position[2]; // Now natively f64
+        let altitude = -original_state.position[2];
+        let airspeed = Vec3::from_array(original_state.velocity).length() as f64;
 
-        // FIX: Catch Altitude Out of Bounds Error (Returns code 6)
         let (drag, aero_result) =
-            match aero::get_drag_with_fallback(&current_state, altitude, aero_opt) {
+            match aero::get_drag_with_fallback(&original_state, altitude, aero_opt) {
                 Ok(res) => res,
                 Err(_) => return 6,
             };
 
-        let airspeed = Vec3::from_array(current_state.velocity).length();
-
-        let t = current_controls.throttle;
-        let r = current_controls.roll * 0.2;
-        let p = current_controls.pitch * 0.2;
-        let y = current_controls.yaw * 0.2;
+        let throttles = mixer::mix_controls(&current_controls);
 
         let thrusts = [
-            aero::get_thrust((t - p + r - y).clamp(0.0, 1.0)).unwrap_or(0.0),
-            aero::get_thrust((t - p - r + y).clamp(0.0, 1.0)).unwrap_or(0.0),
-            aero::get_thrust((t + p + r + y).clamp(0.0, 1.0)).unwrap_or(0.0),
-            aero::get_thrust((t + p - r - y).clamp(0.0, 1.0)).unwrap_or(0.0),
+            aero::get_thrust(throttles[0] as f32, &current_config).unwrap_or(0.0) as f64,
+            aero::get_thrust(throttles[1] as f32, &current_config).unwrap_or(0.0) as f64,
+            aero::get_thrust(throttles[2] as f32, &current_config).unwrap_or(0.0) as f64,
+            aero::get_thrust(throttles[3] as f32, &current_config).unwrap_or(0.0) as f64,
         ];
 
-        let load_proxy = thrusts.iter().sum::<f32>() + Vec3::from_array(drag).length();
+        let load_proxy = thrusts.iter().sum::<f64>() as f32 + Vec3::from_array(drag).length();
         let (safety_margin, fea_result) =
             structural::get_safety_margin_with_fallback(load_proxy, fea_opt);
 
-        let current_temps = if let Ok(telemetry) = TELEMETRY_CACHE.lock() {
-            telemetry.motor_temperatures_c
-        } else {
-            [20.0; 4]
-        };
+        let motor_rpms = [
+            (throttles[0] * current_config.max_rpm),
+            (throttles[1] * current_config.max_rpm),
+            (throttles[2] * current_config.max_rpm),
+            (throttles[3] * current_config.max_rpm),
+        ];
 
-        let new_temps = thermal::update_temperatures(&thrusts, &current_temps, airspeed, dt as f32);
+        thermal::update_temperatures(&mut *thermal_state, &throttles, &motor_rpms, airspeed, dt);
 
-        let (net_force, net_torque, net_thrust) =
-            mixer::calculate_net_forces(thrusts, drag, current_state.orientation, 1.0);
+        let (net_force, net_torque, net_thrust) = mixer::calculate_net_forces(
+            thrusts,
+            [drag[0] as f64, drag[1] as f64, drag[2] as f64],
+            original_state.orientation,
+            &current_config,
+        );
 
-        let new_state = integrator::step_rk4(&current_state, net_force, net_torque, 1.0, 1.0, dt);
+        let new_state = integrator::step_rk4(
+            &original_state,
+            [
+                net_force[0] as f32,
+                net_force[1] as f32,
+                net_force[2] as f32,
+            ],
+            [
+                net_torque[0] as f32,
+                net_torque[1] as f32,
+                net_torque[2] as f32,
+            ],
+            &current_config,
+            dt,
+        );
+
+        let has_nan = new_state
+            .position
+            .iter()
+            .any(|x| x.is_nan() || x.is_infinite())
+            || new_state
+                .velocity
+                .iter()
+                .any(|x| x.is_nan() || x.is_infinite())
+            || new_state
+                .orientation
+                .iter()
+                .any(|x| x.is_nan() || x.is_infinite())
+            || new_state
+                .angular_velocity
+                .iter()
+                .any(|x| x.is_nan() || x.is_infinite());
+
+        if has_nan {
+            *state = original_state;
+            *thermal_state = original_thermal;
+            if let Ok(mut telemetry) = TELEMETRY_CACHE.lock() {
+                telemetry.physics_fault = 1;
+            }
+            return 8;
+        }
 
         *state = new_state;
 
         if let Ok(mut telemetry) = TELEMETRY_CACHE.lock() {
             telemetry.aero_drag = drag;
-            telemetry.motor_thrusts = thrusts;
-            telemetry.net_force = net_force;
-            telemetry.gravity = [0.0, 0.0, 9.80665];
-            telemetry.net_thrust = net_thrust;
-            telemetry.motor_temperatures_c = new_temps;
+            telemetry.motor_thrusts = [
+                thrusts[0] as f32,
+                thrusts[1] as f32,
+                thrusts[2] as f32,
+                thrusts[3] as f32,
+            ];
+            telemetry.net_force = [
+                net_force[0] as f32,
+                net_force[1] as f32,
+                net_force[2] as f32,
+            ];
+            telemetry.gravity = [0.0, 0.0, (9.80665 * current_config.mass_kg) as f32];
+            telemetry.net_thrust = [
+                net_thrust[0] as f32,
+                net_thrust[1] as f32,
+                net_thrust[2] as f32,
+            ];
+
+            telemetry.motor_temperatures_c = [
+                (*thermal_state).motor_temp_c[0] as f32,
+                (*thermal_state).motor_temp_c[1] as f32,
+                (*thermal_state).motor_temp_c[2] as f32,
+                (*thermal_state).motor_temp_c[3] as f32,
+            ];
+            telemetry.motor_rpms = [
+                motor_rpms[0] as f32,
+                motor_rpms[1] as f32,
+                motor_rpms[2] as f32,
+                motor_rpms[3] as f32,
+            ];
             telemetry.structural_safety_margin = safety_margin;
 
             let mut all_valid = 1;
-            if let Some(res) = aero_result
-                && res.in_validated_envelope == 0
-            {
-                all_valid = 0;
+            telemetry.aero_source = 1;
+            if let Some(res) = aero_result {
+                telemetry.aero_source = 2;
+                if res.in_validated_envelope == 0 {
+                    all_valid = 0;
+                }
             }
-            if let Some(res) = fea_result
-                && res.in_validated_envelope == 0
-            {
-                all_valid = 0;
+
+            telemetry.fea_source = 1;
+            if let Some(res) = fea_result {
+                telemetry.fea_source = 2;
+                if res.in_validated_envelope == 0 {
+                    all_valid = 0;
+                }
             }
+
             telemetry.is_validated_envelope = all_valid;
             telemetry.stub_loaded = if cfg!(feature = "allow_stub_models") {
                 1

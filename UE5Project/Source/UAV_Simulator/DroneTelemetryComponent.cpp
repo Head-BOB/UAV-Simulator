@@ -26,28 +26,26 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	if (!bIsPhysicsInitialized)
 	{
 		PhysicsState = FDronePhysicsBridgeModule::CreateDefaultState();
+		Thermal = FDronePhysicsBridgeModule::CreateDefaultThermalState();
 
-		FString BasePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()) + TEXT("trained_models/");
-		FString AeroPath = BasePath + TEXT("aero_stub.onnx");
-		FString FeaPath = BasePath + TEXT("fea_stub.onnx");
+		FString BasePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
+		FString ConfigPath = BasePath + TEXT("offline_pipeline/geometry/vehicle_config.json");
+		FString AeroPath = BasePath + TEXT("trained_models/aero_stub.onnx");
+		FString FeaPath = BasePath + TEXT("trained_models/fea_stub.onnx");
 
-		int32 AeroStatus = ffi_load_surrogate_model(TCHAR_TO_UTF8(*AeroPath), &AeroHandle);
-		if (AeroStatus != 0)
+		if (!FDronePhysicsBridgeModule::LoadVehicleConfig(ConfigPath, &Config))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Aero Surrogate failed to load. Status: %d"), AeroStatus);
+			UE_LOG(LogTemp, Fatal, TEXT("Failed to load VehicleConfig!"));
 		}
 
-		int32 FeaStatus = ffi_load_surrogate_model(TCHAR_TO_UTF8(*FeaPath), &FeaHandle);
-		if (FeaStatus != 0)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("FEA Surrogate failed to load. Status: %d"), FeaStatus);
-		}
+		ffi_load_surrogate_model(TCHAR_TO_UTF8(*AeroPath), &AeroHandle);
+		ffi_load_surrogate_model(TCHAR_TO_UTF8(*FeaPath), &FeaHandle);
 
 		bIsPhysicsInitialized = true;
 	}
 
 	ControlInputs LiveInputs;
-	LiveInputs.throttle = 0.4095f;
+	LiveInputs.throttle = Config.hover_throttle;
 	LiveInputs.roll = 0.0f;
 	LiveInputs.pitch = 0.0f;
 	LiveInputs.yaw = 0.0f;
@@ -55,19 +53,39 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
 	{
-		if (PC->IsInputKeyDown(EKeys::SpaceBar)) LiveInputs.throttle = 0.8f;
-		else if (PC->IsInputKeyDown(EKeys::C)) LiveInputs.throttle = 0.2f;
+		if (PC->IsInputKeyDown(EKeys::SpaceBar)) LiveInputs.throttle = 1.0f;
+		else if (PC->IsInputKeyDown(EKeys::C)) LiveInputs.throttle = 0.0f;
 
-		if (PC->IsInputKeyDown(EKeys::W)) LiveInputs.pitch = 0.3f;
-		if (PC->IsInputKeyDown(EKeys::S)) LiveInputs.pitch = -0.3f;
-		if (PC->IsInputKeyDown(EKeys::A)) LiveInputs.roll = -0.3f;
-		if (PC->IsInputKeyDown(EKeys::D)) LiveInputs.roll = 0.3f;
+		if (PC->IsInputKeyDown(EKeys::W)) LiveInputs.pitch = 1.0f;
+		if (PC->IsInputKeyDown(EKeys::S)) LiveInputs.pitch = -1.0f;
+		if (PC->IsInputKeyDown(EKeys::A)) LiveInputs.roll = -1.0f;
+		if (PC->IsInputKeyDown(EKeys::D)) LiveInputs.roll = 1.0f;
 	}
 
-	FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &LiveInputs, AeroHandle, FeaHandle, (double)DeltaTime);
+	constexpr double FixedDt = 0.002;
+	constexpr int32 MaxSubsteps = 20;
+
+	Accumulator += (double)DeltaTime;
+	int32 Steps = 0;
+
+	while (Accumulator >= FixedDt && Steps < MaxSubsteps)
+	{
+		if (!FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &Thermal, &LiveInputs, AeroHandle, FeaHandle, &Config, FixedDt))
+		{
+			break;
+		}
+		Accumulator -= FixedDt;
+		++Steps;
+	}
+
+	if (Steps == MaxSubsteps && Accumulator >= FixedDt)
+	{
+		Accumulator = 0.0;
+		++DroppedTimeEvents;
+	}
 
 	FVector NewPos = FDronePhysicsBridgeModule::NedToUnrealWorld(PhysicsState.position);
-	FQuat NewRot(PhysicsState.orientation[0], PhysicsState.orientation[1], PhysicsState.orientation[2], PhysicsState.orientation[3]);
+	FQuat NewRot = FDronePhysicsBridgeModule::NedToUnrealQuat(PhysicsState.orientation);
 	GetOwner()->SetActorLocationAndRotation(NewPos, NewRot);
 
 	DebugTelemetry Telemetry;
@@ -88,7 +106,6 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		Hologram->RegisterComponent();
 		Hologram->AttachToComponent(GetOwner()->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 		Hologram->SetRelativeLocation(FVector(0, 0, 150.0f));
-		Hologram->SetTextRenderColor(FColor::Cyan);
 		Hologram->SetHorizontalAlignment(EHTA_Center);
 		Hologram->SetWorldSize(26.0f);
 	}
@@ -97,16 +114,25 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		"Speed: %.1f m/s\n"
 		"Altitude: %.1f m\n"
 		"Struct Margin: %.2f\n"
-		"Motor Temp: %.1f C"
+		"Motor Temp: %.1f C\n"
+		"RPM: %.0f, %.0f, %.0f, %.0f\n"
+		"Dropped Ticks: %d"
 	),
 	(double)(FVector(PhysicsState.velocity[0], PhysicsState.velocity[1], PhysicsState.velocity[2]).Length()),
 	(double)(-PhysicsState.position[2]),
 	(double)(Telemetry.structural_safety_margin),
-	(double)(Telemetry.motor_temperatures_c[0]));
+	(double)(Telemetry.motor_temperatures_c[0]),
+	(double)(Telemetry.motor_rpms[0]), (double)(Telemetry.motor_rpms[1]), (double)(Telemetry.motor_rpms[2]), (double)(Telemetry.motor_rpms[3]),
+	DroppedTimeEvents);
 
-	if (Telemetry.stub_loaded == 1)
+	if (Telemetry.physics_fault == 1)
 	{
-		HologramText += TEXT("\n[!] STUB MODEL LOADED - NOT FOR ANALYSIS");
+		HologramText += TEXT("\n[!] PHYSICS DIVERGENCE (NaN)");
+		Hologram->SetTextRenderColor(FColor::Red);
+	}
+	else if (Telemetry.stub_loaded == 1)
+	{
+		HologramText += TEXT("\n[!] STUB MODEL LOADED");
 		Hologram->SetTextRenderColor(FColor::Red);
 	}
 	else if (Telemetry.is_validated_envelope == 0)
@@ -120,22 +146,4 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	}
 
 	Hologram->SetText(FText::FromString(HologramText));
-
-	if (GEngine)
-	{
-		if (Telemetry.stub_loaded == 1)
-		{
-			GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Red, TEXT("STUB MODEL LOADED - NOT FOR ANALYSIS"));
-		}
-
-		if (Telemetry.is_validated_envelope == 0)
-		{
-			GEngine->AddOnScreenDebugMessage(2, 0.0f, FColor::Orange, TEXT("WARNING: OUT OF VALIDATED ENVELOPE - EXTRAPOLATING"));
-		}
-
-		if (Telemetry.structural_safety_margin < 1.0f)
-		{
-			GEngine->AddOnScreenDebugMessage(3, 0.0f, FColor::Red, TEXT("CRITICAL: STRUCTURAL FAILURE IMMINENT"));
-		}
-	}
 }

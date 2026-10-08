@@ -1,4 +1,4 @@
-use crate::types::DroneState;
+use crate::types::{DroneState, VehicleConfig};
 use glam::{DQuat, DVec3};
 
 /// Internal helper to calculate rates of change.
@@ -64,7 +64,6 @@ pub fn step_rk4_f64(
     let (dp4, dv4, dq4, dw4) =
         compute_derivative(v0 + dv3 * dt, q0 + dq3 * dt, w0 + dw3 * dt, f, t, mass, i);
 
-    // Reordered division and multiplication to preserve max floating point precision
     let p_step = (dp1 + dp2 * 2.0 + dp3 * 2.0 + dp4) * dt / 6.0;
     let v_step = (dv1 + dv2 * 2.0 + dv3 * 2.0 + dv4) * dt / 6.0;
     let q_step = (dq1 + dq2 * 2.0 + dq3 * 2.0 + dq4) * dt / 6.0;
@@ -83,8 +82,7 @@ pub fn step_rk4(
     state: &DroneState,
     force: [f32; 3],
     torque: [f32; 3],
-    mass: f32,
-    inertia_scalar: f32,
+    config: &VehicleConfig,
     dt: f64,
 ) -> DroneState {
     let p0 = DVec3::from_array(state.position);
@@ -107,10 +105,10 @@ pub fn step_rk4(
 
     let f = DVec3::new(force[0] as f64, force[1] as f64, force[2] as f64);
     let t = DVec3::new(torque[0] as f64, torque[1] as f64, torque[2] as f64);
-    let m = mass as f64;
-    let i = DVec3::splat(inertia_scalar as f64);
+    let i = DVec3::from_array(config.inertia_kgm2);
 
-    let (p_final, v_final, q_norm, w_final) = step_rk4_f64(p0, v0, q0, w0, f, t, m, i, dt);
+    let (p_final, v_final, q_norm, w_final) =
+        step_rk4_f64(p0, v0, q0, w0, f, t, config.mass_kg, i, dt);
 
     DroneState {
         position: p_final.to_array(),
@@ -129,12 +127,29 @@ pub fn step_rk4(
 mod tests {
     use super::*;
 
+    fn dummy_config(mass: f64) -> VehicleConfig {
+        VehicleConfig {
+            mass_kg: mass,
+            inertia_kgm2: [1.0, 1.0, 1.0],
+            motor_pos_m: [
+                [0.2, 0.2, 0.0],
+                [0.2, -0.2, 0.0],
+                [-0.2, 0.2, 0.0],
+                [-0.2, -0.2, 0.0],
+            ],
+            motor_spin: [1.0, -1.0, -1.0, 1.0],
+            prop_diameter_m: 0.25,
+            thrust_coeff: 0.11,
+            torque_coeff: 0.05,
+            max_rpm: 10000.0,
+            hover_throttle: 0.4095,
+        }
+    }
+
     #[test]
     fn test_c4_constant_velocity() {
         let mut p = DVec3::new(0.0, 0.0, 0.0);
-
         let mut v = DVec3::new(1.0, 0.0, 0.0);
-
         let mut q = DQuat::from_xyzw(0.0, 0.0, 0.0, 1.0);
         let mut w = DVec3::new(0.0, 0.0, 0.0);
         let dt = 0.002;
@@ -146,8 +161,6 @@ mod tests {
             q = res.2;
             w = res.3;
         }
-
-        // 1.0 m/s * 600 seconds = 600.0 meters
         assert!((p.x - 600.0).abs() < 1e-9);
     }
 
@@ -192,7 +205,7 @@ mod tests {
 
     #[test]
     fn test_c6_rk4_order() {
-        assert!(true); // Validated externally via scaling ratios
+        assert!(true);
     }
 
     #[test]
@@ -203,14 +216,8 @@ mod tests {
             orientation: [0.0, 0.0, 0.0, 1.0],
             angular_velocity: [0.0, 0.0, 0.0],
         };
-        let next_state = step_rk4(
-            &start_state,
-            [0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0],
-            2.0,
-            1.0,
-            0.1,
-        );
+        let cfg = dummy_config(2.0);
+        let next_state = step_rk4(&start_state, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], &cfg, 0.1);
         assert_eq!(next_state.position[2], -10.0);
         assert_eq!(next_state.velocity[2], 0.0);
     }
