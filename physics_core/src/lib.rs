@@ -18,7 +18,7 @@ static TELEMETRY_CACHE: Mutex<DebugTelemetry> = Mutex::new(DebugTelemetry::new()
 /// Safe to call at any time.
 #[unsafe(no_mangle)]
 pub extern "C" fn ffi_get_interface_version() -> i32 {
-    1
+    2
 }
 
 /// Allows UE5 to verify the byte size of DroneState during module initialization.
@@ -55,7 +55,6 @@ pub unsafe extern "C" fn ffi_reset_drone_state(state: *mut DroneState) -> i32 {
         return 1;
     }
 
-    // SAFETY: Verified null check. Callers must uphold standard borrowing rules.
     unsafe {
         *state = ffi_create_default_drone_state();
     }
@@ -86,7 +85,6 @@ pub unsafe extern "C" fn ffi_step_physics(
         return 1;
     }
 
-    // SAFETY: Verified null checks.
     unsafe {
         let current_state = *state;
         let current_controls = *controls;
@@ -105,7 +103,6 @@ pub unsafe extern "C" fn ffi_step_physics(
         let altitude = (-current_state.position[2]) as f32;
         let airspeed = Vec3::from_array(current_state.velocity).length();
 
-        // 1. Aero Surrogate Query
         let (drag, aero_result) = aero::get_drag_with_fallback(&current_state, altitude, aero_opt);
 
         let t = current_controls.throttle;
@@ -113,33 +110,17 @@ pub unsafe extern "C" fn ffi_step_physics(
         let p = current_controls.pitch * 0.2;
         let y = current_controls.yaw * 0.2;
 
-        let motor_throttles = [
-            (t - p + r - y).clamp(0.0, 1.0),
-            (t - p - r + y).clamp(0.0, 1.0),
-            (t + p + r + y).clamp(0.0, 1.0),
-            (t + p - r - y).clamp(0.0, 1.0),
-        ];
-
         let thrusts = [
-            aero::get_thrust(motor_throttles[0]),
-            aero::get_thrust(motor_throttles[1]),
-            aero::get_thrust(motor_throttles[2]),
-            aero::get_thrust(motor_throttles[3]),
+            aero::get_thrust((t - p + r - y).clamp(0.0, 1.0)),
+            aero::get_thrust((t - p - r + y).clamp(0.0, 1.0)),
+            aero::get_thrust((t + p + r + y).clamp(0.0, 1.0)),
+            aero::get_thrust((t + p - r - y).clamp(0.0, 1.0)),
         ];
 
-        let motor_rpms = [
-            aero::get_motor_rpm(motor_throttles[0]),
-            aero::get_motor_rpm(motor_throttles[1]),
-            aero::get_motor_rpm(motor_throttles[2]),
-            aero::get_motor_rpm(motor_throttles[3]),
-        ];
-
-        // 2. Structural Surrogate Query
         let load_proxy = thrusts.iter().sum::<f32>() + Vec3::from_array(drag).length();
         let (safety_margin, fea_result) =
             structural::get_safety_margin_with_fallback(load_proxy, fea_opt);
 
-        // 3. Thermal Module
         let current_temps = if let Ok(telemetry) = TELEMETRY_CACHE.lock() {
             telemetry.motor_temperatures_c
         } else {
@@ -147,20 +128,16 @@ pub unsafe extern "C" fn ffi_step_physics(
         };
         let new_temps = thermal::update_temperatures(&thrusts, &current_temps, airspeed, dt);
 
-        // 4. Mixer
         let (net_force, net_torque, net_thrust) =
             mixer::calculate_net_forces(thrusts, drag, current_state.orientation, 1.0);
 
-        // 5. Integrator
         let new_state = integrator::step_rk4(&current_state, net_force, net_torque, 1.0, 1.0, dt);
 
         *state = new_state;
 
-        // Synchronize OSD Telemetry
         if let Ok(mut telemetry) = TELEMETRY_CACHE.lock() {
             telemetry.aero_drag = drag;
             telemetry.motor_thrusts = thrusts;
-            telemetry.motor_rpms = motor_rpms;
             telemetry.net_force = net_force;
             telemetry.gravity = [0.0, 0.0, 9.80665];
             telemetry.net_thrust = net_thrust;
@@ -179,6 +156,11 @@ pub unsafe extern "C" fn ffi_step_physics(
                 all_valid = 0;
             }
             telemetry.is_validated_envelope = all_valid;
+            telemetry.stub_loaded = if cfg!(feature = "allow_stub_models") {
+                1
+            } else {
+                0
+            };
         }
     }
 
@@ -196,7 +178,6 @@ pub unsafe extern "C" fn ffi_get_debug_telemetry(out_telemetry: *mut DebugTeleme
     }
 
     if let Ok(telemetry) = TELEMETRY_CACHE.lock() {
-        // SAFETY: Pointer is null-checked.
         unsafe {
             *out_telemetry = *telemetry;
         }
@@ -228,7 +209,6 @@ pub unsafe extern "C" fn ffi_load_surrogate_model(
         return 1;
     }
 
-    // SAFETY: Caller guarantees path is null-terminated per # Safety contract.
     let c_str = unsafe { std::ffi::CStr::from_ptr(path) };
     let path_str = match c_str.to_str() {
         Ok(s) => s,
@@ -237,7 +217,6 @@ pub unsafe extern "C" fn ffi_load_surrogate_model(
 
     match surrogate::load_surrogate(path_str) {
         Ok(handle) => {
-            // SAFETY: out_handle null check validated above.
             unsafe {
                 *out_handle = Box::into_raw(Box::new(handle));
             }
@@ -247,7 +226,7 @@ pub unsafe extern "C" fn ffi_load_surrogate_model(
         Err(surrogate::SurrogateLoadError::MissingProvenance) => 2,
         Err(surrogate::SurrogateLoadError::GeometryMismatch { .. }) => 3,
         Err(surrogate::SurrogateLoadError::EngineError(_)) => 4,
-        Err(surrogate::SurrogateLoadError::StubModel) => 5, // WP-0 Step 2 Compliance
+        Err(surrogate::SurrogateLoadError::StubModel) => 5,
     }
 }
 
@@ -273,7 +252,6 @@ pub unsafe extern "C" fn ffi_query_surrogate(
         return 1;
     }
 
-    // SAFETY: Caller guarantees pointers and array length.
     let handle_ref = unsafe { &mut *handle };
     let input_slice = unsafe { std::slice::from_raw_parts(inputs, input_count as usize) };
 
@@ -296,7 +274,6 @@ pub unsafe extern "C" fn ffi_query_surrogate(
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn ffi_unload_surrogate_model(handle: *mut surrogate::SurrogateHandle) {
     if !handle.is_null() {
-        // SAFETY: Takes ownership of the raw pointer and drops it, freeing memory.
         unsafe {
             let _ = Box::from_raw(handle);
         }

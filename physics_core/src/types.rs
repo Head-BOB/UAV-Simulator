@@ -147,6 +147,12 @@ pub struct DebugTelemetry {
     /// # Units
     /// Unitless boolean flag (1 if all queries are valid, 0 if any query extrapolated).
     pub is_validated_envelope: i32,
+
+    /// Flag indicating if an un-trained stub model is currently driving the physics.
+    ///
+    /// # Units
+    /// Unitless boolean flag (1 if stub loaded, 0 otherwise).
+    pub stub_loaded: i32,
 }
 
 impl DebugTelemetry {
@@ -161,6 +167,7 @@ impl DebugTelemetry {
             motor_temperatures_c: [20.0, 20.0, 20.0, 20.0],
             structural_safety_margin: 10.0,
             is_validated_envelope: 1,
+            stub_loaded: 0,
         }
     }
 }
