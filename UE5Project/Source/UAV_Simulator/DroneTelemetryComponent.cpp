@@ -1,6 +1,8 @@
 #include "DroneTelemetryComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/Engine.h"
+#include "GameFramework/PlayerController.h"
+#include "Components/TextRenderComponent.h"
 #include "Misc/Paths.h"
 
 UDroneTelemetryComponent::UDroneTelemetryComponent()
@@ -26,8 +28,8 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		PhysicsState = FDronePhysicsBridgeModule::CreateDefaultState();
 
 		FString BasePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()) + TEXT("trained_models/");
-		FString AeroPath = BasePath + TEXT("aero_surrogate.onnx");
-		FString FeaPath = BasePath + TEXT("fea_surrogate.onnx");
+		FString AeroPath = BasePath + TEXT("aero_stub.onnx");
+		FString FeaPath = BasePath + TEXT("fea_stub.onnx");
 
 		int32 AeroStatus = ffi_load_surrogate_model(TCHAR_TO_UTF8(*AeroPath), &AeroHandle);
 		if (AeroStatus != 0)
@@ -44,13 +46,25 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		bIsPhysicsInitialized = true;
 	}
 
-	ControlInputs TestInputs;
-	TestInputs.throttle = 0.4095f;
-	TestInputs.roll = 0.0f;
-	TestInputs.pitch = 0.0f;
-	TestInputs.yaw = 0.0f;
+	ControlInputs LiveInputs;
+	LiveInputs.throttle = 0.4095f;
+	LiveInputs.roll = 0.0f;
+	LiveInputs.pitch = 0.0f;
+	LiveInputs.yaw = 0.0f;
 
-	FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &TestInputs, AeroHandle, FeaHandle, DeltaTime);
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		if (PC->IsInputKeyDown(EKeys::SpaceBar)) LiveInputs.throttle = 0.8f;
+		else if (PC->IsInputKeyDown(EKeys::C)) LiveInputs.throttle = 0.2f;
+
+		if (PC->IsInputKeyDown(EKeys::W)) LiveInputs.pitch = 0.3f;
+		if (PC->IsInputKeyDown(EKeys::S)) LiveInputs.pitch = -0.3f;
+		if (PC->IsInputKeyDown(EKeys::A)) LiveInputs.roll = -0.3f;
+		if (PC->IsInputKeyDown(EKeys::D)) LiveInputs.roll = 0.3f;
+	}
+
+	FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &LiveInputs, AeroHandle, FeaHandle, DeltaTime);
 
 	FVector NewPos = FDronePhysicsBridgeModule::NedToUnrealWorld(PhysicsState.position);
 	FQuat NewRot(PhysicsState.orientation[0], PhysicsState.orientation[1], PhysicsState.orientation[2], PhysicsState.orientation[3]);
@@ -61,41 +75,58 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	FVector ActorLocation = GetOwner()->GetActorLocation();
 	const float ForceScale = 10.0f;
+	FVector NetThrust(Telemetry.net_thrust[0], Telemetry.net_thrust[1], -Telemetry.net_thrust[2]);
+	FVector NetForce(Telemetry.net_force[0], Telemetry.net_force[1], -Telemetry.net_force[2]);
 
-	FVector NetThrust = FDronePhysicsBridgeModule::NedForceToUnreal(Telemetry.net_thrust);
-	FVector AeroDrag = FDronePhysicsBridgeModule::NedForceToUnreal(Telemetry.aero_drag);
-	FVector Gravity = FDronePhysicsBridgeModule::NedForceToUnreal(Telemetry.gravity);
-	FVector NetForce = FDronePhysicsBridgeModule::NedForceToUnreal(Telemetry.net_force);
+	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (NetThrust * ForceScale), 50.0f, FColor::Blue, false, -1.0f, 0, 3.0f);
+	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (NetForce * ForceScale), 50.0f, FColor::Green, false, -1.0f, 0, 5.0f);
 
-	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (NetThrust * ForceScale), 50.0f, FColor::Blue, false, -1.0f, 0, 2.0f);
-	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (AeroDrag * ForceScale), 50.0f, FColor::Red, false, -1.0f, 0, 2.0f);
-	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (Gravity * ForceScale), 50.0f, FColor::Yellow, false, -1.0f, 0, 2.0f);
-	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (NetForce * ForceScale), 50.0f, FColor::Green, false, -1.0f, 0, 4.0f);
+	UTextRenderComponent* Hologram = GetOwner()->FindComponentByClass<UTextRenderComponent>();
+	if (!Hologram)
+	{
+		Hologram = NewObject<UTextRenderComponent>(GetOwner());
+		Hologram->RegisterComponent();
+		Hologram->AttachToComponent(GetOwner()->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		Hologram->SetRelativeLocation(FVector(0, 0, 150.0f));
+		Hologram->SetTextRenderColor(FColor::Cyan);
+		Hologram->SetHorizontalAlignment(EHTA_Center);
+		Hologram->SetWorldSize(26.0f);
+	}
+
+	FString HologramText = FString::Printf(TEXT(
+		"Speed: %.1f m/s\n"
+		"Altitude: %.1f m\n"
+		"Struct Margin: %.2f\n"
+		"Motor Temp: %.1f C"
+	),
+	(double)(FVector(PhysicsState.velocity[0], PhysicsState.velocity[1], PhysicsState.velocity[2]).Length()),
+	(double)(-PhysicsState.position[2]),
+	(double)(Telemetry.structural_safety_margin),
+	(double)(Telemetry.motor_temperatures_c[0]));
+
+	if (Telemetry.stub_loaded == 1)
+	{
+		HologramText += TEXT("\n[!] STUB MODEL LOADED - NOT FOR ANALYSIS");
+		Hologram->SetTextRenderColor(FColor::Red);
+	}
+	else if (Telemetry.is_validated_envelope == 0)
+	{
+		HologramText += TEXT("\n[!] EXTRAPOLATION WARNING");
+		Hologram->SetTextRenderColor(FColor::Orange);
+	}
+	else
+	{
+		Hologram->SetTextRenderColor(FColor::Cyan);
+	}
+
+	Hologram->SetText(FText::FromString(HologramText));
 
 	if (GEngine)
 	{
-		FVector RustVelocity = FDronePhysicsBridgeModule::NedForceToUnreal(PhysicsState.velocity);
-		FRotator Rotation = NewRot.Rotator();
-
-		FString OSDText = FString::Printf(TEXT(
-			"TEST H4 & M1: PURE HOVER\n"
-			"Speed: %.2f m/s\n"
-			"Altitude: %.2f m\n"
-			"Roll: %.1f, Pitch: %.1f, Yaw: %.1f\n"
-			"Angular Vel (X,Y,Z): %.3f, %.3f, %.3f\n"
-			"--- PHASE 2 TELEMETRY ---\n"
-			"Structural Safety Margin: %.2f\n"
-			"Motor Temps (C): [%.1f, %.1f, %.1f, %.1f]\n"
-		),
-		RustVelocity.Length(),
-		-PhysicsState.position[2],
-		Rotation.Roll, Rotation.Pitch, Rotation.Yaw,
-		PhysicsState.angular_velocity[0], PhysicsState.angular_velocity[1], PhysicsState.angular_velocity[2],
-		Telemetry.structural_safety_margin,
-		Telemetry.motor_temperatures_c[0], Telemetry.motor_temperatures_c[1],
-		Telemetry.motor_temperatures_c[2], Telemetry.motor_temperatures_c[3]);
-
-		GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Cyan, OSDText);
+		if (Telemetry.stub_loaded == 1)
+		{
+			GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Red, TEXT("STUB MODEL LOADED - NOT FOR ANALYSIS"));
+		}
 
 		if (Telemetry.is_validated_envelope == 0)
 		{

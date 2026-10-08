@@ -43,6 +43,11 @@ jobs:
       - name: Run tests
         run: cargo test --release
 
+      # WP-0 Step 6: Enforce Traceability
+      - name: Run Traceability Check
+        working-directory: .
+        run: python tools/check_traceability.py
+
       - name: Install cargo-cyclonedx
         run: cargo install cargo-cyclonedx --locked
 
