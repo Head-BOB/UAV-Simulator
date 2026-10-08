@@ -67,11 +67,14 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	Accumulator += (double)DeltaTime;
 	int32 Steps = 0;
+	bool bPhysicsFault = false;
+	DebugTelemetry Telemetry;
 
 	while (Accumulator >= FixedDt && Steps < MaxSubsteps)
 	{
-		if (!FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &Thermal, &LiveInputs, AeroHandle, FeaHandle, &Config, FixedDt))
+		if (!FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &Thermal, &LiveInputs, AeroHandle, FeaHandle, &Config, &Telemetry, FixedDt))
 		{
+			bPhysicsFault = true;
 			break;
 		}
 		Accumulator -= FixedDt;
@@ -87,9 +90,6 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	FVector NewPos = FDronePhysicsBridgeModule::NedToUnrealWorld(PhysicsState.position);
 	FQuat NewRot = FDronePhysicsBridgeModule::NedToUnrealQuat(PhysicsState.orientation);
 	GetOwner()->SetActorLocationAndRotation(NewPos, NewRot);
-
-	DebugTelemetry Telemetry;
-	if (!FDronePhysicsBridgeModule::GetDebugTelemetry(&Telemetry)) return;
 
 	FVector ActorLocation = GetOwner()->GetActorLocation();
 	const float ForceScale = 10.0f;
@@ -131,14 +131,14 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	(double)(Telemetry.motor_rpms[0]), (double)(Telemetry.motor_rpms[1]), (double)(Telemetry.motor_rpms[2]), (double)(Telemetry.motor_rpms[3]),
 	DroppedTimeEvents);
 
-	if (Telemetry.physics_fault == 1)
+	if (bPhysicsFault || Telemetry.physics_fault == 1)
 	{
 		HologramText += TEXT("\n[!] PHYSICS DIVERGENCE (NaN)");
 		Hologram->SetTextRenderColor(FColor::Red);
 	}
 	else if (Telemetry.stub_loaded == 1)
 	{
-		HologramText += TEXT("\n[!] STUB MODEL LOADED");
+		HologramText += TEXT("\n[!] STUB MODEL LOADED - NOT FOR ANALYSIS");
 		Hologram->SetTextRenderColor(FColor::Red);
 	}
 	else if (Telemetry.is_validated_envelope == 0)

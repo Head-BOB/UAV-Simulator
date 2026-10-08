@@ -9,9 +9,7 @@ pub mod types;
 
 use glam::Vec3;
 use std::sync::Mutex;
-use types::{
-    ControlInputs, DebugTelemetry, DroneState, SurrogateQueryResult, ThermalState, VehicleConfig,
-};
+use types::{ControlInputs, DebugTelemetry, DroneState, SurrogateQueryResult, ThermalState};
 
 static TELEMETRY_CACHE: Mutex<DebugTelemetry> = Mutex::new(DebugTelemetry::new());
 
@@ -21,7 +19,7 @@ static TELEMETRY_CACHE: Mutex<DebugTelemetry> = Mutex::new(DebugTelemetry::new()
 /// Safe to call at any time.
 #[unsafe(no_mangle)]
 pub extern "C" fn ffi_get_interface_version() -> i32 {
-    4
+    5
 }
 
 /// Allows UE5 to verify the byte size of DroneState during module initialization.
@@ -77,6 +75,7 @@ pub unsafe extern "C" fn ffi_reset_drone_state(state: *mut DroneState) -> i32 {
 /// * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
 /// * `aero_handle` and `fea_handle` may be null. If non-null, must be valid SurrogateHandles.
 /// * `config` must be a valid, aligned, immutable pointer to a VehicleConfig.
+/// * `out_telemetry` must be a valid, aligned, mutable pointer to a DebugTelemetry struct.
 /// * Pointers must not alias or be subject to concurrent mutation.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn ffi_step_physics(
@@ -85,10 +84,16 @@ pub unsafe extern "C" fn ffi_step_physics(
     controls: *const ControlInputs,
     aero_handle: *mut surrogate::SurrogateHandle,
     fea_handle: *mut surrogate::SurrogateHandle,
-    config: *const VehicleConfig,
+    config: *const types::VehicleConfig,
+    out_telemetry: *mut DebugTelemetry,
     dt: f64,
 ) -> i32 {
-    if state.is_null() || thermal_state.is_null() || controls.is_null() || config.is_null() {
+    if state.is_null()
+        || thermal_state.is_null()
+        || controls.is_null()
+        || config.is_null()
+        || out_telemetry.is_null()
+    {
         return 1;
     }
 
@@ -187,72 +192,73 @@ pub unsafe extern "C" fn ffi_step_physics(
         if has_nan {
             *state = original_state;
             *thermal_state = original_thermal;
-            if let Ok(mut telemetry) = TELEMETRY_CACHE.lock() {
-                telemetry.physics_fault = 1;
-            }
+            (*out_telemetry).physics_fault = 1;
             return 8;
         }
 
         *state = new_state;
 
-        if let Ok(mut telemetry) = TELEMETRY_CACHE.lock() {
-            telemetry.aero_drag = drag;
-            telemetry.motor_thrusts = [
+        let mut all_valid = 1;
+        let mut aero_src = 1;
+        if let Some(res) = aero_result {
+            aero_src = 2;
+            if res.in_validated_envelope == 0 {
+                all_valid = 0;
+            }
+        }
+
+        let mut fea_src = 1;
+        if let Some(res) = fea_result {
+            fea_src = 2;
+            if res.in_validated_envelope == 0 {
+                all_valid = 0;
+            }
+        }
+
+        *out_telemetry = DebugTelemetry {
+            aero_drag: drag,
+            motor_thrusts: [
                 thrusts[0] as f32,
                 thrusts[1] as f32,
                 thrusts[2] as f32,
                 thrusts[3] as f32,
-            ];
-            telemetry.net_force = [
+            ],
+            net_force: [
                 net_force[0] as f32,
                 net_force[1] as f32,
                 net_force[2] as f32,
-            ];
-            telemetry.gravity = [0.0, 0.0, (9.80665 * current_config.mass_kg) as f32];
-            telemetry.net_thrust = [
+            ],
+            gravity: [0.0, 0.0, (9.80665 * current_config.mass_kg) as f32],
+            net_thrust: [
                 net_thrust[0] as f32,
                 net_thrust[1] as f32,
                 net_thrust[2] as f32,
-            ];
-
-            telemetry.motor_temperatures_c = [
+            ],
+            motor_temperatures_c: [
                 (*thermal_state).motor_temp_c[0] as f32,
                 (*thermal_state).motor_temp_c[1] as f32,
                 (*thermal_state).motor_temp_c[2] as f32,
                 (*thermal_state).motor_temp_c[3] as f32,
-            ];
-            telemetry.motor_rpms = [
+            ],
+            motor_rpms: [
                 motor_rpms[0] as f32,
                 motor_rpms[1] as f32,
                 motor_rpms[2] as f32,
                 motor_rpms[3] as f32,
-            ];
-            telemetry.structural_safety_margin = safety_margin;
-
-            let mut all_valid = 1;
-            telemetry.aero_source = 1;
-            if let Some(res) = aero_result {
-                telemetry.aero_source = 2;
-                if res.in_validated_envelope == 0 {
-                    all_valid = 0;
-                }
-            }
-
-            telemetry.fea_source = 1;
-            if let Some(res) = fea_result {
-                telemetry.fea_source = 2;
-                if res.in_validated_envelope == 0 {
-                    all_valid = 0;
-                }
-            }
-
-            telemetry.is_validated_envelope = all_valid;
-            telemetry.stub_loaded = if cfg!(feature = "allow_stub_models") {
+            ],
+            structural_safety_margin: safety_margin,
+            is_validated_envelope: all_valid,
+            stub_loaded: if cfg!(feature = "allow_stub_models") {
                 1
             } else {
                 0
-            };
-        }
+            },
+            aero_source: aero_src,
+            fea_source: fea_src,
+            physics_fault: 0,
+            dropped_time_events: 0,
+            uncalibrated_flags: 0,
+        };
     }
 
     0
@@ -412,5 +418,215 @@ pub unsafe extern "C" fn ffi_load_vehicle_config(
         Err(config::ConfigError::InvalidMass) => 4,
         Err(config::ConfigError::InvalidInertia) => 5,
         Err(config::ConfigError::InvalidSpin) => 6,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::VehicleConfig;
+    use std::ptr;
+
+    fn dummy_config() -> VehicleConfig {
+        VehicleConfig {
+            mass_kg: 1.0,
+            inertia_kgm2: [1.0, 1.0, 1.0],
+            motor_pos_m: [
+                [0.2, 0.2, 0.0],
+                [0.2, -0.2, 0.0],
+                [-0.2, 0.2, 0.0],
+                [-0.2, -0.2, 0.0],
+            ],
+            motor_spin: [1.0, -1.0, -1.0, 1.0],
+            prop_diameter_m: 0.25,
+            thrust_coeff: 0.11,
+            torque_coeff: 0.05,
+            max_rpm: 10000.0,
+            hover_throttle: 0.5,
+        }
+    }
+
+    #[test]
+    fn test_ffi_null_pointers() {
+        let mut state = ffi_create_default_drone_state();
+        let mut thermal = ThermalState::new();
+        let controls = ControlInputs {
+            throttle: 0.0,
+            roll: 0.0,
+            pitch: 0.0,
+            yaw: 0.0,
+        };
+        let config = dummy_config();
+        let mut telemetry = DebugTelemetry::new();
+
+        unsafe {
+            assert_eq!(
+                ffi_step_physics(
+                    ptr::null_mut(),
+                    &mut thermal,
+                    &controls,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &config,
+                    &mut telemetry,
+                    0.002
+                ),
+                1
+            );
+            assert_eq!(
+                ffi_step_physics(
+                    &mut state,
+                    ptr::null_mut(),
+                    &controls,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &config,
+                    &mut telemetry,
+                    0.002
+                ),
+                1
+            );
+            assert_eq!(
+                ffi_step_physics(
+                    &mut state,
+                    &mut thermal,
+                    ptr::null(),
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &config,
+                    &mut telemetry,
+                    0.002
+                ),
+                1
+            );
+            assert_eq!(
+                ffi_step_physics(
+                    &mut state,
+                    &mut thermal,
+                    &controls,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    ptr::null(),
+                    &mut telemetry,
+                    0.002
+                ),
+                1
+            );
+            assert_eq!(
+                ffi_step_physics(
+                    &mut state,
+                    &mut thermal,
+                    &controls,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &config,
+                    ptr::null_mut(),
+                    0.002
+                ),
+                1
+            );
+        }
+    }
+
+    #[test]
+    fn test_ffi_invalid_dt() {
+        let mut state = ffi_create_default_drone_state();
+        let mut thermal = ThermalState::new();
+        let controls = ControlInputs {
+            throttle: 0.0,
+            roll: 0.0,
+            pitch: 0.0,
+            yaw: 0.0,
+        };
+        let config = dummy_config();
+        let mut telemetry = DebugTelemetry::new();
+
+        unsafe {
+            assert_eq!(
+                ffi_step_physics(
+                    &mut state,
+                    &mut thermal,
+                    &controls,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &config,
+                    &mut telemetry,
+                    f64::NAN
+                ),
+                7
+            );
+            assert_eq!(
+                ffi_step_physics(
+                    &mut state,
+                    &mut thermal,
+                    &controls,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &config,
+                    &mut telemetry,
+                    0.0
+                ),
+                7
+            );
+            assert_eq!(
+                ffi_step_physics(
+                    &mut state,
+                    &mut thermal,
+                    &controls,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &config,
+                    &mut telemetry,
+                    -0.002
+                ),
+                7
+            );
+            assert_eq!(
+                ffi_step_physics(
+                    &mut state,
+                    &mut thermal,
+                    &controls,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &config,
+                    &mut telemetry,
+                    0.1
+                ),
+                7
+            );
+        }
+    }
+
+    #[test]
+    fn test_ffi_nan_propagation_catch() {
+        let mut state = ffi_create_default_drone_state();
+        state.position[0] = f64::NAN;
+
+        let mut thermal = ThermalState::new();
+        let controls = ControlInputs {
+            throttle: 0.0,
+            roll: 0.0,
+            pitch: 0.0,
+            yaw: 0.0,
+        };
+        let config = dummy_config();
+        let mut telemetry = DebugTelemetry::new();
+
+        unsafe {
+            assert_eq!(
+                ffi_step_physics(
+                    &mut state,
+                    &mut thermal,
+                    &controls,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &config,
+                    &mut telemetry,
+                    0.002
+                ),
+                8
+            );
+            assert_eq!(telemetry.physics_fault, 1);
+        }
     }
 }

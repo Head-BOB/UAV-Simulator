@@ -5,7 +5,7 @@ IMPLEMENT_MODULE(FDronePhysicsBridgeModule, DronePhysicsBridge)
 
 void FDronePhysicsBridgeModule::StartupModule()
 {
-    int32 ExpectedVersion = 4; // Bumped per WP-4 and layout changes
+    int32 ExpectedVersion = 5;
     int32 RustVersion = ffi_get_interface_version();
 
     if (RustVersion != ExpectedVersion)
@@ -55,16 +55,10 @@ bool FDronePhysicsBridgeModule::LoadVehicleConfig(const FString& Path, VehicleCo
     return ffi_load_vehicle_config(TCHAR_TO_UTF8(*Path), OutConfig) == 0;
 }
 
-bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, ThermalState* Thermal, const ControlInputs* Inputs, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, const VehicleConfig* Config, double DeltaTime)
+bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, ThermalState* Thermal, const ControlInputs* Inputs, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, const VehicleConfig* Config, DebugTelemetry* OutTelemetry, double DeltaTime)
 {
-    if (!State || !Thermal || !Inputs || !Config) return false;
-    return ffi_step_physics(State, Thermal, Inputs, AeroHandle, FeaHandle, Config, DeltaTime) == 0;
-}
-
-bool FDronePhysicsBridgeModule::GetDebugTelemetry(DebugTelemetry* OutTelemetry)
-{
-    if (!OutTelemetry) return false;
-    return ffi_get_debug_telemetry(OutTelemetry) == 0;
+    if (!State || !Thermal || !Inputs || !Config || !OutTelemetry) return false;
+    return ffi_step_physics(State, Thermal, Inputs, AeroHandle, FeaHandle, Config, OutTelemetry, DeltaTime) == 0;
 }
 
 FVector FDronePhysicsBridgeModule::NedToUnrealWorld(const double NedPosition[3])

@@ -11,6 +11,18 @@
  */
 typedef struct SurrogateHandle SurrogateHandle;
 
+/**
+ * Represents the drone's current physical condition.
+ *
+ * #[repr(C)] guarantees this struct has the exact same memory layout on
+ * both sides of the FFI boundary.
+ *
+ * COORDINATE FRAME (see ADR-001, Section 1.3 of the Standards Framework):
+ * position is expressed in a local North-East-Down (NED) frame, in meters,
+ * relative to a fixed WGS84 geodetic origin defined once per simulation
+ * scenario. Do not reinterpret this as UE5 world-space — conversion
+ * happens ONLY inside the wrapper class described in Section 1.4.
+ */
 typedef struct DroneState {
   /**
    * North-East-Down position relative to the scenario's WGS84 origin.
@@ -27,7 +39,7 @@ typedef struct DroneState {
    */
   float velocity[3];
   /**
-   * Rotation as a unit quaternion, stored in order (w, x, y, z).
+   * Rotation as a unit quaternion, stored in order (x, y, z, w).
    *
    * # Units
    * Unitless quaternion. f32 is sufficient: components are always within [-1.0, 1.0].
@@ -41,6 +53,19 @@ typedef struct DroneState {
    */
   float angular_velocity[3];
 } DroneState;
+
+/**
+ * State container for the thermal and electrical simulation.
+ */
+typedef struct ThermalState {
+  /**
+   * Internal winding temperatures for each motor.
+   *
+   * # Units
+   * Degrees Celsius.
+   */
+  double motor_temp_c[4];
+} ThermalState;
 
 /**
  * Represents what the pilot/controller is commanding.
@@ -75,6 +100,75 @@ typedef struct ControlInputs {
    */
   float yaw;
 } ControlInputs;
+
+/**
+ * Physical properties and layout of the specific airframe being simulated.
+ */
+typedef struct VehicleConfig {
+  /**
+   * Total mass of the vehicle.
+   *
+   * # Units
+   * Kilograms.
+   */
+  double mass_kg;
+  /**
+   * Moment of inertia about the center of mass (Ixx, Iyy, Izz).
+   *
+   * # Units
+   * Kilogram-square meters.
+   */
+  double inertia_kgm2[3];
+  /**
+   * Positions of the 4 motors in the body frame.
+   *
+   * # Units
+   * Meters.
+   */
+  double motor_pos_m[4][3];
+  /**
+   * Spin direction of each motor (+1.0 or -1.0).
+   *
+   * # Units
+   * Unitless multiplier.
+   */
+  double motor_spin[4];
+  /**
+   * Diameter of the propellers.
+   *
+   * # Units
+   * Meters.
+   */
+  double prop_diameter_m;
+  /**
+   * Propeller thrust coefficient.
+   *
+   * # Units
+   * Unitless.
+   */
+  double thrust_coeff;
+  /**
+   * Propeller torque coefficient.
+   *
+   * # Units
+   * Unitless.
+   */
+  double torque_coeff;
+  /**
+   * Maximum rotational speed of the motors.
+   *
+   * # Units
+   * Revolutions per minute.
+   */
+  double max_rpm;
+  /**
+   * Throttle level required to maintain steady hover.
+   *
+   * # Units
+   * Normalized range 0.0 to 1.0.
+   */
+  double hover_throttle;
+} VehicleConfig;
 
 /**
  * Telemetry data exposed exclusively for UE5 On-Screen Display (OSD) and debug visualization.
@@ -152,6 +246,26 @@ typedef struct DebugTelemetry {
    * Unitless boolean flag (1 if stub loaded, 0 otherwise).
    */
   int32_t stub_loaded;
+  /**
+   * Source of aerodynamic data. 0 = none, 1 = analytic fallback, 2 = surrogate.
+   */
+  int32_t aero_source;
+  /**
+   * Source of structural data. 0 = none, 1 = analytic fallback, 2 = surrogate.
+   */
+  int32_t fea_source;
+  /**
+   * Latched fault flag indicating a physics NaN or Inf divergence occurred.
+   */
+  int32_t physics_fault;
+  /**
+   * Count of fixed-timestep execution cycles dropped to prevent a "spiral of death".
+   */
+  int32_t dropped_time_events;
+  /**
+   * Indicates physics constants lacking validated sources are in use.
+   */
+  int32_t uncalibrated_flags;
 } DebugTelemetry;
 
 /**
@@ -180,75 +294,6 @@ typedef struct SurrogateQueryResult {
    */
   int32_t in_validated_envelope;
 } SurrogateQueryResult;
-
-/**
- * Physical properties and layout of the specific airframe being simulated.
- */
-typedef struct VehicleConfig {
-  /**
-   * Total mass of the vehicle.
-   *
-   * # Units
-   * Kilograms.
-   */
-  double mass_kg;
-  /**
-   * Moment of inertia about the center of mass (Ixx, Iyy, Izz).
-   *
-   * # Units
-   * Kilogram-square meters.
-   */
-  double inertia_kgm2[3];
-  /**
-   * Positions of the 4 motors in the body frame.
-   *
-   * # Units
-   * Meters.
-   */
-  double motor_pos_m[4][3];
-  /**
-   * Spin direction of each motor (+1.0 or -1.0).
-   *
-   * # Units
-   * Unitless multiplier.
-   */
-  double motor_spin[4];
-  /**
-   * Diameter of the propellers.
-   *
-   * # Units
-   * Meters.
-   */
-  double prop_diameter_m;
-  /**
-   * Propeller thrust coefficient.
-   *
-   * # Units
-   * Unitless.
-   */
-  double thrust_coeff;
-  /**
-   * Propeller torque coefficient.
-   *
-   * # Units
-   * Unitless.
-   */
-  double torque_coeff;
-  /**
-   * Maximum rotational speed of the motors.
-   *
-   * # Units
-   * Revolutions per minute.
-   */
-  double max_rpm;
-  /**
-   * Throttle level required to maintain steady hover.
-   *
-   * # Units
-   * Normalized range 0.0 to 1.0.
-   */
-  double hover_throttle;
-} VehicleConfig;
 
 #ifdef __cplusplus
 extern "C" {
@@ -297,14 +342,20 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
  *
  * # Safety
  * * `state` must be a valid, aligned, mutable pointer to a DroneState.
+ * * `thermal_state` must be a valid, aligned, mutable pointer to a ThermalState.
  * * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
  * * `aero_handle` and `fea_handle` may be null. If non-null, must be valid SurrogateHandles.
+ * * `config` must be a valid, aligned, immutable pointer to a VehicleConfig.
+ * * `out_telemetry` must be a valid, aligned, mutable pointer to a DebugTelemetry struct.
  * * Pointers must not alias or be subject to concurrent mutation.
  */
 int32_t ffi_step_physics(struct DroneState *state,
+                         struct ThermalState *thermal_state,
                          const struct ControlInputs *controls,
                          struct SurrogateHandle *aero_handle,
                          struct SurrogateHandle *fea_handle,
+                         const struct VehicleConfig *config,
+                         struct DebugTelemetry *out_telemetry,
                          double dt);
 
 /**

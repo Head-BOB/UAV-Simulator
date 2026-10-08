@@ -1,8 +1,6 @@
 name: UE5 Build
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch: {}
 
 concurrency:
