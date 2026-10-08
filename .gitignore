@@ -19,4 +19,5 @@ UE5Project/Plugins/DronePhysicsBridge/Intermediate/
 .vs/
 *.sln
 *.suo
-*.DS_Store
+.DS_Store
+.venv/

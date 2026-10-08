@@ -22,12 +22,16 @@ jobs:
         with:
           toolchain: 1.96.0
 
+      - name: Verify toolchain
+        run: rustc --version
+
+      - name: Install audit tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit@0.22.1,cargo-deny@0.20.2
+
       - name: Run Cargo Audit
-        run: |
-          cargo install cargo-audit --locked
-          cargo audit
+        run: cargo audit
 
       - name: Run Cargo Deny
-        run: |
-          cargo install cargo-deny --locked
-          cargo deny check
+        run: cargo deny check

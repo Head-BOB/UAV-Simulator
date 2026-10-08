@@ -1,0 +1,64 @@
+name: C++ Static Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  clang-tidy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy jq
+
+      - name: Run clang-tidy (ratcheted)
+        run: |
+          # Enable recursive globbing in bash to find all .cpp files
+          shopt -s globstar
+          
+          # Run clang-tidy. (Using || true so missing headers don't hard-crash the CI step)
+          clang-tidy UE5Project/Plugins/DronePhysicsBridge/Source/**/*.cpp -- -std=c++20 > tidy_output.txt || true
+          
+          # Count the number of warnings
+          COUNT=$(grep -c 'warning:' tidy_output.txt || true)
+          echo "clang-tidy findings: $COUNT"
+          
+          # Compare against the locked baseline
+          BASELINE=$(jq '.clang_tidy_baseline' static_analysis_baseline.json)
+          
+          if [ "$COUNT" -gt "$BASELINE" ]; then
+            echo "::error::clang-tidy findings increased ($COUNT > $BASELINE)"
+            exit 1
+          fi
+          
+          exit 0
+
+  cppcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: sudo apt-get update && sudo apt-get install -y cppcheck jq
+
+      - name: Run cppcheck
+        run: |
+          cppcheck --enable=all --std=c++20 --error-exitcode=0 \
+            UE5Project/Plugins/DronePhysicsBridge/Source/ 2> cppcheck_output.txt || true
+          
+          cat cppcheck_output.txt
+          COUNT=$(grep -c '\[.*\]' cppcheck_output.txt || true)
+          echo "cppcheck findings: $COUNT"
+          
+          BASELINE=$(jq '.cppcheck_baseline' static_analysis_baseline.json)
+          
+          if [ "$COUNT" -gt "$BASELINE" ]; then
+            echo "::error::cppcheck findings increased ($COUNT > $BASELINE)"
+            exit 1
+          fi
+          
+          exit 0

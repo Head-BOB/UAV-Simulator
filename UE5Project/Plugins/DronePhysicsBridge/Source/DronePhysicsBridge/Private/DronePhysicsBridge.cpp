@@ -1,20 +1,15 @@
 #include "DronePhysicsBridge.h"
 #include "Modules/ModuleManager.h"
 
-// Tells Unreal Engine this is the main class for the plugin module
 IMPLEMENT_MODULE(FDronePhysicsBridgeModule, DronePhysicsBridge)
 
 void FDronePhysicsBridgeModule::StartupModule()
 {
-    // Task 10 Requirement: Safety Checks!
-    // This is the most important code in the wrapper. It prevents silent memory corruption.
-
-    int32 ExpectedVersion = 1; // This matches the 1 we returned in lib.rs
+    int32 ExpectedVersion = 5;
     int32 RustVersion = ffi_get_interface_version();
 
     if (RustVersion != ExpectedVersion)
     {
-        // Fatal error crashes the engine on purpose. Better to crash than silently corrupt data!
         UE_LOG(LogTemp, Fatal, TEXT("Rust FFI Version Mismatch! Expected %d, got %d"), ExpectedVersion, RustVersion);
     }
 
@@ -31,7 +26,6 @@ void FDronePhysicsBridgeModule::StartupModule()
 
 void FDronePhysicsBridgeModule::ShutdownModule()
 {
-    // Called when the engine shuts down. We don't need to do anything here for now.
 }
 
 DroneState FDronePhysicsBridgeModule::CreateDefaultState()
@@ -39,17 +33,40 @@ DroneState FDronePhysicsBridgeModule::CreateDefaultState()
     return ffi_create_default_drone_state();
 }
 
+ThermalState FDronePhysicsBridgeModule::CreateDefaultThermalState()
+{
+    ThermalState State;
+    State.motor_temp_c[0] = 20.0;
+    State.motor_temp_c[1] = 20.0;
+    State.motor_temp_c[2] = 20.0;
+    State.motor_temp_c[3] = 20.0;
+    return State;
+}
+
 bool FDronePhysicsBridgeModule::ResetState(DroneState* State)
 {
     if (!State) return false;
-
-    // Returns 0 on success (based on our Rust implementation)
     return ffi_reset_drone_state(State) == 0;
 }
 
-bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, const ControlInputs* Inputs, float DeltaTime)
+bool FDronePhysicsBridgeModule::LoadVehicleConfig(const FString& Path, VehicleConfig* OutConfig)
 {
-    if (!State || !Inputs) return false;
+    if (!OutConfig) return false;
+    return ffi_load_vehicle_config(TCHAR_TO_UTF8(*Path), OutConfig) == 0;
+}
 
-    return ffi_step_physics(State, Inputs, DeltaTime) == 0;
+bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, ThermalState* Thermal, const ControlInputs* Inputs, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, const VehicleConfig* Config, DebugTelemetry* OutTelemetry, double DeltaTime)
+{
+    if (!State || !Thermal || !Inputs || !Config || !OutTelemetry) return false;
+    return ffi_step_physics(State, Thermal, Inputs, AeroHandle, FeaHandle, Config, OutTelemetry, DeltaTime) == 0;
+}
+
+FVector FDronePhysicsBridgeModule::NedToUnrealWorld(const double NedPosition[3])
+{
+    return FVector(NedPosition[0] * 100.0, NedPosition[1] * 100.0, -NedPosition[2] * 100.0);
+}
+
+FQuat FDronePhysicsBridgeModule::NedToUnrealQuat(const float NedQuat[4])
+{
+    return FQuat(-NedQuat[0], -NedQuat[1], NedQuat[2], NedQuat[3]);
 }

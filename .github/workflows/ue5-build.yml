@@ -1,8 +1,6 @@
 name: UE5 Build
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch: {}
 
 concurrency:
@@ -19,9 +17,20 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
+      - name: Build Rust Physics Core
+        working-directory: physics_core
+        run: cargo build --release
+
+      - name: Stage Rust DLL for Unreal Engine
+        shell: cmd
+        run: |
+          mkdir "%CD%\UE5Project\Binaries\Win64" 2>nul
+          copy /Y "%CD%\physics_core\target\release\physics_core.dll" "%CD%\UE5Project\Binaries\Win64\"
+
       - name: Run UAT BuildCookRun
         shell: cmd
         run: |
+          set PATH=%CD%\physics_core\target\release;%PATH%
           "%UE5_PATH%\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun ^
           -project="%CD%\UE5Project\UAV_Simulator.uproject" ^
           -platform=Win64 -configuration=Development ^

@@ -1,0 +1,62 @@
+name: Rust Static Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  unsafe-tracking:
+    name: cargo geiger (unsafe usage report)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: physics_core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.96.0
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-geiger
+      - name: Report unsafe usage
+        run: cargo geiger --output-format GitHubMarkdown >> $GITHUB_STEP_SUMMARY || true
+
+  undefined-behavior-check:
+    name: miri (weekly UB scan)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    defaults:
+      run:
+        working-directory: physics_core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@miri
+      - name: Run miri
+        run: cargo miri test
+
+  pedantic-lints:
+    name: clippy pedantic (ratcheted)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: physics_core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.96.0
+          components: clippy
+      - name: Count pedantic findings
+        run: |
+          COUNT=$(cargo clippy --release -- -W clippy::pedantic 2>&1 | grep -c '^warning' || true)
+          echo "Pedantic findings: $COUNT"
+          BASELINE=$(jq '.clippy_pedantic_baseline' ../static_analysis_baseline.json)
+          if [ "$COUNT" -gt "$BASELINE" ]; then
+            echo "::error::Pedantic findings increased ($COUNT > $BASELINE baseline)"
+            exit 1
+          fi

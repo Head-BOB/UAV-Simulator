@@ -1,0 +1,33 @@
+name: CFD / FEA Case Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      case_set:
+        description: 'Which case set to run (e.g. uiuc-validation, bootstrap, single-test)'
+        required: true
+        default: 'single-test'
+
+concurrency:
+  group: gpu-laptop-exclusive
+  cancel-in-progress: false
+
+jobs:
+  run-cases:
+    name: Run CFD/FEA Cases
+    runs-on: [self-hosted, windows, gpu-laptop]
+    timeout-minutes: 480
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - name: Run case set
+        shell: powershell
+        run: |
+          echo "Executing case set: ${{ github.event.inputs.case_set }}"
+          # python offline_pipeline/cfd/run_case.py --set ${{ github.event.inputs.case_set }}
+
+      - name: Upload case results
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          name: cfd-fea-results-${{ github.run_id }}
+          path: offline_pipeline/**/results/

@@ -1,0 +1,38 @@
+name: Train Surrogate Models
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: gpu-laptop-exclusive
+  cancel-in-progress: false
+
+jobs:
+  train:
+    name: Train GPR Surrogates
+    runs-on: [self-hosted, windows, gpu-laptop]
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
+        with:
+          python-version: '3.12'
+
+      - name: Install Python Dependencies
+        shell: powershell
+        run: pip install --require-hashes -r offline_pipeline/requirements.txt
+
+      - name: Train Aero & FEA Surrogates
+        shell: powershell
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          python offline_pipeline/cfd/train_aero.py
+          python offline_pipeline/fea/train_fea.py
+
+      - name: Upload Trained Models
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          name: trained-surrogates
+          path: offline_pipeline/trained_models/

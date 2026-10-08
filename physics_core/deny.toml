@@ -1,6 +1,11 @@
 [licenses]
-# strict allow-list DONOT TOUCH!!
-allow = ["MIT", "Apache-2.0", "BSD-3-Clause", "Unlicense", "MPL-2.0", "Unicode-3.0"]
+# Change only through a reviewed PR. Each license has a reason below.
+# MPL-2.0: required by cbindgen (build-time only). Permissive/weak-copyleft. Vetted 2026-09.
+# Unicode-3.0: required by unicode-ident (proc-macro). Permissive. Vetted 2026-09.
+# ISC: required by hmac-sha256 via ort-sys. Permissive. Vetted 2026-09.
+# CDLA-Permissive-2.0: required by webpki-root-certs via ort-sys. Permissive. Vetted 2026-09.
+# MIT/Apache-2.0: required by serde and serde_json (JSON parsing). Permissive. Vetted 2026-10.
+allow = ["MIT", "Apache-2.0", "BSD-3-Clause", "Unlicense", "MPL-2.0", "Unicode-3.0", "ISC", "CDLA-Permissive-2.0"]
 private = { ignore = true }
 
 [bans]

@@ -15,18 +15,29 @@ jobs:
         working-directory: physics_core
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
 
       - name: Install pinned Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17
         with:
           toolchain: 1.96.0
           components: clippy, rustfmt
 
+      - name: Verify toolchain
+        run: rustc --version
+
       - name: Cache cargo dependencies
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@23bce251a8cd2ffc3c1075eaa2367cf899916d84
         with:
           workspaces: physics_core
+
+      - name: Verify JSON line endings (LF only)
+        working-directory: .
+        run: |
+          if grep -q $'\r' offline_pipeline/geometry/*.json; then
+            echo "::error::CR (carriage return) bytes found in JSON files! Must be LF only."
+            exit 1
+          fi
 
       - name: Check formatting
         run: cargo fmt --check
@@ -37,18 +48,32 @@ jobs:
       - name: Build release
         run: cargo build --release
 
-      - name: Run tests
-        run: cargo test --release
+      - name: Fetch Secure ONNX Binary
+        working-directory: .
+        run: python tools/fetch_onnx.py
 
-      # Task 7: Generate SBOM
+      - name: Run tests (debug)
+        run: cargo test
+        env:
+          ORT_DYLIB_PATH: ${{ github.workspace }}/onnxruntime-linux-x64-1.19.0/lib/libonnxruntime.so
+
+      - name: Run tests (release)
+        run: cargo test --release
+        env:
+          ORT_DYLIB_PATH: ${{ github.workspace }}/onnxruntime-linux-x64-1.19.0/lib/libonnxruntime.so
+
+      - name: Run Traceability Check
+        working-directory: .
+        run: python tools/check_traceability.py
+
       - name: Install cargo-cyclonedx
-        run: cargo install cargo-cyclonedx
+        run: cargo install cargo-cyclonedx --locked
 
       - name: Generate SBOM
         run: cargo cyclonedx -f json --all
 
       - name: Upload SBOM artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
         with:
           name: rust-sbom
           path: physics_core/bom.json

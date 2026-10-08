@@ -1,0 +1,8 @@
+Checks: >
+  cert-*,
+  cppcoreguidelines-*,
+  bugprone-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-type-reinterpret-cast
+WarningsAsErrors: ''
+HeaderFilterRegex: 'DronePhysicsBridge/.*'
