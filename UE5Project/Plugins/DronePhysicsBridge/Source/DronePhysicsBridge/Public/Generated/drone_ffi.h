@@ -7,6 +7,19 @@
 #include <stdlib.h>
 
 /**
+ * Return code: a panic was caught inside the FFI function, or the handle was faulted by an
+ * earlier panic. The call's effect is undefined except that no memory was corrupted; the
+ * caller should treat the run as invalid. Telemetry is not written.
+ */
+#define FFI_CODE_PANIC 99
+
+/**
+ * Return code: an internal lock was poisoned and has been recovered. The call did nothing;
+ * calling again works.
+ */
+#define FFI_CODE_LOCK_RECOVERED 98
+
+/**
  * Engineering bound on the model input width, not a physics limit. The widest planned
  * input today is 4 (aero); raise only by a reviewed change.
  */
@@ -26,6 +39,27 @@
  * Number of inputs the FEA surrogate takes: 4 arm loads, 3 direction components, 1 temperature.
  */
 #define FEA_INPUT_WIDTH 8
+
+/**
+ * True only when every thermal constant above has a sourced, verified value (item B-4).
+ * Stays `false` until a human closes B-4; reported as `DebugTelemetry::thermal_valid`.
+ */
+#define THERMAL_CONSTANTS_VALIDATED false
+
+/**
+ * Motor winding over-temperature limit, deg C. PLACEHOLDER, no source.
+ * TODO(HUMAN-VERIFY): replace with the motor datasheet limit (B-4). Not a `VehicleConfig`
+ * field on purpose: that would change the config hash that every model is bound to.
+ */
+#define MOTOR_TEMP_LIMIT_C 120.0
+
+/**
+ * Largest accepted deviation of a state quaternion's norm from 1 at the FFI boundary.
+ * f32 storage keeps a unit quaternion within about 2.4e-7 of norm 1 and the integrator
+ * re-normalizes every step, so 1e-3 only trips on a caller bug (zero, scaled or garbage
+ * quaternion), never on rounding. TODO(HUMAN-VERIFY): the tolerance is an engineering choice.
+ */
+#define QUAT_NORM_TOLERANCE 1.0e-3
 
 /**
  * Handle to an active ONNX surrogate model session.
@@ -275,11 +309,15 @@ typedef struct DebugTelemetry {
    */
   int32_t stub_loaded;
   /**
-   * Source of aerodynamic data. 0 = none, 1 = analytic fallback, 2 = surrogate.
+   * Source of aerodynamic data. 0 = none (step rejected), 1 = analytic model, no surrogate
+   * handle was passed, 2 = surrogate, 3 = a surrogate handle was passed but its query FAILED
+   * and the analytic model was used instead (the two are never reported as the same value).
    */
   int32_t aero_source;
   /**
-   * Source of structural data. 0 = none, 1 = analytic fallback, 2 = surrogate.
+   * Source of structural data. 0 = none (no handle passed, or step rejected), 2 = surrogate,
+   * 3 = a surrogate handle was passed but its query FAILED (margin is NaN). There is no
+   * analytic structural fallback, so 1 is not used.
    */
   int32_t fea_source;
   /**
@@ -295,6 +333,18 @@ typedef struct DebugTelemetry {
    * Indicates physics constants lacking validated sources are in use.
    */
   int32_t uncalibrated_flags;
+  /**
+   * 1 only when every thermal constant has a sourced, verified value. 0 means the thermal
+   * model is UNVALIDATED: `motor_temperatures_c` and `thermal_over_temp` are arithmetic on
+   * ASSUMED constants (item B-4) and must not be used as evidence. Always 0 until B-4 closes.
+   */
+  int32_t thermal_valid;
+  /**
+   * 1 if any motor winding temperature exceeds `thermal::MOTOR_TEMP_LIMIT_C` after this step
+   * (limit is a placeholder, TODO(HUMAN-VERIFY)); 0 otherwise. Only meaningful when
+   * `thermal_valid` is 1.
+   */
+  int32_t thermal_over_temp;
 } DebugTelemetry;
 
 /**
@@ -365,6 +415,7 @@ int32_t ffi_get_drone_state_size(void);
 
 /**
  * Instantiates a default, zeroed drone state with an identity quaternion.
+ * If a panic is caught the state is all NaN, which the next step rejects loudly (code 8).
  *
  * # Safety
  * Safe to call at any time.
@@ -373,6 +424,9 @@ struct DroneState ffi_create_default_drone_state(void);
 
 /**
  * Resets the provided state to default values.
+ *
+ * # Returns
+ * `0` ok, `1` null pointer, `99` panic caught.
  *
  * # Safety
  * * `state` must be a valid, aligned, and mutable pointer to a DroneState instance.
@@ -390,14 +444,30 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
  *
  * # Returns
  * * `0` - Success
- * * `1` - Null pointer
- * * `6` - Aero model error (drag or thrust), including altitude outside ISA 0..=11000 m;
- *   no output is written
+ * * `1` - Null pointer (nothing is written)
+ * * `6` - Aero model error (drag or thrust), including altitude outside ISA 0..=11000 m
  * * `7` - Invalid dt (NaN, <= 0 or > 0.01)
- * * `8` - NaN/Inf in the new state: `state` and `thermal_state` are restored to their
- *   previous values and `fault_latch` is set to 1.
+ * * `8` - Divergence or invalid input: a NaN/Inf in `config`, `thermal_state.motor_temp_c` or
+ *   `state.orientation`; `config.mass_kg <= 0`, an inertia <= 0 or `max_rpm < 0` (re-checked
+ *   every step because C++ may fill the struct by hand); or a NaN/Inf in the new state or new
+ *   thermal state. `state` and `thermal_state` are left/restored to their previous values and
+ *   `fault_latch` is set to 1.
  * * `9` - A non-null surrogate handle is not live (never loaded, already unloaded, foreign),
- *   or `aero_handle` and `fea_handle` are the same non-null handle; nothing is written
+ *   or `aero_handle` and `fea_handle` are the same non-null handle
+ * * `11` - `state.orientation` is finite but its norm differs from 1 by more than
+ *   `types::QUAT_NORM_TOLERANCE` (rejected, never silently rescaled)
+ * * `98` - an internal lock was poisoned and recovered; nothing was done, call again
+ * * `99` - a panic was caught, or a handle was faulted by an earlier panic; the run is invalid
+ *
+ * # Behavior on a failed step
+ * * `state` and `thermal_state` are always unchanged.
+ * * Codes 1, 7, 9, 11, 98 and 99 are rejected before any computation: NOTHING is written
+ *   (telemetry and latch keep their previous values).
+ * * Codes 6 and 8 fail during the tick: `out_telemetry` is overwritten with "no data" (margin
+ *   NaN, `is_validated_envelope` 0, sources 0, `thermal_valid` 0, `physics_fault` = latch value,
+ *   so it is never left holding the previous tick's numbers).
+ * * `fault_latch` is set to 1 ONLY by code 8. Code 6 (altitude outside the ISA range) is a
+ *   scenario error, not a divergence, and leaves the latch as it was.
  *
  * # Fault latch
  * `fault_latch` is caller-owned and must be zero-initialized by the caller. Rust sets it to 1
@@ -437,8 +507,13 @@ int32_t ffi_step_physics(struct DroneState *state,
  * * `4` - Engine/ONNX initialization failure (including a missing ONNX Runtime library)
  * * `5` - Stub model rejected (allow_stub_models feature not enabled)
  * * `6` - Model inputs/outputs are not the supported shapes
- * * `7` - Handle registry unavailable; the model is dropped and `out_handle` is untouched
  * * `8` - Vehicle config hash mismatch (model `config_hash` differs from the compiled `vehicle_config.json`)
+ * * `98` - Handle registry lock was poisoned and recovered; the model is dropped, `out_handle`
+ *   is untouched, call again (replaces the old code 7)
+ * * `99` - A panic was caught; `out_handle` is untouched
+ *
+ * A model whose `kind` is not `trained` (a stub) loads only with the `allow_stub_models`
+ * feature, and its queries always report `in_validated_envelope = 0`.
  *
  * # Safety
  * * `path` must be a valid, null-terminated C string.
@@ -451,7 +526,8 @@ int32_t ffi_load_surrogate_model(const char *path,
  * Queries a loaded surrogate model.
  *
  * `input_count` must equal the model's declared input width; no slice is built from it
- * before that check, so a huge value cannot read out of bounds.
+ * before that check, so a huge value cannot read out of bounds. The registry lock is NOT held
+ * during inference, only this handle's own lock.
  *
  * # Returns
  * * `0` - Success
@@ -461,6 +537,10 @@ int32_t ffi_load_surrogate_model(const char *path,
  * * `4` - Engine/ONNX inference error
  * * `5` - An input value is NaN or infinite
  * * `6` - Malformed model output (wrong count, non-finite, envelope flag not 0/1)
+ * * `98` - Registry lock was poisoned and recovered; nothing was done, call again
+ * * `99` - A panic was caught, or this handle was faulted by an earlier panic (unload it)
+ *
+ * A stub model always reports `in_validated_envelope = 0`.
  *
  * # Safety
  * * `handle` must be a pointer created by `ffi_load_surrogate_model` (checked against the
@@ -476,10 +556,14 @@ int32_t ffi_query_surrogate(struct SurrogateHandle *handle,
 /**
  * Unloads a surrogate model and frees its memory.
  *
+ * Waits for any query or step still using the handle, then frees it.
+ *
  * # Returns
  * * `0` - Freed
  * * `1` - Null pointer
  * * `2` - `handle` is not live (never loaded or already unloaded); nothing is freed
+ * * `98` - Registry lock was poisoned and recovered; nothing was freed, call again
+ * * `99` - A panic was caught while freeing
  *
  * # Safety
  * * `handle` must be a pointer created by `ffi_load_surrogate_model` (checked against the
@@ -505,6 +589,7 @@ int32_t ffi_unload_surrogate_model(struct SurrogateHandle *handle);
  * * `10` - Invalid Torque Coefficient
  * * `11` - Invalid Max RPM
  * * `12` - Invalid Hover Throttle (must be in (0, 1])
+ * * `99` - A panic was caught
  *
  * # Safety
  * * `path` must be a valid, null-terminated C string.

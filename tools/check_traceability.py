@@ -1,8 +1,10 @@
 # Tier: F
 # tools/check_traceability.py - fails CI if TRACEABILITY.md is not honest in form.
 # Checks: table format, pass rule present, status valid, every named test exists,
-# every existing test is named. It cannot check that a test asserts its pass rule.
+# every existing test is named, and no test is ignored (a skipped test is not evidence).
+# It cannot check that a test asserts its pass rule.
 import argparse
+import os
 import re
 import subprocess
 import sys
@@ -43,8 +45,36 @@ def parse_rows(text):
     return rows, errors
 
 
-def check(text, existing):
+IGNORE_ATTR_RE = re.compile(r"#\[\s*ignore\b")
+
+
+def find_ignore_attributes(src_dirs):
+    """Return 'path:line' for every `#[ignore` attribute in the Rust files under src_dirs.
+
+    The compiler-based listing (`--list --ignored`) only sees tests compiled with the default
+    features; this textual scan also covers feature-gated tests. Comment-only lines are skipped.
+    """
+    hits = []
+    for root in src_dirs:
+        for dirpath, _, names in os.walk(root):
+            for name in sorted(names):
+                if not name.endswith(".rs"):
+                    continue
+                path = os.path.join(dirpath, name)
+                with open(path, encoding="utf-8") as f:
+                    for lineno, line in enumerate(f, start=1):
+                        code = line.split("//", 1)[0]
+                        if IGNORE_ATTR_RE.search(code):
+                            hits.append(f"{path}:{lineno}")
+    return sorted(hits)
+
+
+def check(text, existing, ignored=frozenset(), ignore_attrs=()):
     rows, errors = parse_rows(text)
+    for name in sorted(ignored):
+        errors.append(f"{name}: is #[ignore]d (ignored tests are not allowed)")
+    for hit in ignore_attrs:
+        errors.append(f"{hit}: #[ignore] attribute found (ignored tests are not allowed)")
     named = [r[0] for r in rows]
     for name in sorted(set(named)):
         if name not in existing:
@@ -56,9 +86,12 @@ def check(text, existing):
     return errors
 
 
-def list_tests(manifest):
+def list_tests(manifest, ignored_only=False):
+    cmd = ["cargo", "test", "--manifest-path", manifest, "--", "--list"]
+    if ignored_only:
+        cmd.append("--ignored")
     proc = subprocess.run(
-        ["cargo", "test", "--manifest-path", manifest, "--", "--list"],
+        cmd,
         capture_output=True,
         text=True,
     )
@@ -79,7 +112,14 @@ def main(argv):
     args = parser.parse_args(argv)
     with open(args.matrix, encoding="utf-8") as f:
         text = f.read()
-    errors = check(text, list_tests(args.manifest))
+    manifest_dir = os.path.dirname(os.path.abspath(args.manifest))
+    src_dirs = [os.path.join(manifest_dir, d) for d in ("src", "tests")]
+    errors = check(
+        text,
+        list_tests(args.manifest),
+        ignored=list_tests(args.manifest, ignored_only=True),
+        ignore_attrs=find_ignore_attributes([d for d in src_dirs if os.path.isdir(d)]),
+    )
     if errors:
         print("TRACEABILITY check failed:", *errors, sep="\n ")
         return 1

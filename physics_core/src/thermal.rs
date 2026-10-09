@@ -19,6 +19,26 @@ const COOLING_AREA: f64 = 0.01;
 // Motor velocity constant, rpm per volt.
 const MOTOR_KV_RPM_PER_V: f64 = 1000.0;
 
+/// True only when every thermal constant above has a sourced, verified value (item B-4).
+/// Stays `false` until a human closes B-4; reported as `DebugTelemetry::thermal_valid`.
+pub const THERMAL_CONSTANTS_VALIDATED: bool = false;
+
+/// Motor winding over-temperature limit, deg C. PLACEHOLDER, no source.
+/// TODO(HUMAN-VERIFY): replace with the motor datasheet limit (B-4). Not a `VehicleConfig`
+/// field on purpose: that would change the config hash that every model is bound to.
+pub const MOTOR_TEMP_LIMIT_C: f64 = 120.0;
+
+/// True if any temperature is above `limit_c`. NaN is NOT over the limit (a comparison with NaN
+/// is false), so callers must check finiteness separately (`all_finite`).
+pub fn any_over_temp(temps_c: &[f64; 4], limit_c: f64) -> bool {
+    temps_c.iter().any(|&t| t > limit_c)
+}
+
+/// True if every temperature is finite.
+pub fn all_finite(temps_c: &[f64; 4]) -> bool {
+    temps_c.iter().all(|t| t.is_finite())
+}
+
 /// Calculates the new motor temperatures based on electrical heating and aerodynamic cooling.
 ///
 /// Electrical model:
@@ -87,9 +107,36 @@ fn step_motor_temps(
     }
 }
 
+// NOTE for every test below: they verify the ARITHMETIC of the ASSUMED constants at the top of
+// this file (item B-4), not that the thermal model matches a real motor. Several expected values
+// (e.g. 11648 deg C) are unphysical on purpose of that arithmetic; `thermal_valid` stays 0.
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // Hand calc: limit 120. 120.0 is not over (strict >); 120.0001 is; -5 is not; NaN is not.
+    #[test]
+    fn test_any_over_temp_truth_table() {
+        assert!(!any_over_temp(&[20.0, 120.0, 30.0, -5.0], 120.0));
+        assert!(any_over_temp(&[20.0, 120.0001, 30.0, -5.0], 120.0));
+        assert!(any_over_temp(&[121.0, 0.0, 0.0, 0.0], 120.0));
+        assert!(any_over_temp(&[0.0, 0.0, 0.0, 121.0], 120.0));
+        assert!(!any_over_temp(&[f64::NAN; 4], 120.0));
+    }
+
+    #[test]
+    fn test_all_finite_truth_table() {
+        assert!(all_finite(&[20.0, -5.0, 1e300, 0.0]));
+        assert!(!all_finite(&[20.0, f64::NAN, 1.0, 0.0]));
+        assert!(!all_finite(&[20.0, 1.0, f64::INFINITY, 0.0]));
+        assert!(!all_finite(&[f64::NEG_INFINITY, 1.0, 1.0, 0.0]));
+    }
+
+    #[test]
+    fn test_thermal_stays_unvalidated_until_b4() {
+        // Fails on purpose when someone flips the flag: that change needs a human sign-off on B-4.
+        const { assert!(!THERMAL_CONSTANTS_VALIDATED) };
+    }
 
     #[test]
     fn test_thermal_zero_throttle_long_time() {

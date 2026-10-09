@@ -82,6 +82,51 @@ pub fn validate_vehicle_config(cfg: &VehicleConfig) -> Result<(), ConfigError> {
     Ok(())
 }
 
+/// Why `validate_runtime_config` rejected a config passed to `ffi_step_physics`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RuntimeConfigError {
+    /// A checked field is NaN or infinite (reported as a divergence: code 8 + latch).
+    NonFinite,
+    /// `mass_kg` <= 0.
+    Mass,
+    /// An inertia component <= 0.
+    Inertia,
+    /// `max_rpm` < 0 (0 is allowed: motors that cannot spin give zero thrust).
+    MaxRpm,
+}
+
+/// Cheap per-step re-check of a `VehicleConfig` that C++ may have filled by hand, bypassing
+/// `ffi_load_vehicle_config`. Checks only what would make the step silently wrong or divide
+/// by zero: every numeric field finite; `mass_kg > 0`; each inertia > 0; `max_rpm >= 0`.
+/// The full load-time rules (spin sentinels, hover throttle, ...) stay in `validate_vehicle_config`.
+pub fn validate_runtime_config(cfg: &VehicleConfig) -> Result<(), RuntimeConfigError> {
+    let scalars = [
+        cfg.mass_kg,
+        cfg.prop_diameter_m,
+        cfg.thrust_coeff,
+        cfg.torque_coeff,
+        cfg.max_rpm,
+        cfg.hover_throttle,
+    ];
+    let finite = scalars.iter().all(|v| v.is_finite())
+        && cfg.inertia_kgm2.iter().all(|v| v.is_finite())
+        && cfg.motor_pos_m.iter().flatten().all(|v| v.is_finite())
+        && cfg.motor_spin.iter().all(|v| v.is_finite());
+    if !finite {
+        return Err(RuntimeConfigError::NonFinite);
+    }
+    if !is_positive_finite(cfg.mass_kg) {
+        return Err(RuntimeConfigError::Mass);
+    }
+    if !cfg.inertia_kgm2.iter().all(|&i| is_positive_finite(i)) {
+        return Err(RuntimeConfigError::Inertia);
+    }
+    if cfg.max_rpm < 0.0 {
+        return Err(RuntimeConfigError::MaxRpm);
+    }
+    Ok(())
+}
+
 /// Parses vehicle configuration JSON text and validates it.
 ///
 /// # Errors
@@ -142,6 +187,56 @@ mod tests {
 
     fn shipped_text() -> String {
         fs::read_to_string(SHIPPED_PATH).expect("shipped config readable")
+    }
+
+    // Hand calc: the shipped config passes; each single-field break maps to exactly one variant.
+    // mass 0 and -1 -> Mass; inertia[1] 0 -> Inertia; max_rpm -1 -> MaxRpm, max_rpm 0 is allowed;
+    // NaN / +Inf / -Inf in any checked field (mass, spin, position, torque_coeff) -> NonFinite.
+    #[test]
+    fn test_validate_runtime_config_truth_table() {
+        assert_eq!(validate_runtime_config(&base()), Ok(()));
+        let mut c = base();
+        c.mass_kg = 0.0;
+        assert_eq!(validate_runtime_config(&c), Err(RuntimeConfigError::Mass));
+        c.mass_kg = -1.0;
+        assert_eq!(validate_runtime_config(&c), Err(RuntimeConfigError::Mass));
+        let mut c = base();
+        c.inertia_kgm2[1] = 0.0;
+        assert_eq!(
+            validate_runtime_config(&c),
+            Err(RuntimeConfigError::Inertia)
+        );
+        let mut c = base();
+        c.max_rpm = -1.0;
+        assert_eq!(validate_runtime_config(&c), Err(RuntimeConfigError::MaxRpm));
+        c.max_rpm = 0.0;
+        assert_eq!(validate_runtime_config(&c), Ok(()));
+        for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let mut c = base();
+            c.mass_kg = bad;
+            assert_eq!(
+                validate_runtime_config(&c),
+                Err(RuntimeConfigError::NonFinite)
+            );
+            let mut c = base();
+            c.motor_spin[2] = bad;
+            assert_eq!(
+                validate_runtime_config(&c),
+                Err(RuntimeConfigError::NonFinite)
+            );
+            let mut c = base();
+            c.motor_pos_m[3][1] = bad;
+            assert_eq!(
+                validate_runtime_config(&c),
+                Err(RuntimeConfigError::NonFinite)
+            );
+            let mut c = base();
+            c.torque_coeff = bad;
+            assert_eq!(
+                validate_runtime_config(&c),
+                Err(RuntimeConfigError::NonFinite)
+            );
+        }
     }
 
     #[test]

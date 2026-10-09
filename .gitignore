@@ -25,3 +25,8 @@ CLAUDE.md
 CLAUDE.local.md
 .claude/
 dev-docs/
+
+# Python bytecode and generated context dump
+__pycache__/
+*.pyc
+full_codebase_context.txt

@@ -369,12 +369,43 @@ pub fn query_model(
         .try_extract_tensor::<f32>()
         .map_err(|e| SurrogateLoadError::EngineError(e.to_string()))?;
 
-    pack_outputs(pred.1, unc.1, env.1, handle.predicted_width)
+    let result = pack_outputs(pred.1, unc.1, env.1, handle.predicted_width)?;
+    Ok(force_unvalidated_if_stub(result, handle.is_stub))
+}
+
+/// A stub model is never inside a validated envelope, whatever the model file says
+/// (review finding A; HZ: a stub must not read as validated). Forces
+/// `in_validated_envelope` to 0 when `is_stub`; every other field is unchanged.
+pub fn force_unvalidated_if_stub(
+    mut result: SurrogateQueryResult,
+    is_stub: bool,
+) -> SurrogateQueryResult {
+    if is_stub {
+        result.in_validated_envelope = 0;
+    }
+    result
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // Hand calc: a stub that reports envelope 1 (the shipped stubs hard-code 1.0) must read 0;
+    // a trained model keeps its own flag (1 stays 1, 0 stays 0); other fields are untouched.
+    #[test]
+    fn test_force_unvalidated_if_stub_truth_table() {
+        let make = |env: i32| SurrogateQueryResult {
+            predicted_values: [1.5, -2.5, 3.5],
+            uncertainty: 0.25,
+            in_validated_envelope: env,
+        };
+        for (env, is_stub, want) in [(1, true, 0), (0, true, 0), (1, false, 1), (0, false, 0)] {
+            let r = force_unvalidated_if_stub(make(env), is_stub);
+            assert_eq!(r.in_validated_envelope, want, "env {env} stub {is_stub}");
+            assert_eq!(r.predicted_values, [1.5, -2.5, 3.5]);
+            assert_eq!(r.uncertainty, 0.25);
+        }
+    }
 
     #[test]
     fn test_is_stub_kind() {

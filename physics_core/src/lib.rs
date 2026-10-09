@@ -4,6 +4,7 @@ pub mod config;
 pub mod impact;
 pub mod integrator;
 pub mod mixer;
+pub mod registry;
 #[cfg(feature = "onnx")]
 pub mod structural;
 #[cfg(feature = "onnx")]
@@ -11,8 +12,7 @@ pub mod surrogate;
 pub mod thermal;
 pub mod types;
 
-use std::collections::BTreeSet;
-use std::sync::Mutex;
+use std::panic::{AssertUnwindSafe, catch_unwind};
 #[cfg(feature = "onnx")]
 use surrogate::fea_surrogate::fea_inputs;
 #[cfg(feature = "onnx")]
@@ -21,6 +21,53 @@ use types::{DroneState, FaultLatch};
 
 // Without the `onnx` feature the FFI entry points that use surrogate handles are compiled out, so
 // the pure helpers below are only reached by their tests. They stay compiled so miri runs them.
+
+/// Return code: a panic was caught inside the FFI function, or the handle was faulted by an
+/// earlier panic. The call's effect is undefined except that no memory was corrupted; the
+/// caller should treat the run as invalid. Telemetry is not written.
+pub const FFI_CODE_PANIC: i32 = 99;
+
+/// Return code: an internal lock was poisoned and has been recovered. The call did nothing;
+/// calling again works.
+pub const FFI_CODE_LOCK_RECOVERED: i32 = 98;
+
+/// `ffi_get_interface_version` / `ffi_get_drone_state_size` value if they panic.
+const FFI_VALUE_PANIC: i32 = -1;
+
+/// Process-wide registry of live surrogate handles (see `registry`).
+#[cfg(feature = "onnx")]
+static REGISTRY: registry::Registry = registry::Registry::new();
+
+thread_local! {
+    /// Panic injection point for the tests of the catch_unwind guard. Private and never set by
+    /// production code or by anything outside this crate (no exported function writes it); it is
+    /// not compiled out of non-test builds because `tools/check_mass_literals.py` allows only
+    /// the one test-only attribute that introduces `mod tests`.
+    static INJECT_PANIC: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// Panics when a test set `INJECT_PANIC` on this thread; otherwise one thread-local read.
+#[inline]
+fn panic_point() {
+    if INJECT_PANIC.with(std::cell::Cell::get) {
+        panic!("injected test panic");
+    }
+}
+
+/// Runs an FFI body and converts a panic into `fallback` (a panic must never unwind into C++).
+/// Needs `panic = "unwind"`; with `panic = "abort"` this cannot catch anything.
+fn guarded_or<T>(fallback: T, body: impl FnOnce() -> T) -> T {
+    catch_unwind(AssertUnwindSafe(|| {
+        panic_point();
+        body()
+    }))
+    .unwrap_or(fallback)
+}
+
+/// `guarded_or` with the panic return code.
+fn guarded(body: impl FnOnce() -> i32) -> i32 {
+    guarded_or(FFI_CODE_PANIC, body)
+}
 
 /// `stub_loaded` telemetry value: 1 if either surrogate handle came from a stub model.
 #[cfg_attr(not(feature = "onnx"), allow(dead_code))]
@@ -32,38 +79,6 @@ fn stub_loaded_flag(aero_is_stub: bool, fea_is_stub: bool) -> i32 {
 #[cfg_attr(not(feature = "onnx"), allow(dead_code))]
 fn latched_flag(latch: &FaultLatch) -> i32 {
     i32::from(latch.physics_fault != 0)
-}
-
-/// Addresses of every surrogate handle created by `ffi_load_surrogate_model` and not yet
-/// unloaded. Every FFI entry point that receives a handle checks it here BEFORE
-/// dereferencing, so a stale, foreign or double-unloaded pointer returns an error code
-/// instead of undefined behaviour. The lock is held for the whole query / step so a
-/// concurrent unload cannot free a handle that is in use.
-///
-/// Limit: if a freed address is reused by a later load, the old pointer looks live again.
-/// The caller must still null its pointer after unload.
-#[cfg_attr(not(feature = "onnx"), allow(dead_code))]
-static LIVE_HANDLES: Mutex<BTreeSet<usize>> = Mutex::new(BTreeSet::new());
-
-/// Records a newly created handle address as live.
-#[cfg_attr(not(feature = "onnx"), allow(dead_code))]
-fn register_in(live: &mut BTreeSet<usize>, addr: usize) {
-    live.insert(addr);
-}
-
-/// Removes a handle address. Returns false if it was not live (unknown or already unloaded).
-#[cfg_attr(not(feature = "onnx"), allow(dead_code))]
-fn unregister_from(live: &mut BTreeSet<usize>, addr: usize) -> bool {
-    live.remove(&addr)
-}
-
-/// True when the step's two handle addresses are usable: 0 (null) is allowed, a non-null
-/// address must be live, and the two must differ (the step takes `&mut` to both, so equal
-/// non-null addresses would alias).
-#[cfg_attr(not(feature = "onnx"), allow(dead_code))]
-fn step_handles_ok(aero_addr: usize, fea_addr: usize, live: &BTreeSet<usize>) -> bool {
-    let live_or_null = |a: usize| a == 0 || live.contains(&a);
-    live_or_null(aero_addr) && live_or_null(fea_addr) && (aero_addr == 0 || aero_addr != fea_addr)
 }
 
 /// Per-motor thrust in newtons at `altitude_m`. Any aero error is returned, never
@@ -107,13 +122,63 @@ fn envelope_flag(
     if outside(aero) || outside(fea) { 0 } else { 1 }
 }
 
+/// Envelope flag actually reported for a step: 0 if a stub model drove the step (a stub is
+/// never validated, review finding A) or a passed-in model's query failed (its number is
+/// missing or replaced by a fallback); otherwise `envelope_flag`.
+#[cfg_attr(not(feature = "onnx"), allow(dead_code))]
+fn step_envelope_flag(
+    aero: Option<&types::SurrogateQueryResult>,
+    fea: Option<&types::SurrogateQueryResult>,
+    any_model_failed: bool,
+    any_stub: bool,
+) -> i32 {
+    if any_model_failed || any_stub {
+        0
+    } else {
+        envelope_flag(aero, fea)
+    }
+}
+
+/// `aero_source` telemetry: 2 surrogate answered; 3 a handle was passed but its query failed
+/// (analytic drag used instead); 1 no handle passed (analytic drag).
+#[cfg_attr(not(feature = "onnx"), allow(dead_code))]
+fn aero_source_code(handle_given: bool, surrogate_ok: bool) -> i32 {
+    match (handle_given, surrogate_ok) {
+        (_, true) => 2,
+        (true, false) => 3,
+        (false, false) => 1,
+    }
+}
+
+/// `fea_source` telemetry: 2 surrogate answered; 3 a handle was passed but its query failed
+/// (margin NaN); 0 no handle passed (margin NaN, no analytic fallback exists).
+#[cfg_attr(not(feature = "onnx"), allow(dead_code))]
+fn fea_source_code(handle_given: bool, surrogate_ok: bool) -> i32 {
+    match (handle_given, surrogate_ok) {
+        (_, true) => 2,
+        (true, false) => 3,
+        (false, false) => 0,
+    }
+}
+
+/// Telemetry written for a REJECTED step (return codes 6, 7, 9, 10, 11, 8): everything at its
+/// "no data" value so stale numbers from an earlier tick can never be read as this call's
+/// result. Margin NaN, envelope 0, sources 0, thermal unvalidated, `physics_fault` = latch.
+#[cfg_attr(not(feature = "onnx"), allow(dead_code))]
+fn rejected_telemetry(latch_value: i32) -> types::DebugTelemetry {
+    let mut t = types::DebugTelemetry::new();
+    t.is_validated_envelope = 0;
+    t.physics_fault = i32::from(latch_value != 0);
+    t
+}
+
 /// Returns the current layout version to UE5 to prevent memory corruption on mismatch.
 ///
 /// # Safety
 /// Safe to call at any time.
 #[unsafe(no_mangle)]
 pub extern "C" fn ffi_get_interface_version() -> i32 {
-    9
+    guarded_or(FFI_VALUE_PANIC, || 10)
 }
 
 /// Allows UE5 to verify the byte size of DroneState during module initialization.
@@ -122,15 +187,27 @@ pub extern "C" fn ffi_get_interface_version() -> i32 {
 /// Safe to call at any time.
 #[unsafe(no_mangle)]
 pub extern "C" fn ffi_get_drone_state_size() -> i32 {
-    std::mem::size_of::<DroneState>() as i32
+    // size_of::<DroneState>() is 64, asserted at compile time in types.rs, so the cast is exact.
+    guarded_or(FFI_VALUE_PANIC, || std::mem::size_of::<DroneState>() as i32)
 }
 
 /// Instantiates a default, zeroed drone state with an identity quaternion.
+/// If a panic is caught the state is all NaN, which the next step rejects loudly (code 8).
 ///
 /// # Safety
 /// Safe to call at any time.
 #[unsafe(no_mangle)]
 pub extern "C" fn ffi_create_default_drone_state() -> DroneState {
+    let poisoned = DroneState {
+        position: [f64::NAN; 3],
+        velocity: [f32::NAN; 3],
+        orientation: [f32::NAN; 4],
+        angular_velocity: [f32::NAN; 3],
+    };
+    guarded_or(poisoned, default_drone_state)
+}
+
+fn default_drone_state() -> DroneState {
     DroneState {
         position: [0.0f64, 0.0, 0.0],
         velocity: [0.0, 0.0, 0.0],
@@ -141,19 +218,98 @@ pub extern "C" fn ffi_create_default_drone_state() -> DroneState {
 
 /// Resets the provided state to default values.
 ///
+/// # Returns
+/// `0` ok, `1` null pointer, `99` panic caught.
+///
 /// # Safety
 /// * `state` must be a valid, aligned, and mutable pointer to a DroneState instance.
 /// * The memory must not be concurrently accessed by another thread.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn ffi_reset_drone_state(state: *mut DroneState) -> i32 {
-    if state.is_null() {
-        return 1;
-    }
+    guarded(|| {
+        if state.is_null() {
+            return 1;
+        }
+        // SAFETY: `state` is non-null and the caller guarantees it is valid, aligned and unshared.
+        unsafe {
+            *state = default_drone_state();
+        }
+        0
+    })
+}
 
+/// Why `ffi_step_physics` returned without running the physics.
+#[cfg(feature = "onnx")]
+enum StepStop {
+    /// Rejected before any computation (codes 7, 9, 11, 98, 99): nothing is written.
+    Silent(i32),
+    /// The tick failed during computation (code 6): telemetry reset to "no data", latch untouched.
+    NoData(i32),
+    /// Invalid or non-finite input, or non-finite output (code 8): latch set, telemetry reset.
+    Diverged,
+}
+
+/// Writes the telemetry for a stopped step and returns its code.
+///
+/// # Safety
+/// `out_telemetry` and `fault_latch` must be valid, aligned and mutable.
+#[cfg(feature = "onnx")]
+unsafe fn finish_stopped(
+    stop: StepStop,
+    out_telemetry: *mut DebugTelemetry,
+    fault_latch: *mut FaultLatch,
+) -> i32 {
+    // SAFETY: the caller guarantees both pointers are valid.
     unsafe {
-        *state = ffi_create_default_drone_state();
+        match stop {
+            StepStop::Silent(code) => code,
+            StepStop::NoData(code) => {
+                *out_telemetry = rejected_telemetry((*fault_latch).physics_fault);
+                code
+            }
+            StepStop::Diverged => {
+                (*fault_latch).physics_fault = 1;
+                *out_telemetry = rejected_telemetry(1);
+                8
+            }
+        }
     }
-    0
+}
+
+/// Everything `ffi_step_physics` validates before it touches any state.
+/// Returns the work orientation (validated and re-normalized) on success.
+#[cfg(feature = "onnx")]
+fn validate_step_inputs(
+    state: &DroneState,
+    thermal_state: &ThermalState,
+    config: &types::VehicleConfig,
+    dt: f64,
+) -> Result<[f32; 4], StepStop> {
+    if dt <= 0.0 || dt.is_nan() || dt > 0.01 {
+        return Err(StepStop::Silent(7));
+    }
+    // A hand-filled config that is non-finite, has mass <= 0, inertia <= 0 or max_rpm < 0 would
+    // make the run meaningless, so it latches like a divergence (code 8), as NaN config always did.
+    if config::validate_runtime_config(config).is_err() {
+        return Err(StepStop::Diverged);
+    }
+    if !thermal::all_finite(&thermal_state.motor_temp_c) {
+        return Err(StepStop::Diverged);
+    }
+    match types::unit_quaternion_xyzw(state.orientation) {
+        Ok(q) => Ok(q),
+        Err(types::QuatError::NonFinite) => Err(StepStop::Diverged),
+        Err(types::QuatError::NotUnit) => Err(StepStop::Silent(11)),
+    }
+}
+
+/// True if any component of the new state is NaN or infinite.
+#[cfg(feature = "onnx")]
+fn state_has_nan(s: &DroneState) -> bool {
+    s.position.iter().any(|x| !x.is_finite())
+        || s.velocity.iter().any(|x| !x.is_finite())
+        || s.orientation.iter().any(|x| !x.is_finite())
+        || s.angular_velocity.iter().any(|x| !x.is_finite())
 }
 
 /// Main execution block for the fixed-timestep RK4 physics pipeline.
@@ -165,14 +321,30 @@ pub unsafe extern "C" fn ffi_reset_drone_state(state: *mut DroneState) -> i32 {
 ///
 /// # Returns
 /// * `0` - Success
-/// * `1` - Null pointer
-/// * `6` - Aero model error (drag or thrust), including altitude outside ISA 0..=11000 m;
-///   no output is written
+/// * `1` - Null pointer (nothing is written)
+/// * `6` - Aero model error (drag or thrust), including altitude outside ISA 0..=11000 m
 /// * `7` - Invalid dt (NaN, <= 0 or > 0.01)
-/// * `8` - NaN/Inf in the new state: `state` and `thermal_state` are restored to their
-///   previous values and `fault_latch` is set to 1.
+/// * `8` - Divergence or invalid input: a NaN/Inf in `config`, `thermal_state.motor_temp_c` or
+///   `state.orientation`; `config.mass_kg <= 0`, an inertia <= 0 or `max_rpm < 0` (re-checked
+///   every step because C++ may fill the struct by hand); or a NaN/Inf in the new state or new
+///   thermal state. `state` and `thermal_state` are left/restored to their previous values and
+///   `fault_latch` is set to 1.
 /// * `9` - A non-null surrogate handle is not live (never loaded, already unloaded, foreign),
-///   or `aero_handle` and `fea_handle` are the same non-null handle; nothing is written
+///   or `aero_handle` and `fea_handle` are the same non-null handle
+/// * `11` - `state.orientation` is finite but its norm differs from 1 by more than
+///   `types::QUAT_NORM_TOLERANCE` (rejected, never silently rescaled)
+/// * `98` - an internal lock was poisoned and recovered; nothing was done, call again
+/// * `99` - a panic was caught, or a handle was faulted by an earlier panic; the run is invalid
+///
+/// # Behavior on a failed step
+/// * `state` and `thermal_state` are always unchanged.
+/// * Codes 1, 7, 9, 11, 98 and 99 are rejected before any computation: NOTHING is written
+///   (telemetry and latch keep their previous values).
+/// * Codes 6 and 8 fail during the tick: `out_telemetry` is overwritten with "no data" (margin
+///   NaN, `is_validated_envelope` 0, sources 0, `thermal_valid` 0, `physics_fault` = latch value,
+///   so it is never left holding the previous tick's numbers).
+/// * `fault_latch` is set to 1 ONLY by code 8. Code 6 (altitude outside the ISA range) is a
+///   scenario error, not a divergence, and leaves the latch as it was.
 ///
 /// # Fault latch
 /// `fault_latch` is caller-owned and must be zero-initialized by the caller. Rust sets it to 1
@@ -203,173 +375,183 @@ pub unsafe extern "C" fn ffi_step_physics(
     fault_latch: *mut FaultLatch,
     dt: f64,
 ) -> i32 {
-    if state.is_null()
-        || thermal_state.is_null()
-        || controls.is_null()
-        || config.is_null()
-        || out_telemetry.is_null()
-        || fault_latch.is_null()
-    {
-        return 1;
-    }
+    guarded(|| {
+        if state.is_null()
+            || thermal_state.is_null()
+            || controls.is_null()
+            || config.is_null()
+            || out_telemetry.is_null()
+            || fault_latch.is_null()
+        {
+            return 1;
+        }
+        // SAFETY: every pointer is non-null; the caller guarantees validity and no aliasing.
+        unsafe {
+            match step_checked(
+                state,
+                thermal_state,
+                controls,
+                aero_handle,
+                fea_handle,
+                config,
+                out_telemetry,
+                fault_latch,
+                dt,
+            ) {
+                Ok(()) => 0,
+                Err(stop) => finish_stopped(stop, out_telemetry, fault_latch),
+            }
+        }
+    })
+}
 
-    if dt <= 0.0 || dt.is_nan() || dt > 0.01 {
-        return 7;
-    }
+#[cfg(feature = "onnx")]
+type SlotGuard<'a> = std::sync::MutexGuard<'a, registry::SlotState>;
 
-    // Held until return so an unload on another thread cannot free a handle mid-step.
-    let live_guard = if aero_handle.is_null() && fea_handle.is_null() {
-        None
+/// Maps a locked handle's status to a stop reason (`None` when usable or no handle).
+#[cfg(feature = "onnx")]
+fn locked_status_to_stop(guard: &Option<SlotGuard<'_>>) -> Option<StepStop> {
+    use registry::SlotStatus;
+    match guard.as_deref().map(registry::slot_status) {
+        Some(SlotStatus::Dead) => Some(StepStop::Silent(9)),
+        Some(SlotStatus::Faulted) => Some(StepStop::Silent(FFI_CODE_PANIC)),
+        Some(SlotStatus::Usable) | None => None,
+    }
+}
+
+/// Step body after the null checks. Returns `Ok(())` after writing state and telemetry.
+///
+/// # Safety
+/// Same contract as `ffi_step_physics`, with every pointer other than the handles non-null.
+#[cfg(feature = "onnx")]
+#[allow(clippy::too_many_arguments)]
+unsafe fn step_checked(
+    state: *mut DroneState,
+    thermal_state: *mut ThermalState,
+    controls: *const ControlInputs,
+    aero_handle: *mut surrogate::SurrogateHandle,
+    fea_handle: *mut surrogate::SurrogateHandle,
+    config: *const types::VehicleConfig,
+    out_telemetry: *mut DebugTelemetry,
+    fault_latch: *mut FaultLatch,
+    dt: f64,
+) -> Result<(), StepStop> {
+    // SAFETY: the caller guarantees the pointers are valid; these are plain Copy reads.
+    let (original_state, original_thermal, current_controls, current_config) =
+        unsafe { (*state, *thermal_state, *controls, *config) };
+
+    let work_orientation =
+        validate_step_inputs(&original_state, &original_thermal, &current_config, dt)?;
+
+    // Slots are looked up under the registry lock, which is released before any inference.
+    let (aero_slot, fea_slot) = if aero_handle.is_null() && fea_handle.is_null() {
+        (None, None)
     } else {
-        match LIVE_HANDLES.lock() {
-            Ok(g) => Some(g),
-            Err(_) => return 9,
+        match REGISTRY.step_slots(aero_handle.addr(), fea_handle.addr()) {
+            Ok(Some(pair)) => pair,
+            Ok(None) => return Err(StepStop::Silent(9)),
+            Err(_) => return Err(StepStop::Silent(FFI_CODE_LOCK_RECOVERED)),
         }
     };
-    if let Some(live) = &live_guard
-        && !step_handles_ok(aero_handle.addr(), fea_handle.addr(), live)
-    {
-        return 9;
+    let (aero_guard, fea_guard) = registry::lock_pair(
+        aero_slot.as_deref().map(|s| (aero_handle.addr(), s)),
+        fea_slot.as_deref().map(|s| (fea_handle.addr(), s)),
+    );
+    if let Some(stop) = locked_status_to_stop(&aero_guard).or(locked_status_to_stop(&fea_guard)) {
+        return Err(stop);
     }
 
+    // SAFETY: each non-null handle is live (checked above) and its slot lock is held in
+    // `aero_guard` / `fea_guard` until the end of this function, so no unload can free it and no
+    // other step uses it. The two addresses differ (`step_handles_ok`), so the `&mut` do not alias.
+    let (aero_opt, fea_opt, aero_is_stub, fea_is_stub) = unsafe {
+        (
+            aero_handle.as_mut(),
+            fea_handle.as_mut(),
+            aero_handle.as_ref().is_some_and(|h| h.is_stub),
+            fea_handle.as_ref().is_some_and(|h| h.is_stub),
+        )
+    };
+    let aero_given = aero_opt.is_some();
+    let fea_given = fea_opt.is_some();
+
+    let work_state = DroneState {
+        orientation: work_orientation,
+        ..original_state
+    };
+    let altitude = -work_state.position[2];
+    let airspeed = airspeed_mps(work_state.velocity);
+
+    let (drag, aero_result) = aero::get_drag_with_fallback(&work_state, altitude, aero_opt)
+        .map_err(|_| StepStop::NoData(6))?;
+    let throttles = mixer::mix_controls(&current_controls);
+    let thrusts =
+        motor_thrusts_n(throttles, &current_config, altitude).map_err(|_| StepStop::NoData(6))?;
+
+    let fea_in = fea_inputs(
+        thrusts,
+        drag,
+        work_orientation,
+        original_thermal.motor_temp_c,
+    );
+    let (safety_margin, fea_result) = structural::get_safety_margin_with_fallback(&fea_in, fea_opt);
+
+    let motor_rpms = throttles.map(|t| t * current_config.max_rpm);
+    let mut new_thermal = original_thermal;
+    thermal::update_temperatures(&mut new_thermal, &throttles, &motor_rpms, airspeed, dt);
+
+    let (net_force, net_torque, net_thrust) = mixer::calculate_net_forces(
+        thrusts,
+        drag.map(f64::from),
+        work_orientation,
+        &current_config,
+    );
+    let new_state = integrator::step_rk4(&work_state, net_force, net_torque, &current_config, dt);
+
+    if state_has_nan(&new_state) || !thermal::all_finite(&new_thermal.motor_temp_c) {
+        return Err(StepStop::Diverged);
+    }
+
+    let aero_failed = aero_given && aero_result.is_none();
+    let fea_failed = fea_given && fea_result.is_none();
+    // SAFETY: `fault_latch` is valid per the caller's contract.
+    let latch_copy = latched_flag(unsafe { &*fault_latch });
+    let telemetry = DebugTelemetry {
+        aero_drag: drag,
+        motor_thrusts: thrusts.map(|t| t as f32),
+        net_force: net_force.map(|f| f as f32),
+        gravity: [0.0, 0.0, (9.80665 * current_config.mass_kg) as f32],
+        net_thrust: net_thrust.map(|f| f as f32),
+        motor_temperatures_c: new_thermal.motor_temp_c.map(|t| t as f32),
+        motor_rpms: motor_rpms.map(|r| r as f32),
+        structural_safety_margin: safety_margin,
+        is_validated_envelope: step_envelope_flag(
+            aero_result.as_ref(),
+            fea_result.as_ref(),
+            aero_failed || fea_failed,
+            aero_is_stub || fea_is_stub,
+        ),
+        stub_loaded: stub_loaded_flag(aero_is_stub, fea_is_stub),
+        aero_source: aero_source_code(aero_given, aero_result.is_some()),
+        fea_source: fea_source_code(fea_given, fea_result.is_some()),
+        physics_fault: latch_copy,
+        dropped_time_events: 0,
+        uncalibrated_flags: 0,
+        thermal_valid: i32::from(thermal::THERMAL_CONSTANTS_VALIDATED),
+        thermal_over_temp: i32::from(thermal::any_over_temp(
+            &new_thermal.motor_temp_c,
+            thermal::MOTOR_TEMP_LIMIT_C,
+        )),
+    };
+
+    // SAFETY: valid, aligned, exclusive per the caller's contract; written only on success.
     unsafe {
-        let original_state = *state;
-        let original_thermal = *thermal_state;
-        let current_controls = *controls;
-        let current_config = *config;
-
-        let aero_is_stub = !aero_handle.is_null() && (*aero_handle).is_stub;
-        let fea_is_stub = !fea_handle.is_null() && (*fea_handle).is_stub;
-        let aero_opt = if aero_handle.is_null() {
-            None
-        } else {
-            Some(&mut *aero_handle)
-        };
-        let fea_opt = if fea_handle.is_null() {
-            None
-        } else {
-            Some(&mut *fea_handle)
-        };
-
-        let altitude = -original_state.position[2];
-        let airspeed = airspeed_mps(original_state.velocity);
-
-        let (drag, aero_result) =
-            match aero::get_drag_with_fallback(&original_state, altitude, aero_opt) {
-                Ok(res) => res,
-                Err(_) => return 6,
-            };
-
-        let throttles = mixer::mix_controls(&current_controls);
-
-        let thrusts = match motor_thrusts_n(throttles, &current_config, altitude) {
-            Ok(t) => t,
-            Err(_) => return 6,
-        };
-
-        let fea_in = fea_inputs(
-            thrusts,
-            drag,
-            original_state.orientation,
-            original_thermal.motor_temp_c,
-        );
-        let (safety_margin, fea_result) =
-            structural::get_safety_margin_with_fallback(&fea_in, fea_opt);
-
-        let motor_rpms = [
-            (throttles[0] * current_config.max_rpm),
-            (throttles[1] * current_config.max_rpm),
-            (throttles[2] * current_config.max_rpm),
-            (throttles[3] * current_config.max_rpm),
-        ];
-
-        thermal::update_temperatures(&mut *thermal_state, &throttles, &motor_rpms, airspeed, dt);
-
-        let (net_force, net_torque, net_thrust) = mixer::calculate_net_forces(
-            thrusts,
-            [drag[0] as f64, drag[1] as f64, drag[2] as f64],
-            original_state.orientation,
-            &current_config,
-        );
-
-        let new_state =
-            integrator::step_rk4(&original_state, net_force, net_torque, &current_config, dt);
-
-        let has_nan = new_state
-            .position
-            .iter()
-            .any(|x| x.is_nan() || x.is_infinite())
-            || new_state
-                .velocity
-                .iter()
-                .any(|x| x.is_nan() || x.is_infinite())
-            || new_state
-                .orientation
-                .iter()
-                .any(|x| x.is_nan() || x.is_infinite())
-            || new_state
-                .angular_velocity
-                .iter()
-                .any(|x| x.is_nan() || x.is_infinite());
-
-        if has_nan {
-            *state = original_state;
-            *thermal_state = original_thermal;
-            (*fault_latch).physics_fault = 1;
-            (*out_telemetry).physics_fault = 1;
-            return 8;
-        }
-
         *state = new_state;
-
-        let all_valid = envelope_flag(aero_result.as_ref(), fea_result.as_ref());
-        let aero_src = if aero_result.is_some() { 2 } else { 1 };
-        // No structural fallback exists: without a model the margin is NaN and the source is 0.
-        let fea_src = if fea_result.is_some() { 2 } else { 0 };
-
-        *out_telemetry = DebugTelemetry {
-            aero_drag: drag,
-            motor_thrusts: [
-                thrusts[0] as f32,
-                thrusts[1] as f32,
-                thrusts[2] as f32,
-                thrusts[3] as f32,
-            ],
-            net_force: [
-                net_force[0] as f32,
-                net_force[1] as f32,
-                net_force[2] as f32,
-            ],
-            gravity: [0.0, 0.0, (9.80665 * current_config.mass_kg) as f32],
-            net_thrust: [
-                net_thrust[0] as f32,
-                net_thrust[1] as f32,
-                net_thrust[2] as f32,
-            ],
-            motor_temperatures_c: [
-                (*thermal_state).motor_temp_c[0] as f32,
-                (*thermal_state).motor_temp_c[1] as f32,
-                (*thermal_state).motor_temp_c[2] as f32,
-                (*thermal_state).motor_temp_c[3] as f32,
-            ],
-            motor_rpms: [
-                motor_rpms[0] as f32,
-                motor_rpms[1] as f32,
-                motor_rpms[2] as f32,
-                motor_rpms[3] as f32,
-            ],
-            structural_safety_margin: safety_margin,
-            is_validated_envelope: all_valid,
-            stub_loaded: stub_loaded_flag(aero_is_stub, fea_is_stub),
-            aero_source: aero_src,
-            fea_source: fea_src,
-            physics_fault: latched_flag(&*fault_latch),
-            dropped_time_events: 0,
-            uncalibrated_flags: 0,
-        };
+        *thermal_state = new_thermal;
+        *out_telemetry = telemetry;
     }
-
-    0
+    drop((aero_guard, fea_guard));
+    Ok(())
 }
 
 /// Loads a trained ONNX surrogate model and returns an opaque handle to C++.
@@ -382,8 +564,13 @@ pub unsafe extern "C" fn ffi_step_physics(
 /// * `4` - Engine/ONNX initialization failure (including a missing ONNX Runtime library)
 /// * `5` - Stub model rejected (allow_stub_models feature not enabled)
 /// * `6` - Model inputs/outputs are not the supported shapes
-/// * `7` - Handle registry unavailable; the model is dropped and `out_handle` is untouched
 /// * `8` - Vehicle config hash mismatch (model `config_hash` differs from the compiled `vehicle_config.json`)
+/// * `98` - Handle registry lock was poisoned and recovered; the model is dropped, `out_handle`
+///   is untouched, call again (replaces the old code 7)
+/// * `99` - A panic was caught; `out_handle` is untouched
+///
+/// A model whose `kind` is not `trained` (a stub) loads only with the `allow_stub_models`
+/// feature, and its queries always report `in_validated_envelope = 0`.
 ///
 /// # Safety
 /// * `path` must be a valid, null-terminated C string.
@@ -394,21 +581,23 @@ pub unsafe extern "C" fn ffi_load_surrogate_model(
     path: *const std::ffi::c_char,
     out_handle: *mut *mut surrogate::SurrogateHandle,
 ) -> i32 {
-    if path.is_null() || out_handle.is_null() {
-        return 1;
-    }
+    guarded(|| {
+        if path.is_null() || out_handle.is_null() {
+            return 1;
+        }
 
-    // SAFETY: `path` is non-null and the caller guarantees a valid NUL-terminated C string.
-    let c_str = unsafe { std::ffi::CStr::from_ptr(path) };
-    let path_str = match c_str.to_str() {
-        Ok(s) => s,
-        Err(_) => return 1,
-    };
+        // SAFETY: `path` is non-null and the caller guarantees a valid NUL-terminated C string.
+        let c_str = unsafe { std::ffi::CStr::from_ptr(path) };
+        let path_str = match c_str.to_str() {
+            Ok(s) => s,
+            Err(_) => return 1,
+        };
 
-    match surrogate::load_surrogate(path_str) {
-        Ok(handle) => publish_handle(handle, out_handle),
-        Err(e) => load_error_code(&e),
-    }
+        match surrogate::load_surrogate(path_str) {
+            Ok(handle) => publish_handle(&REGISTRY, handle, out_handle),
+            Err(e) => load_error_code(&e),
+        }
+    })
 }
 
 /// Maps a surrogate load failure to its `ffi_load_surrogate_model` return code.
@@ -427,16 +616,16 @@ fn load_error_code(e: &surrogate::SurrogateLoadError) -> i32 {
 }
 
 /// Boxes a loaded handle, registers its address as live and writes it to `out_handle`.
-/// Returns 0, or 7 if the registry is unusable (the box is dropped, `out_handle` untouched).
+/// Returns 0, or 98 if the registry lock was poisoned (the box is dropped, `out_handle` untouched).
 #[cfg(feature = "onnx")]
 fn publish_handle(
+    registry: &registry::Registry,
     handle: surrogate::SurrogateHandle,
     out_handle: *mut *mut surrogate::SurrogateHandle,
 ) -> i32 {
     let raw = Box::into_raw(Box::new(handle));
-    match LIVE_HANDLES.lock() {
-        Ok(mut live) => {
-            register_in(&mut live, raw.addr());
+    match registry.register(raw.addr()) {
+        Ok(()) => {
             // SAFETY: caller of the FFI function guarantees `out_handle` is valid and aligned.
             unsafe {
                 *out_handle = raw;
@@ -446,7 +635,7 @@ fn publish_handle(
         Err(_) => {
             // SAFETY: `raw` came from `Box::into_raw` just above and was never shared.
             drop(unsafe { Box::from_raw(raw) });
-            7
+            FFI_CODE_LOCK_RECOVERED
         }
     }
 }
@@ -454,7 +643,8 @@ fn publish_handle(
 /// Queries a loaded surrogate model.
 ///
 /// `input_count` must equal the model's declared input width; no slice is built from it
-/// before that check, so a huge value cannot read out of bounds.
+/// before that check, so a huge value cannot read out of bounds. The registry lock is NOT held
+/// during inference, only this handle's own lock.
 ///
 /// # Returns
 /// * `0` - Success
@@ -464,6 +654,10 @@ fn publish_handle(
 /// * `4` - Engine/ONNX inference error
 /// * `5` - An input value is NaN or infinite
 /// * `6` - Malformed model output (wrong count, non-finite, envelope flag not 0/1)
+/// * `98` - Registry lock was poisoned and recovered; nothing was done, call again
+/// * `99` - A panic was caught, or this handle was faulted by an earlier panic (unload it)
+///
+/// A stub model always reports `in_validated_envelope = 0`.
 ///
 /// # Safety
 /// * `handle` must be a pointer created by `ffi_load_surrogate_model` (checked against the
@@ -478,52 +672,63 @@ pub unsafe extern "C" fn ffi_query_surrogate(
     input_count: i32,
     out_result: *mut SurrogateQueryResult,
 ) -> i32 {
-    if handle.is_null() || inputs.is_null() || out_result.is_null() || input_count < 0 {
-        return 1;
-    }
-
-    // Held for the whole query so an unload on another thread cannot free the handle.
-    let live = match LIVE_HANDLES.lock() {
-        Ok(g) => g,
-        Err(_) => return 2,
-    };
-    if !live.contains(&handle.addr()) {
-        return 2;
-    }
-
-    // SAFETY: `handle` is non-null and in the live registry, so it came from
-    // `Box::into_raw` in `publish_handle` and has not been freed; the lock excludes unload.
-    let handle_ref = unsafe { &mut *handle };
-    let count = match surrogate::check_input_count(input_count, handle_ref.input_width) {
-        Ok(n) => n,
-        Err(_) => return 3,
-    };
-    // SAFETY: `inputs` is non-null; `count` equals the model width (at most
-    // MAX_INPUT_WIDTH) and the caller guarantees `input_count` readable floats.
-    let input_slice = unsafe { std::slice::from_raw_parts(inputs, count) };
-
-    use surrogate::SurrogateLoadError as E;
-    match surrogate::query_model(handle_ref, input_slice) {
-        Ok(res) => {
-            // SAFETY: `out_result` is non-null; the caller guarantees it is valid and aligned.
-            unsafe {
-                *out_result = res;
-            }
-            0
+    guarded(|| {
+        if handle.is_null() || inputs.is_null() || out_result.is_null() || input_count < 0 {
+            return 1;
         }
-        Err(E::InputCountMismatch { .. }) => 3,
-        Err(E::NonFiniteInput) => 5,
-        Err(E::BadOutput) => 6,
-        Err(_) => 4,
-    }
+        let slot = match REGISTRY.slot_of(handle.addr()) {
+            Ok(Some(slot)) => slot,
+            Ok(None) => return 2,
+            Err(_) => return FFI_CODE_LOCK_RECOVERED,
+        };
+        // The registry lock is already released; only this handle is locked from here on.
+        let guard = slot.lock();
+        match registry::slot_status(&guard) {
+            registry::SlotStatus::Dead => return 2,
+            registry::SlotStatus::Faulted => return FFI_CODE_PANIC,
+            registry::SlotStatus::Usable => {}
+        }
+
+        // SAFETY: `handle` is non-null and its slot is alive under the slot lock held in
+        // `guard`, so it came from `Box::into_raw` in `publish_handle` and cannot be freed.
+        let handle_ref = unsafe { &mut *handle };
+        let count = match surrogate::check_input_count(input_count, handle_ref.input_width) {
+            Ok(n) => n,
+            Err(_) => return 3,
+        };
+        // SAFETY: `inputs` is non-null; `count` equals the model width (at most
+        // MAX_INPUT_WIDTH) and the caller guarantees `input_count` readable floats.
+        let input_slice = unsafe { std::slice::from_raw_parts(inputs, count) };
+
+        use surrogate::SurrogateLoadError as E;
+        let code = match surrogate::query_model(handle_ref, input_slice) {
+            Ok(res) => {
+                // SAFETY: `out_result` is non-null; the caller guarantees it is valid and aligned.
+                unsafe {
+                    *out_result = res;
+                }
+                0
+            }
+            Err(E::InputCountMismatch { .. }) => 3,
+            Err(E::NonFiniteInput) => 5,
+            Err(E::BadOutput) => 6,
+            Err(_) => 4,
+        };
+        drop(guard);
+        code
+    })
 }
 
 /// Unloads a surrogate model and frees its memory.
+///
+/// Waits for any query or step still using the handle, then frees it.
 ///
 /// # Returns
 /// * `0` - Freed
 /// * `1` - Null pointer
 /// * `2` - `handle` is not live (never loaded or already unloaded); nothing is freed
+/// * `98` - Registry lock was poisoned and recovered; nothing was freed, call again
+/// * `99` - A panic was caught while freeing
 ///
 /// # Safety
 /// * `handle` must be a pointer created by `ffi_load_surrogate_model` (checked against the
@@ -534,20 +739,25 @@ pub unsafe extern "C" fn ffi_query_surrogate(
 pub unsafe extern "C" fn ffi_unload_surrogate_model(
     handle: *mut surrogate::SurrogateHandle,
 ) -> i32 {
-    if handle.is_null() {
-        return 1;
-    }
-    let removed = match LIVE_HANDLES.lock() {
-        Ok(mut live) => unregister_from(&mut live, handle.addr()),
-        Err(_) => false,
-    };
-    if !removed {
-        return 2;
-    }
-    // SAFETY: the address was live, so it came from `Box::into_raw` in `publish_handle`;
-    // removing it from the registry above means no other call can free or use it now.
-    drop(unsafe { Box::from_raw(handle) });
-    0
+    guarded(|| {
+        if handle.is_null() {
+            return 1;
+        }
+        let slot = match REGISTRY.remove(handle.addr()) {
+            Ok(Some(slot)) => slot,
+            Ok(None) => return 2,
+            Err(_) => return FFI_CODE_LOCK_RECOVERED,
+        };
+        // Waits for an in-flight query; anyone who looked the slot up earlier sees `alive == false`.
+        let mut guard = slot.lock();
+        guard.alive = false;
+        // SAFETY: the address was live, so it came from `Box::into_raw` in `publish_handle`;
+        // it is out of the registry and marked dead under its slot lock, so nothing else can
+        // use or free it.
+        drop(unsafe { Box::from_raw(handle) });
+        drop(guard);
+        0
+    })
 }
 
 /// Loads a vehicle configuration file.
@@ -566,6 +776,7 @@ pub unsafe extern "C" fn ffi_unload_surrogate_model(
 /// * `10` - Invalid Torque Coefficient
 /// * `11` - Invalid Max RPM
 /// * `12` - Invalid Hover Throttle (must be in (0, 1])
+/// * `99` - A panic was caught
 ///
 /// # Safety
 /// * `path` must be a valid, null-terminated C string.
@@ -575,25 +786,29 @@ pub unsafe extern "C" fn ffi_load_vehicle_config(
     path: *const std::ffi::c_char,
     out_config: *mut types::VehicleConfig,
 ) -> i32 {
-    if path.is_null() || out_config.is_null() {
-        return 1;
-    }
-
-    let c_str = unsafe { std::ffi::CStr::from_ptr(path) };
-    let path_str = match c_str.to_str() {
-        Ok(s) => s,
-        Err(_) => return 1,
-    };
-
-    match config::load_vehicle_config(path_str) {
-        Ok(cfg) => {
-            unsafe {
-                *out_config = cfg;
-            }
-            0
+    guarded(|| {
+        if path.is_null() || out_config.is_null() {
+            return 1;
         }
-        Err(e) => config_error_code(e),
-    }
+
+        // SAFETY: `path` is non-null and the caller guarantees a valid NUL-terminated C string.
+        let c_str = unsafe { std::ffi::CStr::from_ptr(path) };
+        let path_str = match c_str.to_str() {
+            Ok(s) => s,
+            Err(_) => return 1,
+        };
+
+        match config::load_vehicle_config(path_str) {
+            Ok(cfg) => {
+                // SAFETY: `out_config` is non-null; the caller guarantees it is valid and aligned.
+                unsafe {
+                    *out_config = cfg;
+                }
+                0
+            }
+            Err(e) => config_error_code(e),
+        }
+    })
 }
 
 /// Maps a config rejection to its FFI return code. Codes 2-6 are unchanged
@@ -618,7 +833,9 @@ fn config_error_code(e: config::ConfigError) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::registry::{register_in, step_handles_ok, unregister_from};
     use crate::types::VehicleConfig;
+    use std::collections::BTreeSet;
     use std::ptr;
 
     fn dummy_config() -> VehicleConfig {
@@ -1209,7 +1426,7 @@ mod tests {
 
     #[test]
     fn test_ffi_interface_version() {
-        assert_eq!(ffi_get_interface_version(), 9);
+        assert_eq!(ffi_get_interface_version(), 10);
     }
 
     #[test]
@@ -1493,5 +1710,436 @@ mod tests {
         assert!(state.angular_velocity[2] > 0.0);
         assert!(state.angular_velocity[0].abs() < 1e-9);
         assert!(state.angular_velocity[1].abs() < 1e-9);
+    }
+
+    // ---- Review findings A-F -------------------------------------------------------------
+
+    /// Runs `body` with a panic injected at the entry of the next guarded FFI call on this thread.
+    fn with_injected_panic<T>(body: impl FnOnce() -> T) -> T {
+        INJECT_PANIC.with(|c| c.set(true));
+        let out = body();
+        INJECT_PANIC.with(|c| c.set(false));
+        out
+    }
+
+    // Finding B: a panic must come back as a code, never unwind into C++.
+    #[test]
+    fn test_guarded_converts_panic_to_code_99() {
+        assert_eq!(guarded(|| panic!("deliberate")), FFI_CODE_PANIC);
+        assert_eq!(guarded(|| 5), 5);
+        assert_eq!(guarded_or(-7, || panic!("deliberate")), -7);
+        assert_eq!(FFI_CODE_PANIC, 99);
+        assert_eq!(FFI_CODE_LOCK_RECOVERED, 98);
+    }
+
+    // The catch only works with panic = "unwind". A release profile with `panic = "abort"`
+    // would turn every caught panic into a process abort, so the manifest must not set it.
+    #[test]
+    fn test_cargo_profile_does_not_abort_on_panic() {
+        const MANIFEST: &str = include_str!("../Cargo.toml");
+        assert!(!MANIFEST.contains("panic = \"abort\""));
+    }
+
+    // Deliberate panic through each exported function that has no surrogate handle.
+    #[test]
+    fn test_ffi_panic_is_caught_in_pure_exports() {
+        assert_eq!(with_injected_panic(|| ffi_get_interface_version()), -1);
+        assert_eq!(with_injected_panic(|| ffi_get_drone_state_size()), -1);
+        let poisoned = with_injected_panic(|| ffi_create_default_drone_state());
+        assert!(poisoned.position.iter().all(|v| v.is_nan()));
+        assert!(poisoned.orientation.iter().all(|v| v.is_nan()));
+
+        let mut state = ffi_create_default_drone_state();
+        state.position = [1.0, 2.0, 3.0];
+        // SAFETY: `state` is valid, aligned and unaliased.
+        let code = with_injected_panic(|| unsafe { ffi_reset_drone_state(&mut state) });
+        assert_eq!(code, 99);
+        assert_eq!(state.position, [1.0, 2.0, 3.0]);
+
+        let path = std::ffi::CString::new("x").expect("no NUL");
+        let mut cfg = dummy_config();
+        // SAFETY: valid NUL-terminated path and a valid config pointer.
+        let code =
+            with_injected_panic(|| unsafe { ffi_load_vehicle_config(path.as_ptr(), &mut cfg) });
+        assert_eq!(code, 99);
+        // The next call is not poisoned by the caught panic.
+        assert_eq!(ffi_get_interface_version(), 10);
+    }
+
+    // Deliberate panic through the step and the three handle functions.
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_ffi_panic_is_caught_in_step_and_handle_exports() {
+        let mut state = ffi_create_default_drone_state();
+        state.position = [1.0, 2.0, -3.0];
+        let before = state;
+        let mut thermal = ThermalState::new();
+        let controls = zero_controls();
+        let config = dummy_config();
+        let mut telemetry = DebugTelemetry::new();
+        telemetry.net_force = [4.0, 5.0, 6.0];
+        let mut latch = FaultLatch::new();
+        // SAFETY: all pointers are valid, aligned and unaliased for the call.
+        let code = with_injected_panic(|| unsafe {
+            ffi_step_physics(
+                &mut state,
+                &mut thermal,
+                &controls,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                &config,
+                &mut telemetry,
+                &mut latch,
+                0.002,
+            )
+        });
+        assert_eq!(code, 99);
+        assert_eq!(state.position, before.position);
+        assert_eq!(thermal.motor_temp_c, [20.0; 4]);
+        assert_eq!(telemetry.net_force, [4.0, 5.0, 6.0]);
+        assert_eq!(latch.physics_fault, 0);
+
+        let path = std::ffi::CString::new("x").expect("no NUL");
+        let mut out: *mut surrogate::SurrogateHandle = ptr::null_mut();
+        // SAFETY: valid path and out pointer.
+        let code =
+            with_injected_panic(|| unsafe { ffi_load_surrogate_model(path.as_ptr(), &mut out) });
+        assert_eq!(code, 99);
+        assert!(out.is_null());
+
+        let inputs = [0.0f32; 3];
+        let mut result = SurrogateQueryResult {
+            predicted_values: [0.0; 3],
+            uncertainty: 0.0,
+            in_validated_envelope: 7,
+        };
+        let fake = 0x1000usize as *mut surrogate::SurrogateHandle;
+        // SAFETY: the panic fires before any pointer is used.
+        let code = with_injected_panic(|| unsafe {
+            ffi_query_surrogate(fake, inputs.as_ptr(), 3, &mut result)
+        });
+        assert_eq!(code, 99);
+        assert_eq!(result.in_validated_envelope, 7);
+        // SAFETY: the panic fires before the pointer is used.
+        assert_eq!(
+            with_injected_panic(|| unsafe { ffi_unload_surrogate_model(fake) }),
+            99
+        );
+    }
+
+    // Finding A (step level): a stub drives the flag to 0 even if the model said 1.
+    // Hand calc: results both 1, no failure: 1. stub: 0. failure: 0. a result of 0 (outside): 0.
+    #[test]
+    fn test_step_envelope_flag_truth_table() {
+        let r = |env: i32| types::SurrogateQueryResult {
+            predicted_values: [0.0; 3],
+            uncertainty: 0.0,
+            in_validated_envelope: env,
+        };
+        assert_eq!(step_envelope_flag(None, None, false, false), 1);
+        assert_eq!(
+            step_envelope_flag(Some(&r(1)), Some(&r(1)), false, false),
+            1
+        );
+        assert_eq!(step_envelope_flag(Some(&r(1)), Some(&r(1)), false, true), 0);
+        assert_eq!(step_envelope_flag(Some(&r(1)), None, true, false), 0);
+        assert_eq!(
+            step_envelope_flag(Some(&r(0)), Some(&r(1)), false, false),
+            0
+        );
+        assert_eq!(step_envelope_flag(None, None, false, true), 0);
+    }
+
+    // Finding F: "model failed" (3) is never the same value as "no model loaded" (1 aero, 0 fea).
+    #[test]
+    fn test_source_codes_distinguish_failed_from_absent() {
+        assert_eq!(aero_source_code(false, false), 1);
+        assert_eq!(aero_source_code(true, true), 2);
+        assert_eq!(aero_source_code(true, false), 3);
+        assert_eq!(fea_source_code(false, false), 0);
+        assert_eq!(fea_source_code(true, true), 2);
+        assert_eq!(fea_source_code(true, false), 3);
+    }
+
+    #[test]
+    fn test_rejected_telemetry_is_no_data() {
+        let t = rejected_telemetry(0);
+        assert!(t.structural_safety_margin.is_nan());
+        assert_eq!(t.is_validated_envelope, 0);
+        assert_eq!((t.aero_source, t.fea_source, t.stub_loaded), (0, 0, 0));
+        assert_eq!((t.thermal_valid, t.thermal_over_temp), (0, 0));
+        assert_eq!(t.physics_fault, 0);
+        assert_eq!(t.net_force, [0.0; 3]);
+        assert_eq!(rejected_telemetry(1).physics_fault, 1);
+        assert_eq!(rejected_telemetry(5).physics_fault, 1);
+    }
+
+    #[cfg(feature = "onnx")]
+    fn run_step(
+        state: &mut DroneState,
+        thermal: &mut ThermalState,
+        controls: &ControlInputs,
+        config: &VehicleConfig,
+        telemetry: &mut DebugTelemetry,
+        latch: &mut FaultLatch,
+    ) -> i32 {
+        // SAFETY: all pointers are valid, aligned and unaliased for the call.
+        unsafe {
+            ffi_step_physics(
+                state,
+                thermal,
+                controls,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                config,
+                telemetry,
+                latch,
+                0.002,
+            )
+        }
+    }
+
+    // Finding D, code 6: altitude -5 m (NED z = +5) is outside ISA 0..=11000 m. Defined behavior:
+    // state and thermal unchanged, latch unchanged (0), telemetry reset to "no data" (the stale
+    // [4,5,6] force and envelope 1 must be gone).
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_ffi_step_code_6_resets_telemetry_and_leaves_latch() {
+        let mut state = ffi_create_default_drone_state();
+        state.position = [0.0, 0.0, 5.0];
+        let before = state;
+        let mut thermal = ThermalState::new();
+        let mut telemetry = DebugTelemetry::new();
+        telemetry.net_force = [4.0, 5.0, 6.0];
+        telemetry.structural_safety_margin = 3.0;
+        telemetry.is_validated_envelope = 1;
+        telemetry.aero_source = 2;
+        let mut latch = FaultLatch::new();
+        let code = run_step(
+            &mut state,
+            &mut thermal,
+            &zero_controls(),
+            &dummy_config(),
+            &mut telemetry,
+            &mut latch,
+        );
+        assert_eq!(code, 6);
+        assert_eq!(state.position, before.position);
+        assert_eq!(thermal.motor_temp_c, [20.0; 4]);
+        assert_eq!(latch.physics_fault, 0);
+        assert_eq!(telemetry.net_force, [0.0; 3]);
+        assert!(telemetry.structural_safety_margin.is_nan());
+        assert_eq!(telemetry.is_validated_envelope, 0);
+        assert_eq!(telemetry.aero_source, 0);
+        assert_eq!(telemetry.physics_fault, 0);
+
+        // With the latch already set, the telemetry copy reads 1 and the latch stays 1.
+        latch.physics_fault = 1;
+        let code = run_step(
+            &mut state,
+            &mut thermal,
+            &zero_controls(),
+            &dummy_config(),
+            &mut telemetry,
+            &mut latch,
+        );
+        assert_eq!(code, 6);
+        assert_eq!(latch.physics_fault, 1);
+        assert_eq!(telemetry.physics_fault, 1);
+    }
+
+    // Codes rejected before computation (11 here) write nothing: telemetry and latch keep
+    // their previous values.
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_ffi_step_code_11_non_unit_quaternion_writes_nothing() {
+        for q in [
+            [0.0, 0.0, 0.0, 1.01],
+            [0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.99],
+        ] {
+            let mut state = ffi_create_default_drone_state();
+            state.orientation = q;
+            let mut thermal = ThermalState::new();
+            let mut telemetry = DebugTelemetry::new();
+            telemetry.net_force = [4.0, 5.0, 6.0];
+            let mut latch = FaultLatch::new();
+            let code = run_step(
+                &mut state,
+                &mut thermal,
+                &zero_controls(),
+                &dummy_config(),
+                &mut telemetry,
+                &mut latch,
+            );
+            assert_eq!(code, 11, "q {q:?}");
+            assert_eq!(state.orientation, q);
+            assert_eq!(telemetry.net_force, [4.0, 5.0, 6.0]);
+            assert_eq!(latch.physics_fault, 0);
+        }
+    }
+
+    // Hand calc: |q| = 1.0005 is within 1e-3, so the step runs on the re-normalized (0,0,0,1);
+    // free fall with zero throttle from rest: v_z after one step = g dt = 9.80665 * 0.002 = 0.0196133
+    // (same as with an exactly unit quaternion). Output orientation stays a unit quaternion.
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_ffi_step_slightly_non_unit_quaternion_is_normalized() {
+        let mut state = ffi_create_default_drone_state();
+        state.position[2] = -100.0;
+        state.orientation = [0.0, 0.0, 0.0, 1.0005];
+        let mut thermal = ThermalState::new();
+        let mut telemetry = DebugTelemetry::new();
+        let mut latch = FaultLatch::new();
+        let code = run_step(
+            &mut state,
+            &mut thermal,
+            &zero_controls(),
+            &dummy_config(),
+            &mut telemetry,
+            &mut latch,
+        );
+        assert_eq!(code, 0);
+        assert!((f64::from(state.velocity[2]) - 0.0196133).abs() < 1e-6);
+        let n: f64 = state
+            .orientation
+            .iter()
+            .map(|c| f64::from(*c).powi(2))
+            .sum();
+        assert!((n.sqrt() - 1.0).abs() < 1e-6);
+    }
+
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_ffi_step_nan_quaternion_latches() {
+        let mut state = ffi_create_default_drone_state();
+        state.orientation = [f32::NAN, 0.0, 0.0, 1.0];
+        let mut thermal = ThermalState::new();
+        let mut telemetry = DebugTelemetry::new();
+        let mut latch = FaultLatch::new();
+        let code = run_step(
+            &mut state,
+            &mut thermal,
+            &zero_controls(),
+            &dummy_config(),
+            &mut telemetry,
+            &mut latch,
+        );
+        assert_eq!(code, 8);
+        assert_eq!(latch.physics_fault, 1);
+        assert!(state.orientation[0].is_nan());
+        assert_eq!(thermal.motor_temp_c, [20.0; 4]);
+    }
+
+    // Finding D: hand-filled config checks. mass 0, inertia 0, max_rpm -1, mass +Inf all
+    // diverge (code 8 + latch, nothing changed); max_rpm 0 is legal (motors give 0 N) -> code 0.
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_ffi_step_revalidates_config() {
+        let bad: [fn(&mut VehicleConfig); 4] = [
+            |c| c.mass_kg = 0.0,
+            |c| c.inertia_kgm2[2] = 0.0,
+            |c| c.max_rpm = -1.0,
+            |c| c.mass_kg = f64::INFINITY,
+        ];
+        for mutate in bad {
+            let mut config = dummy_config();
+            mutate(&mut config);
+            let mut state = ffi_create_default_drone_state();
+            state.position[2] = -100.0;
+            let before = state;
+            let mut thermal = ThermalState::new();
+            let mut telemetry = DebugTelemetry::new();
+            let mut latch = FaultLatch::new();
+            let code = run_step(
+                &mut state,
+                &mut thermal,
+                &zero_controls(),
+                &config,
+                &mut telemetry,
+                &mut latch,
+            );
+            assert_eq!(code, 8);
+            assert_eq!(state.position, before.position);
+            assert_eq!(thermal.motor_temp_c, [20.0; 4]);
+            assert_eq!(latch.physics_fault, 1);
+        }
+        let mut config = dummy_config();
+        config.max_rpm = 0.0;
+        let mut state = ffi_create_default_drone_state();
+        state.position[2] = -100.0;
+        let mut thermal = ThermalState::new();
+        let mut telemetry = DebugTelemetry::new();
+        let mut latch = FaultLatch::new();
+        let mut controls = zero_controls();
+        controls.throttle = 1.0;
+        let code = run_step(
+            &mut state,
+            &mut thermal,
+            &controls,
+            &config,
+            &mut telemetry,
+            &mut latch,
+        );
+        assert_eq!(code, 0);
+        assert_eq!(telemetry.motor_thrusts, [0.0; 4]);
+    }
+
+    // Finding C: a NaN in the caller's motor_temp_c is rejected (code 8, latch), not carried on.
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_ffi_step_nan_thermal_state_latches() {
+        for bad in [f64::NAN, f64::INFINITY] {
+            let mut state = ffi_create_default_drone_state();
+            state.position[2] = -100.0;
+            let mut thermal = ThermalState::new();
+            thermal.motor_temp_c[2] = bad;
+            let mut telemetry = DebugTelemetry::new();
+            let mut latch = FaultLatch::new();
+            let code = run_step(
+                &mut state,
+                &mut thermal,
+                &zero_controls(),
+                &dummy_config(),
+                &mut telemetry,
+                &mut latch,
+            );
+            assert_eq!(code, 8);
+            assert_eq!(latch.physics_fault, 1);
+            assert_eq!(thermal.motor_temp_c[0], 20.0);
+            assert!(!thermal.motor_temp_c[2].is_finite());
+        }
+    }
+
+    // Finding C: telemetry says thermal is unvalidated on every successful step. Over-temp flag:
+    // dummy config, throttle 1.0 -> rpm 10000 -> I = (22.2 - 10) / 0.08 = 152.5 A,
+    // P = 152.5^2 * 0.05 = 1162.8125 W, so dT/dt = P / C = 23.26 K/s and one 0.002 s step adds
+    // about 0.0465 K (cooling removes about 0.0004 K). Start 119.99 C -> 120.036 C > 120: flag 1.
+    // Start 20 C -> about 20.05 C: flag 0.
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_ffi_step_reports_thermal_unvalidated_and_over_temp() {
+        let mut controls = zero_controls();
+        controls.throttle = 1.0;
+        for (start_c, want_over) in [(119.99, 1), (20.0, 0)] {
+            let mut state = ffi_create_default_drone_state();
+            state.position[2] = -100.0;
+            let mut thermal = ThermalState {
+                motor_temp_c: [start_c; 4],
+            };
+            let mut telemetry = DebugTelemetry::new();
+            let mut latch = FaultLatch::new();
+            let code = run_step(
+                &mut state,
+                &mut thermal,
+                &controls,
+                &dummy_config(),
+                &mut telemetry,
+                &mut latch,
+            );
+            assert_eq!(code, 0);
+            assert_eq!(telemetry.thermal_valid, 0);
+            assert_eq!(telemetry.thermal_over_temp, want_over, "start {start_c}");
+        }
     }
 }

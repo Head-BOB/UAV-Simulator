@@ -13,6 +13,8 @@ on:
       - 'offline_pipeline/geometry/**'
       - 'offline_pipeline/promote_model.py'
       - 'offline_pipeline/test_promote_model.py'
+      - 'offline_pipeline/test_surrogate_contract.py'
+      - 'physics_core/src/surrogate/**'
       - 'offline_pipeline/requirements.txt'
       - '.github/workflows/model-promotion.yml'
 
@@ -29,5 +31,7 @@ jobs:
         run: python -m pip install --require-hashes -r offline_pipeline/requirements.txt
       - name: Unit-test the promotion tool
         run: python -m unittest discover -s offline_pipeline -p 'test_promote_model.py'
+      - name: Surrogate input contract (stub models vs the Rust input layout)
+        run: python -m unittest discover -s offline_pipeline -p 'test_surrogate_contract.py'
       - name: Check the manifest (fails on any mismatch)
         run: python offline_pipeline/promote_model.py --check

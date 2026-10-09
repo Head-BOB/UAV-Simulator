@@ -279,10 +279,14 @@ pub struct DebugTelemetry {
     /// from a model whose `kind` is not `trained`, 0 otherwise).
     pub stub_loaded: i32,
 
-    /// Source of aerodynamic data. 0 = none, 1 = analytic fallback, 2 = surrogate.
+    /// Source of aerodynamic data. 0 = none (step rejected), 1 = analytic model, no surrogate
+    /// handle was passed, 2 = surrogate, 3 = a surrogate handle was passed but its query FAILED
+    /// and the analytic model was used instead (the two are never reported as the same value).
     pub aero_source: i32,
 
-    /// Source of structural data. 0 = none, 1 = analytic fallback, 2 = surrogate.
+    /// Source of structural data. 0 = none (no handle passed, or step rejected), 2 = surrogate,
+    /// 3 = a surrogate handle was passed but its query FAILED (margin is NaN). There is no
+    /// analytic structural fallback, so 1 is not used.
     pub fea_source: i32,
 
     /// Copy of the caller's `FaultLatch`: 1 from the faulting step until the caller clears it.
@@ -294,6 +298,16 @@ pub struct DebugTelemetry {
 
     /// Indicates physics constants lacking validated sources are in use.
     pub uncalibrated_flags: i32,
+
+    /// 1 only when every thermal constant has a sourced, verified value. 0 means the thermal
+    /// model is UNVALIDATED: `motor_temperatures_c` and `thermal_over_temp` are arithmetic on
+    /// ASSUMED constants (item B-4) and must not be used as evidence. Always 0 until B-4 closes.
+    pub thermal_valid: i32,
+
+    /// 1 if any motor winding temperature exceeds `thermal::MOTOR_TEMP_LIMIT_C` after this step
+    /// (limit is a placeholder, TODO(HUMAN-VERIFY)); 0 otherwise. Only meaningful when
+    /// `thermal_valid` is 1.
+    pub thermal_over_temp: i32,
 }
 
 impl DebugTelemetry {
@@ -315,6 +329,8 @@ impl DebugTelemetry {
             physics_fault: 0,
             dropped_time_events: 0,
             uncalibrated_flags: 0,
+            thermal_valid: 0,
+            thermal_over_temp: 0,
         }
     }
 }
@@ -323,6 +339,39 @@ impl Default for DebugTelemetry {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Largest accepted deviation of a state quaternion's norm from 1 at the FFI boundary.
+/// f32 storage keeps a unit quaternion within about 2.4e-7 of norm 1 and the integrator
+/// re-normalizes every step, so 1e-3 only trips on a caller bug (zero, scaled or garbage
+/// quaternion), never on rounding. TODO(HUMAN-VERIFY): the tolerance is an engineering choice.
+pub const QUAT_NORM_TOLERANCE: f64 = 1.0e-3;
+
+/// Why `unit_quaternion_xyzw` rejected a quaternion.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum QuatError {
+    /// A component is NaN or infinite.
+    NonFinite,
+    /// `| |q| - 1 | > QUAT_NORM_TOLERANCE` (includes the zero quaternion).
+    NotUnit,
+}
+
+/// Validates a body -> NED quaternion in (x, y, z, w) order and returns it re-normalized
+/// (norm computed in f64, result rounded to f32). Within tolerance the change is at most
+/// the tolerance; outside it the quaternion is REJECTED, never silently rescaled.
+///
+/// # Errors
+/// `NonFinite` for NaN/Inf, `NotUnit` when the norm is farther than `QUAT_NORM_TOLERANCE` from 1.
+pub fn unit_quaternion_xyzw(q: [f32; 4]) -> Result<[f32; 4], QuatError> {
+    let c = q.map(f64::from);
+    if !c.iter().all(|v| v.is_finite()) {
+        return Err(QuatError::NonFinite);
+    }
+    let norm = c.iter().map(|v| v * v).sum::<f64>().sqrt();
+    if (norm - 1.0).abs() > QUAT_NORM_TOLERANCE {
+        return Err(QuatError::NotUnit);
+    }
+    Ok(c.map(|v| (v / norm) as f32))
 }
 
 // WP-4.6 / ADR-001 Decision 7: compile-time layout guard for every repr(C) FFI struct.
@@ -344,8 +393,8 @@ const _: () = {
     assert!(size_of::<SurrogateQueryResult>() == 20 && align_of::<SurrogateQueryResult>() == 4);
     // 8 + 24 + 96 + 32 + 5*8 = 200
     assert!(size_of::<VehicleConfig>() == 200 && align_of::<VehicleConfig>() == 8);
-    // 4 vec3 f32 (48) + 3 vec4 f32 (48) + margin f32 (4) + 7 i32 (28) = 128
-    assert!(size_of::<DebugTelemetry>() == 128 && align_of::<DebugTelemetry>() == 4);
+    // 4 vec3 f32 (48) + 3 vec4 f32 (48) + margin f32 (4) + 9 i32 (36) = 136
+    assert!(size_of::<DebugTelemetry>() == 136 && align_of::<DebugTelemetry>() == 4);
 };
 
 #[cfg(test)]
@@ -401,11 +450,46 @@ mod tests {
         assert_eq!(offset_of!(VehicleConfig, hover_throttle), 192);
     }
 
+    // Hand calc: (0,0,0,1) is exact. (0,0,0,1.0005) has norm 1.0005, inside 1e-3, and
+    // normalizes to w = 1. (0,0,0,1.002) and (0,0,0,0) are rejected; (0,0,0,0.998) too.
+    // (3,0,0,4)/5 style: (0.6, 0, 0, 0.8) has norm 1 exactly in real numbers; f32 rounding of
+    // 0.6 and 0.8 keeps it within 1e-7, so it is accepted and stays within 1e-7 of (0.6, 0, 0, 0.8).
+    #[test]
+    fn test_unit_quaternion_xyzw_truth_table() {
+        assert_eq!(
+            unit_quaternion_xyzw([0.0, 0.0, 0.0, 1.0]),
+            Ok([0.0, 0.0, 0.0, 1.0])
+        );
+        assert_eq!(
+            unit_quaternion_xyzw([0.0, 0.0, 0.0, 1.0005]),
+            Ok([0.0, 0.0, 0.0, 1.0])
+        );
+        assert_eq!(
+            unit_quaternion_xyzw([0.0, 0.0, 0.0, 1.002]),
+            Err(QuatError::NotUnit)
+        );
+        assert_eq!(
+            unit_quaternion_xyzw([0.0, 0.0, 0.0, 0.998]),
+            Err(QuatError::NotUnit)
+        );
+        assert_eq!(unit_quaternion_xyzw([0.0; 4]), Err(QuatError::NotUnit));
+        assert_eq!(
+            unit_quaternion_xyzw([f32::NAN, 0.0, 0.0, 1.0]),
+            Err(QuatError::NonFinite)
+        );
+        assert_eq!(
+            unit_quaternion_xyzw([0.0, f32::INFINITY, 0.0, 1.0]),
+            Err(QuatError::NonFinite)
+        );
+        let q = unit_quaternion_xyzw([0.6, 0.0, 0.0, 0.8]).expect("unit within tolerance");
+        assert!((f64::from(q[0]) - 0.6).abs() < 1e-7 && (f64::from(q[3]) - 0.8).abs() < 1e-7);
+    }
+
     #[test]
     fn test_debug_telemetry_layout() {
         // vec3 f32 = 12 B at 0, 12, 24, 36; vec4 f32 = 16 B at 48, 64, 80; margin f32 @96;
-        // seven i32 at 100, 104, ..., 124; total 128.
-        assert_eq!(std::mem::size_of::<DebugTelemetry>(), 128);
+        // nine i32 at 100, 104, ..., 132; total 136.
+        assert_eq!(std::mem::size_of::<DebugTelemetry>(), 136);
         assert_eq!(offset_of!(DebugTelemetry, net_thrust), 0);
         assert_eq!(offset_of!(DebugTelemetry, aero_drag), 12);
         assert_eq!(offset_of!(DebugTelemetry, gravity), 24);
@@ -421,6 +505,8 @@ mod tests {
         assert_eq!(offset_of!(DebugTelemetry, physics_fault), 116);
         assert_eq!(offset_of!(DebugTelemetry, dropped_time_events), 120);
         assert_eq!(offset_of!(DebugTelemetry, uncalibrated_flags), 124);
+        assert_eq!(offset_of!(DebugTelemetry, thermal_valid), 128);
+        assert_eq!(offset_of!(DebugTelemetry, thermal_over_temp), 132);
     }
 
     #[test]

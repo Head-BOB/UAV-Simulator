@@ -152,6 +152,35 @@ an open question. Source `unmapped` = no requirement ID exists yet. Hazard IDs (
 | FEA inputs: NaN in first temperature position | WP-7 D.3, HZ-03 | `surrogate::fea_surrogate::tests::test_fea_inputs_nan_in_first_position_also_rejected` | motor_temp_k NaN | PASS |  |
 | FEA model input order | WP-7 D.3 | `surrogate::fea_surrogate::tests::test_fea_to_model_inputs_order` | exact [1..8] order, length 8 | PASS | stub model input width is 8 (checked with onnx, not queried) |
 | Envelope flag truth table | WP-6, WP-11.3 | `tests::test_envelope_flag_truth_table` | exact 0/1 for all 9 combinations of none/in/out | PASS | pure move of the previous inline logic |
+| Stub model never reports validated (envelope forced to 0) | Review A | `surrogate::tests::test_force_unvalidated_if_stub_truth_table` | 4 exact cases; other fields unchanged | PASS | wiring inside query_model needs ONNX Runtime and is NOT run (B-13); step level covered by test_step_envelope_flag_truth_table |
+| Step envelope flag: stub or failed model gives 0 | Review A, F | `tests::test_step_envelope_flag_truth_table` | 6 exact cases | PASS |  |
+| Guard converts a panic to code 99 | Review B | `tests::test_guarded_converts_panic_to_code_99` | exact codes 99, 5, -7; constants 99 and 98 | PASS |  |
+| Cargo profile does not set panic = abort (catch_unwind needs unwind) | Review B | `tests::test_cargo_profile_does_not_abort_on_panic` | manifest text has no panic abort | PASS | guards the manifest only; a RUSTFLAGS panic=abort build is not detected |
+| Deliberate panic is caught in version, size, default state, reset, config load | Review B | `tests::test_ffi_panic_is_caught_in_pure_exports` | exact -1, -1, NaN state, 99, 99; state untouched | PASS |  |
+| Deliberate panic is caught in step, load, query, unload; nothing written | Review B | `tests::test_ffi_panic_is_caught_in_step_and_handle_exports` | exact 99 x4; state, thermal, telemetry, latch, out pointers unchanged | PASS |  |
+| Registry register, lookup, remove, double remove | Review B | `registry::tests::test_registry_register_lookup_remove` | exact Some/None sequence | PASS |  |
+| Registry step slot pairs truth table (null, live, alias, unknown) | Review B | `registry::tests::test_registry_step_slots_truth_table` | 7 exact cases | PASS |  |
+| Registry lock is not held while a handle is in use | Review B | `registry::tests::test_registry_not_held_while_slot_is_locked` | no hang (single thread); lookups, register, remove succeed | PASS |  |
+| Unload waits for an in-flight query, then the slot is dead | Review B | `registry::tests::test_unload_waits_for_in_flight_query` | blocked at 100 ms, done after release | PASS | timing check can only false-pass if the OS stalls the worker 100 ms |
+| Stale slot looked up before unload reads Dead | Review B | `registry::tests::test_stale_slot_after_unload_is_dead` | exact status Dead | PASS |  |
+| Poisoned registry lock recovers: Recovered once, then works, entries kept | Review B | `registry::tests::test_registry_poison_is_recovered_once` | exact error then Ok | PASS |  |
+| Poisoned slot marks the handle Faulted permanently, still unloadable | Review B | `registry::tests::test_slot_poison_marks_handle_faulted` | Faulted twice, then Dead | PASS |  |
+| Slot status truth table | Review B | `registry::tests::test_slot_status_truth_table` | 4 exact cases | PASS |  |
+| Locking two slots in opposite orders does not deadlock | Review B | `registry::tests::test_lock_pair_opposite_orders_do_not_deadlock` | 200000 iterations x 2 threads finish | PASS | failure mode is a hang until the CI timeout |
+| Over-temperature comparison is strict, NaN is not over | Review C | `thermal::tests::test_any_over_temp_truth_table` | 5 exact cases at limit 120 | PASS |  |
+| Temperature finiteness check | Review C | `thermal::tests::test_all_finite_truth_table` | 4 exact cases | PASS |  |
+| Thermal constants stay flagged unvalidated until B-4 is closed by a human | Review C | `thermal::tests::test_thermal_stays_unvalidated_until_b4` | const assert false | PASS | fails on purpose if the flag is flipped |
+| Step telemetry: thermal_valid 0; over-temp 1 at 119.99 C start, 0 at 20 C | Review C | `tests::test_ffi_step_reports_thermal_unvalidated_and_over_temp` | exact flags; hand calc 0.0465 K per step | PASS | arithmetic on ASSUMED constants (B-4) |
+| NaN or Inf in the caller's motor_temp_c gives code 8 and latch | Review C | `tests::test_ffi_step_nan_thermal_state_latches` | code 8; latch 1; thermal unchanged | PASS | the output-side finiteness check is redundant with the input check, so removing only the input check is not caught |
+| Runtime config re-check truth table | Review D | `config::tests::test_validate_runtime_config_truth_table` | exact variant per case; max_rpm 0 allowed | PASS |  |
+| Step re-validates a hand-filled config (mass 0, inertia 0, max_rpm -1, Inf mass give code 8; max_rpm 0 ok) | Review D | `tests::test_ffi_step_revalidates_config` | code 8 + latch x4; code 0 and thrust [0;4] for max_rpm 0 | PASS |  |
+| Code 6 resets telemetry to no data and leaves the latch | Review D | `tests::test_ffi_step_code_6_resets_telemetry_and_leaves_latch` | telemetry fields exact; latch 0, stays 1 when preset | PASS |  |
+| Unit quaternion check: tolerance 1e-3, normalization, NaN, zero | Review F | `types::tests::test_unit_quaternion_xyzw_truth_table` | exact results; abs 1e-7 for (0.6, 0.8) | PASS |  |
+| Non-unit state quaternion gives code 11 and writes nothing | Review F | `tests::test_ffi_step_code_11_non_unit_quaternion_writes_nothing` | code 11 x3; state, telemetry, latch unchanged | PASS |  |
+| Slightly non-unit quaternion is normalized and the step runs | Review F | `tests::test_ffi_step_slightly_non_unit_quaternion_is_normalized` | vz = 0.0196133 abs 1e-6; norm 1 abs 1e-6 | PASS |  |
+| NaN state quaternion gives code 8 and latch | Review F | `tests::test_ffi_step_nan_quaternion_latches` | code 8; latch 1 | PASS |  |
+| Telemetry source codes: model failed (3) differs from no model (aero 1, fea 0) | Review F | `tests::test_source_codes_distinguish_failed_from_absent` | 6 exact cases | PASS | a real failing ONNX model is NOT tested (needs ONNX Runtime, B-13) |
+| Rejected-step telemetry is all no-data | Review D, F | `tests::test_rejected_telemetry_is_no_data` | exact fields; margin NaN | PASS |  |
 
 ## Python tests (not parsed by `tools/check_traceability.py`; run by `python -m unittest discover -s offline_pipeline/fea -p 'test_*.py'`)
 

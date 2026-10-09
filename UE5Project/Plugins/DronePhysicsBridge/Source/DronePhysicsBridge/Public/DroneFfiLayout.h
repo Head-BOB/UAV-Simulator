@@ -20,7 +20,7 @@
 
 // Must equal Rust ffi_get_interface_version(). Checked by the Rust test
 // types::tests::test_cpp_expected_version_matches_rust, which parses the next line, so keep its form.
-constexpr std::int32_t kDroneFfiExpectedInterfaceVersion = 9;
+constexpr std::int32_t kDroneFfiExpectedInterfaceVersion = 10;
 
 // DroneState: 3*8 + 3*4 + 4*4 + 3*4 = 64
 static_assert(sizeof(DroneState) == 64, "DroneState size");
@@ -68,8 +68,8 @@ static_assert(offsetof(VehicleConfig, torque_coeff) == 176, "VehicleConfig.torqu
 static_assert(offsetof(VehicleConfig, max_rpm) == 184, "VehicleConfig.max_rpm");
 static_assert(offsetof(VehicleConfig, hover_throttle) == 192, "VehicleConfig.hover_throttle");
 
-// DebugTelemetry: 4 vec3 f32 (48) + 3 vec4 f32 (48) + margin f32 (4) + 7 int32 (28) = 128
-static_assert(sizeof(DebugTelemetry) == 128, "DebugTelemetry size");
+// DebugTelemetry: 4 vec3 f32 (48) + 3 vec4 f32 (48) + margin f32 (4) + 9 int32 (36) = 136
+static_assert(sizeof(DebugTelemetry) == 136, "DebugTelemetry size");
 static_assert(alignof(DebugTelemetry) == 4, "DebugTelemetry align");
 static_assert(offsetof(DebugTelemetry, net_thrust) == 0, "DebugTelemetry.net_thrust");
 static_assert(offsetof(DebugTelemetry, aero_drag) == 12, "DebugTelemetry.aero_drag");
@@ -86,3 +86,5 @@ static_assert(offsetof(DebugTelemetry, fea_source) == 112, "DebugTelemetry.fea_s
 static_assert(offsetof(DebugTelemetry, physics_fault) == 116, "DebugTelemetry.physics_fault");
 static_assert(offsetof(DebugTelemetry, dropped_time_events) == 120, "DebugTelemetry.dropped_time_events");
 static_assert(offsetof(DebugTelemetry, uncalibrated_flags) == 124, "DebugTelemetry.uncalibrated_flags");
+static_assert(offsetof(DebugTelemetry, thermal_valid) == 128, "DebugTelemetry.thermal_valid");
+static_assert(offsetof(DebugTelemetry, thermal_over_temp) == 132, "DebugTelemetry.thermal_over_temp");
