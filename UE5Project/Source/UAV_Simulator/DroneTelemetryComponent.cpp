@@ -78,6 +78,7 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		if (PC->IsInputKeyDown(EKeys::D)) LiveInputs.roll = 1.0f;
 	}
 
+	const WindInput StillAir = {{0.0, 0.0, 0.0}};
 	constexpr double FixedDt = 0.002;
 	constexpr int32 MaxSubsteps = 20;
 
@@ -88,7 +89,7 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	while (Accumulator >= FixedDt && Steps < MaxSubsteps)
 	{
 		DebugTelemetry StepTelemetry = {};
-		if (!FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &Thermal, &LiveInputs, AeroHandle, FeaHandle, &Config, &StepTelemetry, &PhysicsFaultLatch, FixedDt))
+		if (!FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &Thermal, &LiveInputs, &StillAir, AeroHandle, FeaHandle, &Config, &StepTelemetry, &PhysicsFaultLatch, FixedDt))
 		{
 			bPhysicsFault = true;
 			break;

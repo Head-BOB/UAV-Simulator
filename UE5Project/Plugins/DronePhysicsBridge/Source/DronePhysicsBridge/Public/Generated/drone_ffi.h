@@ -54,6 +54,13 @@
 #define MOTOR_TEMP_LIMIT_C 120.0
 
 /**
+ * Largest accepted |component| of `WindInput::wind_ned_mps`, m/s.
+ * TODO(HUMAN-VERIFY: demo value) Chosen by the project owner as a sanity bound for the demo
+ * (30 m/s is about gale force); it is not a validated aerodynamic limit of the drag model.
+ */
+#define MAX_WIND_COMPONENT_MPS 30.0
+
+/**
  * Largest accepted deviation of a state quaternion's norm from 1 at the FFI boundary.
  * f32 storage keeps a unit quaternion within about 2.4e-7 of norm 1 and the integrator
  * re-normalizes every step, so 1e-3 only trips on a caller bug (zero, scaled or garbage
@@ -155,6 +162,23 @@ typedef struct ControlInputs {
    */
   float yaw;
 } ControlInputs;
+
+/**
+ * Ambient wind for one `ffi_step_physics` call (interface v11).
+ *
+ * COORDINATE FRAME: NED world frame (ADR-001), the direction the air moves TOWARD.
+ * All zeros is still air. The step computes the air-relative velocity
+ * `v_air = v_ground - wind_ned_mps` for the aerodynamic drag only.
+ */
+typedef struct WindInput {
+  /**
+   * Wind velocity, north / east / down components.
+   *
+   * # Units
+   * Metres per second, f64. Each component must be finite with |value| <= `MAX_WIND_COMPONENT_MPS`.
+   */
+  double wind_ned_mps[3];
+} WindInput;
 
 /**
  * Physical properties and layout of the specific airframe being simulated.
@@ -439,6 +463,11 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
  *
  * Executes modules in strict order: Aero -> Structural -> Thermal -> Mixer -> Integrator.
  *
+ * # Wind (interface v11)
+ * `wind` is the ambient air velocity in the NED world frame, m/s, all zeros = still air. Only the
+ * aerodynamic drag uses it, through the air-relative velocity `v_air = v_ground - wind`. Thrust,
+ * thermal convection (ground speed) and everything else are unchanged.
+ *
  * # Units
  * * `dt` - Timestep in seconds.
  *
@@ -456,12 +485,14 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
  *   or `aero_handle` and `fea_handle` are the same non-null handle
  * * `11` - `state.orientation` is finite but its norm differs from 1 by more than
  *   `types::QUAT_NORM_TOLERANCE` (rejected, never silently rescaled)
+ * * `12` - `wind.wind_ned_mps` has a NaN/Inf component or a component with magnitude above
+ *   `types::MAX_WIND_COMPONENT_MPS` (30 m/s). Rejected before any computation: NOTHING is written.
  * * `98` - an internal lock was poisoned and recovered; nothing was done, call again
  * * `99` - a panic was caught, or a handle was faulted by an earlier panic; the run is invalid
  *
  * # Behavior on a failed step
  * * `state` and `thermal_state` are always unchanged.
- * * Codes 1, 7, 9, 11, 98 and 99 are rejected before any computation: NOTHING is written
+ * * Codes 1, 7, 9, 11, 12, 98 and 99 are rejected before any computation: NOTHING is written
  *   (telemetry and latch keep their previous values).
  * * Codes 6 and 8 fail during the tick: `out_telemetry` is overwritten with "no data" (margin
  *   NaN, `is_validated_envelope` 0, sources 0, `thermal_valid` 0, `physics_fault` = latch value,
@@ -480,6 +511,7 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
  * * `state` must be a valid, aligned, mutable pointer to a DroneState.
  * * `thermal_state` must be a valid, aligned, mutable pointer to a ThermalState.
  * * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
+ * * `wind` must be a valid, aligned, immutable pointer to a `WindInput` (null gives code 1).
  * * `aero_handle` and `fea_handle` may be null. If non-null, must be valid SurrogateHandles.
  * * `config` must be a valid, aligned, immutable pointer to a VehicleConfig.
  * * `out_telemetry` must be a valid, aligned, mutable pointer to a DebugTelemetry struct.
@@ -489,6 +521,7 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
 int32_t ffi_step_physics(struct DroneState *state,
                          struct ThermalState *thermal_state,
                          const struct ControlInputs *controls,
+                         const struct WindInput *wind,
                          struct SurrogateHandle *aero_handle,
                          struct SurrogateHandle *fea_handle,
                          const struct VehicleConfig *config,

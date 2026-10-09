@@ -5,7 +5,7 @@ use crate::surrogate::SurrogateHandle;
 use crate::surrogate::aero_surrogate::{body_to_ned, query_aero};
 #[cfg(feature = "onnx")]
 use crate::types::SurrogateQueryResult;
-use crate::types::{DroneState, VehicleConfig};
+use crate::types::{DroneState, MAX_WIND_COMPONENT_MPS, VehicleConfig, WindInput};
 use glam::{DQuat, DVec3};
 
 const DRAG_COEFF_X: f64 = 1.0;
@@ -39,6 +39,55 @@ fn compute_air_density(altitude: f64) -> Result<f64, AeroError> {
     let pressure_at_alt = STD_PRESSURE * pressure_ratio;
 
     Ok(pressure_at_alt / (SPECIFIC_GAS_CONST * temp_at_alt))
+}
+
+/// Why a `WindInput` was rejected.
+#[derive(Debug, PartialEq, Eq)]
+pub enum WindError {
+    /// A component is NaN or infinite.
+    NonFinite,
+    /// A component's magnitude is above `MAX_WIND_COMPONENT_MPS`.
+    TooLarge,
+}
+
+/// Checks that the wind is finite and each |component| <= `MAX_WIND_COMPONENT_MPS` (30 m/s).
+/// Exactly 30.0 is accepted; the bound is on each NED component, not on the vector norm.
+///
+/// # Errors
+/// `NonFinite` for NaN/Inf (checked first), `TooLarge` for a component beyond the bound.
+pub fn validate_wind(wind: &WindInput) -> Result<(), WindError> {
+    if wind.wind_ned_mps.iter().any(|c| !c.is_finite()) {
+        return Err(WindError::NonFinite);
+    }
+    if wind
+        .wind_ned_mps
+        .iter()
+        .any(|c| c.abs() > MAX_WIND_COMPONENT_MPS)
+    {
+        return Err(WindError::TooLarge);
+    }
+    Ok(())
+}
+
+/// Air-relative velocity `v_air = v_ground - wind`, NED frame, m/s.
+///
+/// The subtraction is done in f64 and narrowed once to the f32 state precision. With zero wind
+/// the f32 -> f64 -> f32 round trip is exact, so the result is bit-identical to `v_ground`.
+/// (`-0.0 - 0.0 = -0.0` keeps the sign of a negative zero.) `wind` must have passed `validate_wind`.
+#[must_use]
+pub fn air_relative_velocity(v_ground_ned_mps: [f32; 3], wind: &WindInput) -> [f32; 3] {
+    let mut v_air = [0.0f32; 3];
+    for (out, (v, w)) in v_air
+        .iter_mut()
+        .zip(v_ground_ned_mps.iter().zip(wind.wind_ned_mps.iter()))
+    {
+        // Narrowing to the f32 state precision is intended (see DroneState::velocity).
+        #[allow(clippy::cast_possible_truncation)]
+        {
+            *out = (f64::from(*v) - *w) as f32;
+        }
+    }
+    v_air
 }
 
 /// Computes the aerodynamic drag force vector.
@@ -410,6 +459,119 @@ mod tests {
                 hover_throttle(&cfg, alt),
                 Err(AeroError::AltitudeOutOfRange)
             ));
+        }
+    }
+    fn wind_state(velocity: [f32; 3], orientation: [f32; 4]) -> DroneState {
+        DroneState {
+            position: [0.0, 0.0, 0.0],
+            velocity,
+            orientation,
+            angular_velocity: [0.0, 0.0, 0.0],
+        }
+    }
+
+    fn wind_of(w: [f64; 3]) -> WindInput {
+        WindInput { wind_ned_mps: w }
+    }
+
+    #[test]
+    fn test_wind_zero_wind_velocity_is_bit_identical() {
+        // v - 0.0 is exact in f64 for every f32 value, and the narrowing back to f32 is exact,
+        // so zero wind must return the identical bits (including -0.0 and a subnormal).
+        let cases = [
+            [3.0f32, -2.0, 1.0],
+            [-0.0, 0.0, -0.0],
+            [1.0e-45, -1.0e-45, 0.1],
+            [123456.78, -0.3, f32::MAX],
+        ];
+        for v in cases {
+            let out = air_relative_velocity(v, &WindInput::still());
+            for k in 0..3 {
+                assert_eq!(out[k].to_bits(), v[k].to_bits(), "component {k} of {v:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn test_wind_zero_wind_drag_is_bit_identical() {
+        // Moving 3 m/s north, yawed 30 deg: the drag computed from the air-relative velocity
+        // with zero wind must equal the drag computed from the ground velocity, bit for bit.
+        let half = 15.0_f32.to_radians();
+        let q = [0.0, 0.0, half.sin(), half.cos()];
+        let ground = wind_state([3.0, -2.0, 1.0], q);
+        let air = wind_state(
+            air_relative_velocity(ground.velocity, &WindInput::still()),
+            q,
+        );
+        let a = get_drag(&ground, 0.0).unwrap();
+        let b = get_drag(&air, 0.0).unwrap();
+        for k in 0..3 {
+            assert_eq!(a[k].to_bits(), b[k].to_bits());
+        }
+    }
+
+    #[test]
+    fn test_wind_head_wind_at_hover_drag_opposes_apparent_air_motion() {
+        // Hover (v_ground = 0), identity attitude (body X = north), wind blowing TOWARD south:
+        // wind_ned = (-5, 0, 0). v_air = 0 - (-5) = +5 m/s north: the vehicle moves north
+        // relative to the air, so drag points south (-X) and equals
+        // F = -0.5 * rho * v^2 * Cd * A = -0.5 * 1.2250 * 25 * 1.0 * 0.02 = -0.30625 N.
+        // rho(0 m) = 1.2250 kg/m3 (ISA, same value and 1e-4 relative tolerance as test_b1_isa_values).
+        let wind = wind_of([-5.0, 0.0, 0.0]);
+        let v_air = air_relative_velocity([0.0; 3], &wind);
+        assert_eq!(v_air, [5.0, 0.0, 0.0]);
+        let drag = get_drag(&wind_state(v_air, [0.0, 0.0, 0.0, 1.0]), 0.0).unwrap();
+        assert!((f64::from(drag[0]) + 0.30625).abs() < 0.30625 * 1e-4 + 1e-6);
+        assert_eq!(drag[1], 0.0);
+        assert_eq!(drag[2], 0.0);
+    }
+
+    #[test]
+    fn test_wind_vertical_wind_uses_z_coefficient() {
+        // wind_ned = (0, 0, -4): air moving UP (NED -Z). v_air = +4 m/s down relative to the air,
+        // so drag points up (-Z): F = -0.5 * 1.2250 * 16 * 1.5 * 0.08 = -1.176 N.
+        let wind = wind_of([0.0, 0.0, -4.0]);
+        let v_air = air_relative_velocity([0.0; 3], &wind);
+        let drag = get_drag(&wind_state(v_air, [0.0, 0.0, 0.0, 1.0]), 0.0).unwrap();
+        assert!((f64::from(drag[2]) + 1.176).abs() < 1.176 * 1e-4 + 1e-6);
+        assert_eq!(drag[0], 0.0);
+        assert_eq!(drag[1], 0.0);
+    }
+
+    #[test]
+    fn test_wind_equal_to_vehicle_velocity_gives_zero_drag() {
+        // v_air = v_ground - wind = (3, -2, 1) - (3, -2, 1) = 0 exactly (all values exact in f32),
+        // and get_drag returns exactly 0 for a zero velocity, in any attitude.
+        let half = 15.0_f32.to_radians();
+        let q = [0.0, 0.0, half.sin(), half.cos()];
+        let wind = wind_of([3.0, -2.0, 1.0]);
+        let v_air = air_relative_velocity([3.0, -2.0, 1.0], &wind);
+        assert_eq!(v_air, [0.0, 0.0, 0.0]);
+        assert_eq!(get_drag(&wind_state(v_air, q), 0.0).unwrap(), [0.0; 3]);
+    }
+
+    #[test]
+    fn test_wind_validation_rejects_non_finite_and_over_30() {
+        assert_eq!(validate_wind(&WindInput::still()), Ok(()));
+        // The bound is inclusive: exactly +-30 is accepted.
+        assert_eq!(validate_wind(&wind_of([30.0, -30.0, 30.0])), Ok(()));
+        for k in 0..3 {
+            for (bad, want) in [
+                (f64::NAN, WindError::NonFinite),
+                (f64::INFINITY, WindError::NonFinite),
+                (f64::NEG_INFINITY, WindError::NonFinite),
+                (31.0, WindError::TooLarge),
+                (-31.0, WindError::TooLarge),
+                (30.000001, WindError::TooLarge),
+            ] {
+                let mut w = [1.0, 2.0, 3.0];
+                w[k] = bad;
+                assert_eq!(
+                    validate_wind(&wind_of(w)),
+                    Err(want),
+                    "component {k}, value {bad}"
+                );
+            }
         }
     }
 }

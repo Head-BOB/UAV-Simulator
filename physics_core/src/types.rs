@@ -68,6 +68,42 @@ pub struct ControlInputs {
     pub yaw: f32,
 }
 
+/// Ambient wind for one `ffi_step_physics` call (interface v11).
+///
+/// COORDINATE FRAME: NED world frame (ADR-001), the direction the air moves TOWARD.
+/// All zeros is still air. The step computes the air-relative velocity
+/// `v_air = v_ground - wind_ned_mps` for the aerodynamic drag only.
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct WindInput {
+    /// Wind velocity, north / east / down components.
+    ///
+    /// # Units
+    /// Metres per second, f64. Each component must be finite with |value| <= `MAX_WIND_COMPONENT_MPS`.
+    pub wind_ned_mps: [f64; 3],
+}
+
+impl WindInput {
+    /// Still air.
+    #[must_use]
+    pub const fn still() -> Self {
+        Self {
+            wind_ned_mps: [0.0; 3],
+        }
+    }
+}
+
+impl Default for WindInput {
+    fn default() -> Self {
+        Self::still()
+    }
+}
+
+/// Largest accepted |component| of `WindInput::wind_ned_mps`, m/s.
+/// TODO(HUMAN-VERIFY: demo value) Chosen by the project owner as a sanity bound for the demo
+/// (30 m/s is about gale force); it is not a validated aerodynamic limit of the drag model.
+pub const MAX_WIND_COMPONENT_MPS: f64 = 30.0;
+
 /// State container for the thermal and electrical simulation.
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -387,6 +423,8 @@ const _: () = {
     assert!(size_of::<ControlInputs>() == 16 && align_of::<ControlInputs>() == 4);
     // 4*8 = 32
     assert!(size_of::<ThermalState>() == 32 && align_of::<ThermalState>() == 8);
+    // 3*8 = 24
+    assert!(size_of::<WindInput>() == 24 && align_of::<WindInput>() == 8);
     // 1*4 = 4
     assert!(size_of::<FaultLatch>() == 4 && align_of::<FaultLatch>() == 4);
     // 3*4 + 4 + 4 = 20
@@ -422,6 +460,15 @@ mod tests {
         assert_eq!(std::mem::size_of::<FaultLatch>(), 4);
         assert_eq!(offset_of!(FaultLatch, physics_fault), 0);
         assert_eq!(FaultLatch::new().physics_fault, 0);
+    }
+
+    #[test]
+    fn test_wind_input_layout() {
+        // 3 x f64, no padding: offset 0, size 24, align 8. Zero is still air.
+        assert_eq!(std::mem::size_of::<WindInput>(), 24);
+        assert_eq!(std::mem::align_of::<WindInput>(), 8);
+        assert_eq!(offset_of!(WindInput, wind_ned_mps), 0);
+        assert_eq!(WindInput::still().wind_ned_mps, [0.0; 3]);
     }
 
     #[test]

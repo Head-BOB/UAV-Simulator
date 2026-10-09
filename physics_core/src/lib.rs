@@ -16,7 +16,7 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 #[cfg(feature = "onnx")]
 use surrogate::fea_surrogate::fea_inputs;
 #[cfg(feature = "onnx")]
-use types::{ControlInputs, DebugTelemetry, SurrogateQueryResult, ThermalState};
+use types::{ControlInputs, DebugTelemetry, SurrogateQueryResult, ThermalState, WindInput};
 use types::{DroneState, FaultLatch};
 
 // Without the `onnx` feature the FFI entry points that use surrogate handles are compiled out, so
@@ -178,7 +178,7 @@ fn rejected_telemetry(latch_value: i32) -> types::DebugTelemetry {
 /// Safe to call at any time.
 #[unsafe(no_mangle)]
 pub extern "C" fn ffi_get_interface_version() -> i32 {
-    guarded_or(FFI_VALUE_PANIC, || 10)
+    guarded_or(FFI_VALUE_PANIC, || 11)
 }
 
 /// Allows UE5 to verify the byte size of DroneState during module initialization.
@@ -283,6 +283,7 @@ fn validate_step_inputs(
     state: &DroneState,
     thermal_state: &ThermalState,
     config: &types::VehicleConfig,
+    wind: &WindInput,
     dt: f64,
 ) -> Result<[f32; 4], StepStop> {
     if dt <= 0.0 || dt.is_nan() || dt > 0.01 {
@@ -296,11 +297,16 @@ fn validate_step_inputs(
     if !thermal::all_finite(&thermal_state.motor_temp_c) {
         return Err(StepStop::Diverged);
     }
-    match types::unit_quaternion_xyzw(state.orientation) {
-        Ok(q) => Ok(q),
-        Err(types::QuatError::NonFinite) => Err(StepStop::Diverged),
-        Err(types::QuatError::NotUnit) => Err(StepStop::Silent(11)),
+    let work_orientation = match types::unit_quaternion_xyzw(state.orientation) {
+        Ok(q) => q,
+        Err(types::QuatError::NonFinite) => return Err(StepStop::Diverged),
+        Err(types::QuatError::NotUnit) => return Err(StepStop::Silent(11)),
+    };
+    // Checked last so every earlier rejection keeps its code. Nothing is written (code 12).
+    if aero::validate_wind(wind).is_err() {
+        return Err(StepStop::Silent(12));
     }
+    Ok(work_orientation)
 }
 
 /// True if any component of the new state is NaN or infinite.
@@ -315,6 +321,11 @@ fn state_has_nan(s: &DroneState) -> bool {
 /// Main execution block for the fixed-timestep RK4 physics pipeline.
 ///
 /// Executes modules in strict order: Aero -> Structural -> Thermal -> Mixer -> Integrator.
+///
+/// # Wind (interface v11)
+/// `wind` is the ambient air velocity in the NED world frame, m/s, all zeros = still air. Only the
+/// aerodynamic drag uses it, through the air-relative velocity `v_air = v_ground - wind`. Thrust,
+/// thermal convection (ground speed) and everything else are unchanged.
 ///
 /// # Units
 /// * `dt` - Timestep in seconds.
@@ -333,12 +344,14 @@ fn state_has_nan(s: &DroneState) -> bool {
 ///   or `aero_handle` and `fea_handle` are the same non-null handle
 /// * `11` - `state.orientation` is finite but its norm differs from 1 by more than
 ///   `types::QUAT_NORM_TOLERANCE` (rejected, never silently rescaled)
+/// * `12` - `wind.wind_ned_mps` has a NaN/Inf component or a component with magnitude above
+///   `types::MAX_WIND_COMPONENT_MPS` (30 m/s). Rejected before any computation: NOTHING is written.
 /// * `98` - an internal lock was poisoned and recovered; nothing was done, call again
 /// * `99` - a panic was caught, or a handle was faulted by an earlier panic; the run is invalid
 ///
 /// # Behavior on a failed step
 /// * `state` and `thermal_state` are always unchanged.
-/// * Codes 1, 7, 9, 11, 98 and 99 are rejected before any computation: NOTHING is written
+/// * Codes 1, 7, 9, 11, 12, 98 and 99 are rejected before any computation: NOTHING is written
 ///   (telemetry and latch keep their previous values).
 /// * Codes 6 and 8 fail during the tick: `out_telemetry` is overwritten with "no data" (margin
 ///   NaN, `is_validated_envelope` 0, sources 0, `thermal_valid` 0, `physics_fault` = latch value,
@@ -357,6 +370,7 @@ fn state_has_nan(s: &DroneState) -> bool {
 /// * `state` must be a valid, aligned, mutable pointer to a DroneState.
 /// * `thermal_state` must be a valid, aligned, mutable pointer to a ThermalState.
 /// * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
+/// * `wind` must be a valid, aligned, immutable pointer to a `WindInput` (null gives code 1).
 /// * `aero_handle` and `fea_handle` may be null. If non-null, must be valid SurrogateHandles.
 /// * `config` must be a valid, aligned, immutable pointer to a VehicleConfig.
 /// * `out_telemetry` must be a valid, aligned, mutable pointer to a DebugTelemetry struct.
@@ -368,6 +382,7 @@ pub unsafe extern "C" fn ffi_step_physics(
     state: *mut DroneState,
     thermal_state: *mut ThermalState,
     controls: *const ControlInputs,
+    wind: *const WindInput,
     aero_handle: *mut surrogate::SurrogateHandle,
     fea_handle: *mut surrogate::SurrogateHandle,
     config: *const types::VehicleConfig,
@@ -379,6 +394,7 @@ pub unsafe extern "C" fn ffi_step_physics(
         if state.is_null()
             || thermal_state.is_null()
             || controls.is_null()
+            || wind.is_null()
             || config.is_null()
             || out_telemetry.is_null()
             || fault_latch.is_null()
@@ -391,6 +407,7 @@ pub unsafe extern "C" fn ffi_step_physics(
                 state,
                 thermal_state,
                 controls,
+                wind,
                 aero_handle,
                 fea_handle,
                 config,
@@ -419,6 +436,22 @@ fn locked_status_to_stop(guard: &Option<SlotGuard<'_>>) -> Option<StepStop> {
     }
 }
 
+/// Aerodynamic drag (NED force) for the air-relative velocity `v_air = v_ground - wind`.
+/// Only the velocity differs from `state`; the integrator still advances the ground velocity.
+#[cfg(feature = "onnx")]
+fn drag_in_wind(
+    state: &DroneState,
+    wind: &WindInput,
+    altitude_m: f64,
+    aero_handle: Option<&mut surrogate::SurrogateHandle>,
+) -> Result<([f32; 3], Option<SurrogateQueryResult>), aero::AeroError> {
+    let air_state = DroneState {
+        velocity: aero::air_relative_velocity(state.velocity, wind),
+        ..*state
+    };
+    aero::get_drag_with_fallback(&air_state, altitude_m, aero_handle)
+}
+
 /// Step body after the null checks. Returns `Ok(())` after writing state and telemetry.
 ///
 /// # Safety
@@ -429,6 +462,7 @@ unsafe fn step_checked(
     state: *mut DroneState,
     thermal_state: *mut ThermalState,
     controls: *const ControlInputs,
+    wind: *const WindInput,
     aero_handle: *mut surrogate::SurrogateHandle,
     fea_handle: *mut surrogate::SurrogateHandle,
     config: *const types::VehicleConfig,
@@ -437,11 +471,16 @@ unsafe fn step_checked(
     dt: f64,
 ) -> Result<(), StepStop> {
     // SAFETY: the caller guarantees the pointers are valid; these are plain Copy reads.
-    let (original_state, original_thermal, current_controls, current_config) =
-        unsafe { (*state, *thermal_state, *controls, *config) };
+    let (original_state, original_thermal, current_controls, current_config, current_wind) =
+        unsafe { (*state, *thermal_state, *controls, *config, *wind) };
 
-    let work_orientation =
-        validate_step_inputs(&original_state, &original_thermal, &current_config, dt)?;
+    let work_orientation = validate_step_inputs(
+        &original_state,
+        &original_thermal,
+        &current_config,
+        &current_wind,
+        dt,
+    )?;
 
     // Slots are looked up under the registry lock, which is released before any inference.
     let (aero_slot, fea_slot) = if aero_handle.is_null() && fea_handle.is_null() {
@@ -482,18 +521,14 @@ unsafe fn step_checked(
     let altitude = -work_state.position[2];
     let airspeed = airspeed_mps(work_state.velocity);
 
-    let (drag, aero_result) = aero::get_drag_with_fallback(&work_state, altitude, aero_opt)
+    let (drag, aero_result) = drag_in_wind(&work_state, &current_wind, altitude, aero_opt)
         .map_err(|_| StepStop::NoData(6))?;
     let throttles = mixer::mix_controls(&current_controls);
     let thrusts =
         motor_thrusts_n(throttles, &current_config, altitude).map_err(|_| StepStop::NoData(6))?;
 
-    let fea_in = fea_inputs(
-        thrusts,
-        drag,
-        work_orientation,
-        original_thermal.motor_temp_c,
-    );
+    let temps_c = original_thermal.motor_temp_c;
+    let fea_in = fea_inputs(thrusts, drag, work_orientation, temps_c);
     let (safety_margin, fea_result) = structural::get_safety_margin_with_fallback(&fea_in, fea_opt);
 
     let motor_rpms = throttles.map(|t| t * current_config.max_rpm);
@@ -878,6 +913,7 @@ mod tests {
                     ptr::null_mut(),
                     &mut thermal,
                     &controls,
+                    &WindInput::still(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -892,6 +928,7 @@ mod tests {
                     &mut state,
                     ptr::null_mut(),
                     &controls,
+                    &WindInput::still(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -906,6 +943,7 @@ mod tests {
                     &mut state,
                     &mut thermal,
                     ptr::null(),
+                    &WindInput::still(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -920,6 +958,7 @@ mod tests {
                     &mut state,
                     &mut thermal,
                     &controls,
+                    &WindInput::still(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     ptr::null(),
@@ -934,6 +973,7 @@ mod tests {
                     &mut state,
                     &mut thermal,
                     &controls,
+                    &WindInput::still(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -967,6 +1007,7 @@ mod tests {
                     &mut state,
                     &mut thermal,
                     &controls,
+                    &WindInput::still(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -981,6 +1022,7 @@ mod tests {
                     &mut state,
                     &mut thermal,
                     &controls,
+                    &WindInput::still(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -995,6 +1037,7 @@ mod tests {
                     &mut state,
                     &mut thermal,
                     &controls,
+                    &WindInput::still(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -1009,6 +1052,7 @@ mod tests {
                     &mut state,
                     &mut thermal,
                     &controls,
+                    &WindInput::still(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -1044,6 +1088,7 @@ mod tests {
                     &mut state,
                     &mut thermal,
                     &controls,
+                    &WindInput::still(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -1083,6 +1128,7 @@ mod tests {
                 &mut state,
                 &mut thermal,
                 &controls,
+                &WindInput::still(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1132,6 +1178,7 @@ mod tests {
                 &mut state,
                 &mut thermal,
                 &controls,
+                &WindInput::still(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1164,6 +1211,7 @@ mod tests {
                 &mut state,
                 &mut thermal,
                 &controls,
+                &WindInput::still(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1297,6 +1345,7 @@ mod tests {
                 &mut state,
                 &mut thermal,
                 &controls,
+                &WindInput::still(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1320,6 +1369,7 @@ mod tests {
                     &mut state,
                     &mut thermal,
                     &controls,
+                    &WindInput::still(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -1340,6 +1390,7 @@ mod tests {
                 &mut state,
                 &mut thermal,
                 &controls,
+                &WindInput::still(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1369,6 +1420,7 @@ mod tests {
                 &mut state,
                 &mut thermal,
                 &controls,
+                &WindInput::still(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1400,6 +1452,7 @@ mod tests {
                 &mut state,
                 &mut thermal,
                 &controls,
+                &WindInput::still(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1426,7 +1479,7 @@ mod tests {
 
     #[test]
     fn test_ffi_interface_version() {
-        assert_eq!(ffi_get_interface_version(), 10);
+        assert_eq!(ffi_get_interface_version(), 11);
     }
 
     #[test]
@@ -1557,6 +1610,7 @@ mod tests {
                     &mut state,
                     &mut thermal,
                     &controls,
+                    &WindInput::still(),
                     aero,
                     fea,
                     &config,
@@ -1636,6 +1690,7 @@ mod tests {
                 &mut state,
                 &mut thermal,
                 &controls,
+                &WindInput::still(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1698,6 +1753,7 @@ mod tests {
                 &mut state,
                 &mut thermal,
                 &controls,
+                &WindInput::still(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1763,7 +1819,7 @@ mod tests {
             with_injected_panic(|| unsafe { ffi_load_vehicle_config(path.as_ptr(), &mut cfg) });
         assert_eq!(code, 99);
         // The next call is not poisoned by the caught panic.
-        assert_eq!(ffi_get_interface_version(), 10);
+        assert_eq!(ffi_get_interface_version(), 11);
     }
 
     // Deliberate panic through the step and the three handle functions.
@@ -1785,6 +1841,7 @@ mod tests {
                 &mut state,
                 &mut thermal,
                 &controls,
+                &WindInput::still(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1889,6 +1946,7 @@ mod tests {
                 state,
                 thermal,
                 controls,
+                &WindInput::still(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 config,
@@ -2140,6 +2198,290 @@ mod tests {
             assert_eq!(code, 0);
             assert_eq!(telemetry.thermal_valid, 0);
             assert_eq!(telemetry.thermal_over_temp, want_over, "start {start_c}");
+        }
+    }
+
+    #[cfg(feature = "onnx")]
+    fn golden_words() -> Vec<u64> {
+        // Scenario: 100 m up, ground velocity (3, -2, 1) m/s, yaw 30 deg, throttle 0.5, roll 0.1,
+        // 500 steps of 0.002 s, analytic aero (no handles).
+        let mut state = ffi_create_default_drone_state();
+        state.position = [0.0, 0.0, -100.0];
+        state.velocity = [3.0, -2.0, 1.0];
+        let half = 15.0_f32.to_radians();
+        state.orientation = [0.0, 0.0, half.sin(), half.cos()];
+        state.angular_velocity = [0.1, 0.0, 0.0];
+        let mut thermal = ThermalState::new();
+        let mut controls = zero_controls();
+        controls.throttle = 0.5;
+        controls.roll = 0.1;
+        let config = dummy_config();
+        let mut telemetry = DebugTelemetry::new();
+        let mut latch = FaultLatch::new();
+        for _ in 0..500 {
+            // SAFETY: all pointers are valid, aligned and unaliased for the call.
+            let code = unsafe {
+                ffi_step_physics(
+                    &mut state,
+                    &mut thermal,
+                    &controls,
+                    &WindInput::still(),
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &config,
+                    &mut telemetry,
+                    &mut latch,
+                    0.002,
+                )
+            };
+            assert_eq!(code, 0);
+        }
+        let mut w: Vec<u64> = Vec::new();
+        w.extend(state.position.iter().map(|x| x.to_bits()));
+        w.extend(state.velocity.iter().map(|x| u64::from(x.to_bits())));
+        w.extend(state.orientation.iter().map(|x| u64::from(x.to_bits())));
+        w.extend(
+            state
+                .angular_velocity
+                .iter()
+                .map(|x| u64::from(x.to_bits())),
+        );
+        w.extend(thermal.motor_temp_c.iter().map(|x| x.to_bits()));
+        w.extend(telemetry.aero_drag.iter().map(|x| u64::from(x.to_bits())));
+        w.extend(telemetry.net_force.iter().map(|x| u64::from(x.to_bits())));
+        w.extend(
+            telemetry
+                .motor_thrusts
+                .iter()
+                .map(|x| u64::from(x.to_bits())),
+        );
+        w
+    }
+
+    /// Bit patterns captured from the pre-wind build (interface v10, git HEAD 4a4659b) by running
+    /// the identical `golden_words` scenario there. Order: position (3 x f64), velocity (3 x f32),
+    /// orientation (4 x f32), angular velocity (3 x f32), motor temperatures (4 x f64),
+    /// telemetry aero_drag (3), net_force (3), motor_thrusts (4) (f32 values in the low 32 bits).
+    #[cfg(feature = "onnx")]
+    const GOLDEN_V10: [u64; 27] = [
+        0x40062903c31ec19e,
+        0xbffa1dc47b754389,
+        0xc0595337f4a92ef5,
+        0x000000004012d6d6,
+        0x00000000bf56ae45,
+        0x00000000c05c2d48,
+        0x000000003dd51620,
+        0x000000003ce462ac,
+        0x000000003e83be8f,
+        0x000000003f75d698,
+        0x000000003ea9d47a,
+        0x00000000a083126d,
+        0x0000000000000000,
+        0x403958c64f7ca6c0,
+        0x403a4668bd89c740,
+        0x403958c64f7ca6c0,
+        0x403a4668bd89c740,
+        0x000000003b377a28,
+        0x00000000bd840f58,
+        0x000000003f230bd9,
+        0x00000000bfc5d6fd,
+        0x0000000040278487,
+        0x00000000c06e651a,
+        0x0000000040558368,
+        0x00000000407a94e3,
+        0x0000000040558368,
+        0x00000000407a94e3,
+    ];
+
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_wind_zero_wind_step_is_bit_identical_to_v10_build() {
+        // Reference = the previous build (a pre-change binary), not a hand calculation: with zero
+        // wind v_air = v_ground - 0 must change no bit over 500 steps (drag is nonzero here:
+        // |v| = 3.7 m/s, so a wrong velocity path would show).
+        assert_eq!(golden_words(), GOLDEN_V10.to_vec());
+    }
+
+    #[cfg(feature = "onnx")]
+    fn step_with_wind(
+        state: &mut DroneState,
+        wind: &WindInput,
+        telemetry: &mut DebugTelemetry,
+        latch: &mut FaultLatch,
+    ) -> i32 {
+        let mut thermal = ThermalState::new();
+        let controls = zero_controls();
+        let config = dummy_config();
+        // SAFETY: all pointers are valid, aligned and unaliased for the call.
+        unsafe {
+            ffi_step_physics(
+                state,
+                &mut thermal,
+                &controls,
+                wind,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                &config,
+                telemetry,
+                latch,
+                0.002,
+            )
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_wind_head_wind_at_hover_step_drag_is_minus_0_30625_n() {
+        // Hover at 0 m altitude (rho = 1.2250), identity attitude, ground velocity 0, wind
+        // toward south (-5, 0, 0): v_air = (+5, 0, 0). Drag = -0.5 * 1.2250 * 5^2 * Cd_x(1.0) *
+        // A_x(0.02) = -0.30625 N along body X = north, i.e. it opposes the apparent air motion.
+        // Still air gives exactly 0 (control).
+        let mut telemetry = DebugTelemetry::new();
+        let mut latch = FaultLatch::new();
+        let mut still = ffi_create_default_drone_state();
+        assert_eq!(
+            step_with_wind(&mut still, &WindInput::still(), &mut telemetry, &mut latch),
+            0
+        );
+        assert_eq!(telemetry.aero_drag, [0.0; 3]);
+
+        let mut state = ffi_create_default_drone_state();
+        let wind = WindInput {
+            wind_ned_mps: [-5.0, 0.0, 0.0],
+        };
+        assert_eq!(
+            step_with_wind(&mut state, &wind, &mut telemetry, &mut latch),
+            0
+        );
+        assert!((f64::from(telemetry.aero_drag[0]) + 0.30625).abs() < 0.30625 * 1e-4 + 1e-6);
+        assert_eq!(telemetry.aero_drag[1], 0.0);
+        assert_eq!(telemetry.aero_drag[2], 0.0);
+    }
+
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_wind_equal_to_vehicle_velocity_step_has_zero_drag() {
+        // Ground velocity (3, -2, 1) and wind (3, -2, 1): v_air = 0 exactly, so drag is exactly 0
+        // (without the wind the drag would be nonzero: the control below).
+        let mut telemetry = DebugTelemetry::new();
+        let mut latch = FaultLatch::new();
+        let mut moving = ffi_create_default_drone_state();
+        moving.velocity = [3.0, -2.0, 1.0];
+        let mut no_wind = moving;
+        assert_eq!(
+            step_with_wind(
+                &mut no_wind,
+                &WindInput::still(),
+                &mut telemetry,
+                &mut latch
+            ),
+            0
+        );
+        assert!(telemetry.aero_drag[0] < 0.0);
+
+        let wind = WindInput {
+            wind_ned_mps: [3.0, -2.0, 1.0],
+        };
+        assert_eq!(
+            step_with_wind(&mut moving, &wind, &mut telemetry, &mut latch),
+            0
+        );
+        assert_eq!(telemetry.aero_drag, [0.0; 3]);
+        // The integrator still advances the GROUND velocity: with zero thrust and zero drag the
+        // horizontal force is exactly 0, so vN and vE are unchanged (3 and -2). Integrating the
+        // air-relative velocity (0) instead would give 0 here.
+        assert_eq!(moving.velocity[0], 3.0);
+        assert_eq!(moving.velocity[1], -2.0);
+    }
+
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_wind_invalid_is_code_12_and_writes_nothing() {
+        for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, 31.0, -31.0] {
+            let mut state = ffi_create_default_drone_state();
+            state.velocity = [1.0, 2.0, 3.0];
+            let before_state = state;
+            let mut telemetry = DebugTelemetry::new();
+            telemetry.net_force = [4.0, 5.0, 6.0];
+            telemetry.is_validated_envelope = 1;
+            let before_telemetry = telemetry;
+            let mut latch = FaultLatch::new();
+            let wind = WindInput {
+                wind_ned_mps: [0.0, bad, 0.0],
+            };
+            assert_eq!(
+                step_with_wind(&mut state, &wind, &mut telemetry, &mut latch),
+                12,
+                "wind y = {bad}"
+            );
+            assert_eq!(state.position, before_state.position);
+            assert_eq!(state.velocity, before_state.velocity);
+            assert_eq!(telemetry.net_force, before_telemetry.net_force);
+            assert_eq!(telemetry.is_validated_envelope, 1);
+            assert_eq!(latch.physics_fault, 0);
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_wind_30_mps_component_is_accepted() {
+        let mut state = ffi_create_default_drone_state();
+        let mut telemetry = DebugTelemetry::new();
+        let mut latch = FaultLatch::new();
+        let wind = WindInput {
+            wind_ned_mps: [30.0, -30.0, 30.0],
+        };
+        assert_eq!(
+            step_with_wind(&mut state, &wind, &mut telemetry, &mut latch),
+            0
+        );
+    }
+
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_wind_null_pointer_is_code_1_and_bad_dt_keeps_code_7() {
+        let mut state = ffi_create_default_drone_state();
+        let mut thermal = ThermalState::new();
+        let controls = zero_controls();
+        let config = dummy_config();
+        let mut telemetry = DebugTelemetry::new();
+        let mut latch = FaultLatch::new();
+        let bad_wind = WindInput {
+            wind_ned_mps: [f64::NAN; 3],
+        };
+        // SAFETY: all non-null pointers are valid, aligned and unaliased for each call.
+        unsafe {
+            assert_eq!(
+                ffi_step_physics(
+                    &mut state,
+                    &mut thermal,
+                    &controls,
+                    ptr::null(),
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &config,
+                    &mut telemetry,
+                    &mut latch,
+                    0.002,
+                ),
+                1
+            );
+            // dt is validated before the wind, so an earlier rejection keeps its code.
+            assert_eq!(
+                ffi_step_physics(
+                    &mut state,
+                    &mut thermal,
+                    &controls,
+                    &bad_wind,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &config,
+                    &mut telemetry,
+                    &mut latch,
+                    0.0,
+                ),
+                7
+            );
         }
     }
 }

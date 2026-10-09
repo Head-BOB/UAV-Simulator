@@ -85,6 +85,17 @@ jobs:
             exit 1
           fi
 
+      - name: Closed-loop DEMO flight sim against the real physics (g++, release library)
+        working-directory: .
+        run: >
+          g++ -std=c++17 -Wall -Wextra -Werror
+          -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public
+          tools/cpp_ffi_check/demo_flight_sim.cpp
+          -o "$RUNNER_TEMP/demo_flight_sim"
+          -Lphysics_core/target/release -lphysics_core
+          "-Wl,-rpath,$PWD/physics_core/target/release"
+          && "$RUNNER_TEMP/demo_flight_sim"
+
       - name: Unit-test the Python tools
         working-directory: .
         run: python -m unittest discover -s tools -p 'test_*.py'
@@ -144,3 +155,27 @@ jobs:
           tools/cpp_ffi_check/frame_conversion_test.cpp
           -o "$RUNNER_TEMP/frame_conversion_test"
           && "$RUNNER_TEMP/frame_conversion_test"
+
+      - name: Build and run the demo wind generator test
+        run: >
+          g++ -std=c++17 -Wall -Wextra -Werror
+          -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public
+          tools/cpp_ffi_check/wind_test.cpp
+          -o "$RUNNER_TEMP/wind_test"
+          && "$RUNNER_TEMP/wind_test"
+
+      - name: Build and run the prop spin, scale and disc math test
+        run: >
+          g++ -std=c++17 -Wall -Wextra -Werror
+          -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public
+          tools/cpp_ffi_check/visual_math_test.cpp
+          -o "$RUNNER_TEMP/visual_math_test"
+          && "$RUNNER_TEMP/visual_math_test"
+
+      - name: Build and run the DEMO controller pieces test
+        run: >
+          g++ -std=c++17 -Wall -Wextra -Werror
+          -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public
+          tools/cpp_ffi_check/demo_control_test.cpp
+          -o "$RUNNER_TEMP/demo_control_test"
+          && "$RUNNER_TEMP/demo_control_test"

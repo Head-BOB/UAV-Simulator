@@ -20,7 +20,7 @@
 
 // Must equal Rust ffi_get_interface_version(). Checked by the Rust test
 // types::tests::test_cpp_expected_version_matches_rust, which parses the next line, so keep its form.
-constexpr std::int32_t kDroneFfiExpectedInterfaceVersion = 10;
+constexpr std::int32_t kDroneFfiExpectedInterfaceVersion = 11;
 
 // DroneState: 3*8 + 3*4 + 4*4 + 3*4 = 64
 static_assert(sizeof(DroneState) == 64, "DroneState size");
@@ -37,6 +37,11 @@ static_assert(offsetof(ControlInputs, throttle) == 0, "ControlInputs.throttle");
 static_assert(offsetof(ControlInputs, roll) == 4, "ControlInputs.roll");
 static_assert(offsetof(ControlInputs, pitch) == 8, "ControlInputs.pitch");
 static_assert(offsetof(ControlInputs, yaw) == 12, "ControlInputs.yaw");
+
+// WindInput (interface v11): 3*8 = 24
+static_assert(sizeof(WindInput) == 24, "WindInput size");
+static_assert(alignof(WindInput) == 8, "WindInput align");
+static_assert(offsetof(WindInput, wind_ned_mps) == 0, "WindInput.wind_ned_mps");
 
 // ThermalState: 4*8 = 32
 static_assert(sizeof(ThermalState) == 32, "ThermalState size");

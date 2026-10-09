@@ -1,0 +1,29 @@
+{
+  "_comment": "Derived from the bone names and rest positions in scene.gltf (hartwelkisaka, CC-BY-4.0). Front = camera side. TODO(HUMAN-VERIFY): confirm FR/FL/RR/RL visually in Unreal before trusting.",
+  "model": {
+    "source": "https://sketchfab.com/3d-models/animated-drone-d47d61f8a78d4cce9f985ad7ade3e403",
+    "author": "hartwelkisaka",
+    "license": "CC-BY-4.0",
+    "asset_path": "/Game/Drone/Drone",
+    "type": "SkeletalMesh",
+    "approx_overall_size_m": [0.254, 0.067, 0.195],
+    "span_between_motor_axes_m": {"left_right": 0.1708, "front_rear": 0.1453}
+  },
+  "motor_order": ["FR", "FL", "RR", "RL"],
+  "motors": {
+    "FR": {"index": 0, "spin_bones": ["prop_1_jnt", "prop_bolt_nut_1_jnt", "prop_bolt_cap_1_jnt", "prop_motor_bolt_1_jnt"], "hub_bone": "prop_1_jnt", "gltf_xz_m": [-0.0854, 0.0751]},
+    "FL": {"index": 1, "spin_bones": ["prop_4_jnt", "prop_bolt_nut_4_jnt", "prop_bolt_cap_4_jnt", "prop_motor_bolt_4_jnt"], "hub_bone": "prop_4_jnt", "gltf_xz_m": [0.0854, 0.0751]},
+    "RR": {"index": 2, "spin_bones": ["prop_2_jnt", "prop_bolt_nut_2_jnt", "prop_bolt_cap_2_jnt", "prop_motor_bolt_2_jnt"], "hub_bone": "prop_2_jnt", "gltf_xz_m": [-0.0854, -0.0702]},
+    "RL": {"index": 3, "spin_bones": ["prop_3_jnt", "prop_bolt_nut_3_jnt", "prop_bolt_cap_3_jnt", "prop_motor_bolt_3_jnt"], "hub_bone": "prop_3_jnt", "gltf_xz_m": [0.0854, -0.0702]}
+  },
+  "spin_axis": "bone-local up axis (vertical through the hub); confirm in Unreal by watching one prop",
+  "static_motor_bones": ["motor_1_jnt", "motor_2_jnt", "motor_3_jnt", "motor_4_jnt"],
+  "camera_bones": ["CameraHandle_jnt", "camera_jnt"],
+  "camera_front_hint": "camera bones sit on the +Z side in the glTF, which is the vehicle front",
+  "notes": [
+    "Spinning bones: prop, nut, cap and bolt per motor. If the motor bell looks wrong, add motor_N_jnt to that motor's spin list and re-test.",
+    "Rotate bones with UPoseableMeshComponent::SetBoneRotationByName each tick; do not use the baked animations.",
+    "Spin direction per motor comes from motor_spin in vehicle_config.json (config order FR, FL, RR, RL).",
+    "Scale the mesh so the distance between motor axes matches the arm length in vehicle_config.json."
+  ]
+}

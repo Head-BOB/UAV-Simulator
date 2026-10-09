@@ -10,7 +10,8 @@ public class UAV_Simulator : ModuleRules
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore","DronePhysicsBridge", "EnhancedInput" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		// Json: reads DroneModelMap.json (engine module, not a third-party dependency).
+		PrivateDependencyModuleNames.AddRange(new string[] { "Json" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
