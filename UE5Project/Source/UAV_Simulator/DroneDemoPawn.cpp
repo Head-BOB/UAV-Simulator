@@ -56,6 +56,49 @@ constexpr float kCameraPitchDeg = -18.0f;
 constexpr double kDiscThicknessCm = 0.5;
 constexpr int32 kMaxSubsteps = 20;
 constexpr double kFixedDt = 0.002;  // ADR-001: fixed step 0.002 s
+
+// Runtime spin selection, read every frame so a change in the console shows at once. They exist to
+// find the right axis/sign in one Play session; once found, copy the values into kSpinAxisBoneLocal
+// / kSpinDirectionScale in DroneVisualMath.h. TODO(HUMAN-VERIFY): builds on the project's Unreal version.
+TAutoConsoleVariable<int32> CVarSpinAxis(TEXT("drone.SpinAxis"), DroneVisual::kSpinAxisIndexDefault,
+	TEXT("Prop spin axis in the bone's local frame: 0=X, 1=Y, 2=Z."), ECVF_Default);
+TAutoConsoleVariable<float> CVarSpinSign(TEXT("drone.SpinSign"), static_cast<float>(DroneVisual::kSpinDirectionScale),
+	TEXT("Prop spin direction scale, +1 or -1 (sign of the value is used)."), ECVF_Default);
+
+// Current console choice, validated. A bad drone.SpinAxis logs a Warning and uses the default.
+void ReadSpinSelection(FVector& OutAxisLocal, double& OutSign)
+{
+	double Axis[3];
+	const int32 Index = CVarSpinAxis.GetValueOnGameThread();
+	if (!DroneVisual::SpinAxisFromIndex(Index, Axis))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DroneDemo: drone.SpinAxis=%d is not 0, 1 or 2; using the default %d."), Index, DroneVisual::kSpinAxisIndexDefault);
+		DroneVisual::SpinAxisFromIndex(DroneVisual::kSpinAxisIndexDefault, Axis);
+	}
+	OutAxisLocal = FVector(Axis[0], Axis[1], Axis[2]);
+	OutSign = DroneVisual::NormalizeSpinSign(CVarSpinSign.GetValueOnGameThread());
+}
+
+// Component-space reference-pose rotation of a bone, from the mesh's ref skeleton (not from the
+// poseable component's current pose, which can be empty or already spun at BeginPlay). The ref
+// skeleton stores each bone relative to its parent, so walk up to the root: CS = P_root*...*P_parent*L.
+// Returns false if the bone is not in the skeleton. The walk is bounded by the bone count.
+bool RefPoseComponentRotation(const FReferenceSkeleton& RefSkel, const FName& Bone, FQuat& OutRot)
+{
+	int32 Index = RefSkel.FindBoneIndex(Bone);
+	if (Index == INDEX_NONE) return false;
+	const TArray<FTransform>& Local = RefSkel.GetRefBonePose();
+	FQuat Q = FQuat::Identity;
+	for (int32 Hops = 0; Index != INDEX_NONE && Hops <= RefSkel.GetNum(); ++Hops)
+	{
+		if (!Local.IsValidIndex(Index)) return false;
+		Q = Local[Index].GetRotation() * Q;  // parent * child: the child's rotation acts first
+		Index = RefSkel.GetParentIndex(Index);
+	}
+	if (Index != INDEX_NONE) return false;  // loop bound hit: a cyclic skeleton, which is corrupt
+	OutRot = Q.GetNormalized();
+	return true;
+}
 }  // namespace
 
 ADroneDemoPawn::ADroneDemoPawn()
@@ -213,13 +256,35 @@ void ADroneDemoPawn::SetupVisuals()
 	UE_LOG(LogTemp, Log, TEXT("DroneDemo: uniform mesh scale %.5f (config left-right span %.4f m / model %.4f m). Front-rear leftover %+.4f m (scaled model %.4f m vs config %.4f m); props are not distorted."),
 		Scale, CfgLR, ModelLR, Leftover, Scale * ModelFR, CfgFR);
 
-	// Rest rotations, captured before any spin is applied.
+	// Reference-pose rotations in component space, from the ref skeleton, stored once. UpdateVisuals
+	// writes ref * spin, never the spin alone. An unreadable bone uses the simple shapes instead.
+	const FReferenceSkeleton& RefSkel = Mesh->GetRefSkeleton();
 	for (FMotorVisual& M : Motors)
 	{
+		M.RestComponentRot.Reset();
 		for (const FName& Bone : M.SpinBones)
 		{
-			M.RestComponentRot.Add(PoseMesh->GetBoneRotationByName(Bone, EBoneSpaces::ComponentSpace).Quaternion());
+			FQuat Ref;
+			if (!RefPoseComponentRotation(RefSkel, Bone, Ref))
+			{
+				UE_LOG(LogTemp, Error, TEXT("DroneDemo: no reference pose for bone '%s'. Using simple shapes."), *Bone.ToString());
+				bUseFallbackShapes = true;
+				PoseMesh->SetVisibility(false);
+				BuildFallbackShapes();
+				BuildMotionDiscs();
+				return;
+			}
+			M.RestComponentRot.Add(Ref);
+			UE_LOG(LogTemp, Log, TEXT("DroneDemo: bone '%s' ref rotation (component space) quat xyzw = (%.5f, %.5f, %.5f, %.5f), euler pitch/yaw/roll = %s"),
+				*Bone.ToString(), Ref.X, Ref.Y, Ref.Z, Ref.W, *Ref.Rotator().ToString());
 		}
+	}
+	{
+		FVector AxisLocal;
+		double Sign;
+		ReadSpinSelection(AxisLocal, Sign);
+		UE_LOG(LogTemp, Log, TEXT("DroneDemo: drone.SpinAxis=%d (local axis %s), drone.SpinSign=%+.0f. Change at runtime with `drone.SpinAxis 0|1|2` and `drone.SpinSign 1|-1`."),
+			CVarSpinAxis.GetValueOnGameThread(), *AxisLocal.ToString(), Sign);
 	}
 	BuildMotionDiscs();
 }
@@ -591,22 +656,30 @@ void ADroneDemoPawn::Tick(float DeltaTime)
 
 void ADroneDemoPawn::UpdateVisuals(float DeltaTime)
 {
-	const FVector AxisLocal = FVector(DroneVisual::kSpinAxisBoneLocal[0], DroneVisual::kSpinAxisBoneLocal[1], DroneVisual::kSpinAxisBoneLocal[2]).GetSafeNormal();
+	FVector AxisLocal;
+	double SpinDirection;
+	ReadSpinSelection(AxisLocal, SpinDirection);
+	const double AxisArr[3] = {AxisLocal.X, AxisLocal.Y, AxisLocal.Z};
 
 	for (int32 I = 0; I < Motors.Num() && I < 4; ++I)
 	{
 		FMotorVisual& M = Motors[I];
 		const double Rpm = bHaveTelemetry ? static_cast<double>(LastTelemetry.motor_rpms[I]) : 0.0;
 
-		M.SpinAngleDeg = DroneVisual::AdvanceSpinDeg(M.SpinAngleDeg, Rpm, Config.motor_spin[I], DeltaTime);
+		M.SpinAngleDeg = DroneVisual::AdvanceSpinDeg(M.SpinAngleDeg, Rpm, Config.motor_spin[I], DeltaTime, SpinDirection);
 		if (!bUseFallbackShapes)
 		{
-			const FQuat Spin(AxisLocal, FMath::DegreesToRadians(M.SpinAngleDeg));
+			const double AngleRad = FMath::DegreesToRadians(M.SpinAngleDeg);
 			for (int32 B = 0; B < M.SpinBones.Num() && B < M.RestComponentRot.Num(); ++B)
 			{
-				// Rest rotation, then the spin about the bone's local axis. Absolute component-space
-				// set, so a bone that is a child of a spinning bone is not rotated twice.
-				PoseMesh->SetBoneRotationByName(M.SpinBones[B], (M.RestComponentRot[B] * Spin).Rotator(), EBoneSpaces::ComponentSpace);
+				// final = ref * spin: the spin acts in the bone's LOCAL frame on top of the stored
+				// reference rotation (DroneVisual::SpinOnRefRotation, tested without Unreal).
+				// Absolute component-space set, so a bone that is a child of a spinning bone is not
+				// rotated twice. TODO(HUMAN-VERIFY): that holds only if a parent spin bone is written
+				// before its child; check the nut/cap/bolt bones do not drift.
+				const FQuat& Ref = M.RestComponentRot[B];
+				const DroneVisual::Quat Final = DroneVisual::SpinOnRefRotation(DroneVisual::Quat{Ref.X, Ref.Y, Ref.Z, Ref.W}, AxisArr, AngleRad);
+				PoseMesh->SetBoneRotationByName(M.SpinBones[B], FQuat(Final.x, Final.y, Final.z, Final.w).Rotator(), EBoneSpaces::ComponentSpace);
 			}
 		}
 

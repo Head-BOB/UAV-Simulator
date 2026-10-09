@@ -62,11 +62,31 @@ arrow: the gust part.
 2. One `DroneDemo: uniform mesh scale ...` line: scale about 2.342 and a front-rear leftover of
    about -0.0597 m (the model is not square, the config is; props are not distorted).
 3. No `DroneDemo: bone '...' is missing` Error. If you see one, the demo draws simple shapes instead.
-4. Watch the FR prop at low throttle: it must turn counter-clockwise seen from above. If it
-   spins about the wrong axis or the wrong way, change `kSpinAxisBoneLocal` or
-   `kSpinDirectionScale` in `Public/DroneVisualMath.h` (the only place).
+4. Props must spin about their own shaft. The Output Log prints each prop bone's reference
+   rotation and the current `drone.SpinAxis` / `drone.SpinSign` once at BeginPlay. If a prop
+   points wrong, wobbles, or turns the wrong way, use "How to find the correct spin axis" below.
 5. Confirm FR/FL/RR/RL against `DroneModelMap.json` (its own `TODO(HUMAN-VERIFY)`), the model's
    forward direction (`kMeshYawOffsetDeg` in `DroneDemoPawn.cpp`), and the ground height.
+
+## How to find the correct spin axis
+
+The spin is applied in each bone's own local frame on top of its stored reference-pose rotation
+(`final = ref * spin`), so the right axis is whichever local axis runs along the prop shaft. The
+imported skeleton decides which one that is; find it in one Play session, no rebuild:
+
+1. Press Play, raise throttle a little (press T for takeoff), and open the console (`` ` ``).
+2. Type `drone.SpinAxis 0`, then `1`, then `2`. Each takes effect on the next frame. The right axis
+   is the one where the prop stays flat in its own plane and turns like a normal propeller
+   (the wrong ones tumble or wobble up and down).
+3. With the axis right, watch FR (prop_1) from above: it must turn counter-clockwise. If it turns
+   clockwise, type `drone.SpinSign -1` (back with `drone.SpinSign 1`). Adjacent props must turn
+   opposite ways; that comes from `motor_spin` [1, -1, -1, 1] in config order FR, FL, RR, RL, mapped
+   to prop_1, prop_4, prop_2, prop_3 by `DroneModelMap.json`, and is not affected by the sign.
+4. Make the answer permanent: set `kSpinAxisBoneLocal` and `kSpinAxisIndexDefault` (same axis) and
+   `kSpinDirectionScale` in `Public/DroneVisualMath.h`. Defaults are Z (index 2) and +1.
+
+The reference rotations and starting values are in the Output Log lines starting `DroneDemo: bone`
+and `DroneDemo: drone.SpinAxis`. If no axis looks right, send those lines.
 
 ## Notes
 

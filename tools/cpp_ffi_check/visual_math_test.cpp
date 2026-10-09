@@ -11,6 +11,7 @@
 #include <cstdio>
 
 static int g_failures = 0;
+static const double kPi = 3.14159265358979323846;
 
 static void Check(bool ok, const char* name)
 {
@@ -57,6 +58,97 @@ static void TestSpin()
     Check(kSpinDirectionScale == 1.0 || kSpinDirectionScale == -1.0, "direction scale is +-1");
 }
 
+static bool QuatNear(const Quat& A, const Quat& B, double tol)
+{
+    return Near(A.x, B.x, tol) && Near(A.y, B.y, tol) && Near(A.z, B.z, tol) && Near(A.w, B.w, tol);
+}
+
+// Rotates vector V by unit quaternion Q: V' = V + 2w(u x V) + 2 u x (u x V), u = (x, y, z).
+static void Rotate(const Quat& Q, const double V[3], double Out[3])
+{
+    const double Ux = Q.y * V[2] - Q.z * V[1], Uy = Q.z * V[0] - Q.x * V[2], Uz = Q.x * V[1] - Q.y * V[0];
+    Out[0] = V[0] + 2.0 * (Q.w * Ux + Q.y * Uz - Q.z * Uy);
+    Out[1] = V[1] + 2.0 * (Q.w * Uy + Q.z * Ux - Q.x * Uz);
+    Out[2] = V[2] + 2.0 * (Q.w * Uz + Q.x * Uy - Q.y * Ux);
+}
+
+static void TestSpinQuat()
+{
+    const double S = std::sqrt(0.5);
+    const double AxisX[3] = {1.0, 0.0, 0.0}, AxisZ[3] = {0.0, 0.0, 1.0};
+
+    // Hand value: 90 deg about +Z = (0, 0, sin45, cos45) = (0, 0, S, S).
+    Check(QuatNear(QuatFromAxisAngle(AxisZ, 0.5 * kPi), Quat{0.0, 0.0, S, S}, 1e-12), "90 deg about Z");
+    Check(QuatNear(QuatFromAxisAngle(AxisZ, 0.0), Quat(), 1e-12), "zero angle is identity");
+    const double Zero[3] = {0.0, 0.0, 0.0};
+    Check(QuatNear(QuatFromAxisAngle(Zero, 1.0), Quat(), 0.0), "zero axis is identity");
+    Check(QuatNear(QuatFromAxisAngle(AxisZ, std::nan("")), Quat(), 0.0), "NaN angle is identity");
+    const double Long[3] = {0.0, 0.0, 5.0};
+    Check(QuatNear(QuatFromAxisAngle(Long, 0.5 * kPi), Quat{0.0, 0.0, S, S}, 1e-12), "non-unit axis is normalised");
+
+    // Known ref rotation: 90 deg about +X, Ref = (S, 0, 0, S). Spin 90 deg about bone-local Z.
+    // Hand Hamilton product Ref*Spin with Spin = (0, 0, S, S):
+    //   x = w1 x2 + x1 w2 + y1 z2 - z1 y2 = 0 + S*S + 0 - 0 = 0.5
+    //   y = w1 y2 - x1 z2 + y1 w2 + z1 x2 = 0 - S*S + 0 + 0 = -0.5
+    //   z = w1 z2 + x1 y2 - y1 x2 + z1 w2 = S*S + 0 - 0 + 0 = 0.5
+    //   w = w1 w2 - x1 x2 - y1 y2 - z1 z2 = S*S - 0 - 0 - 0 = 0.5
+    const Quat Ref{S, 0.0, 0.0, S};
+    const Quat Got = SpinOnRefRotation(Ref, AxisZ, 0.5 * kPi);
+    Check(QuatNear(Got, Quat{0.5, -0.5, 0.5, 0.5}, 1e-12), "90 deg spin on ref rotation, hand quaternion");
+    // Mutation guard: the swapped order Spin*Ref is a different rotation (it spins about the
+    // PARENT's Z). Hand value: x = 0.5, y = +0.5, z = 0.5, w = 0.5. Must differ from the above.
+    const Quat Swapped = QuatMul(QuatFromAxisAngle(AxisZ, 0.5 * kPi), Ref);
+    Check(QuatNear(Swapped, Quat{0.5, 0.5, 0.5, 0.5}, 1e-12), "swapped order hand value");
+    Check(!QuatNear(Got, Swapped, 1e-6), "swapped order is detectably different");
+
+    // Spin axis stays fixed in the bone-local frame: Ref^-1 * Final is a pure spin about Z, so the
+    // bone-local Z axis, carried to component space by Final, equals carrying it by Ref alone,
+    // for every angle. Ref maps Z to (0, -1, 0) here (90 deg about X: z -> -y).
+    double RefZ[3];
+    Rotate(Ref, AxisZ, RefZ);
+    Check(Near(RefZ[0], 0.0, 1e-12) && Near(RefZ[1], -1.0, 1e-12) && Near(RefZ[2], 0.0, 1e-12), "ref carries Z to -Y");
+    for (int Deg = 0; Deg < 360; Deg += 15)
+    {
+        const Quat F = SpinOnRefRotation(Ref, AxisZ, Deg * kPi / 180.0);
+        double FZ[3];
+        Rotate(F, AxisZ, FZ);
+        Check(Near(FZ[0], RefZ[0], 1e-12) && Near(FZ[1], RefZ[1], 1e-12) && Near(FZ[2], RefZ[2], 1e-12), "spin axis fixed in bone-local frame");
+        // The mutated order moves this axis: it must NOT stay fixed away from 0/180 deg.
+    }
+    // Same fixed-axis check for a non-trivial ref and a different axis (X).
+    const Quat Ref2 = QuatMul(QuatFromAxisAngle(AxisX, 0.7), QuatFromAxisAngle(AxisZ, -1.1));
+    double Ref2X[3];
+    Rotate(Ref2, AxisX, Ref2X);
+    double FX[3];
+    Rotate(SpinOnRefRotation(Ref2, AxisX, 2.3), AxisX, FX);
+    Check(Near(FX[0], Ref2X[0], 1e-12) && Near(FX[1], Ref2X[1], 1e-12) && Near(FX[2], Ref2X[2], 1e-12), "axis fixed, general ref, X axis");
+    // And the swapped order does NOT keep it fixed (the bug this guards against).
+    double SX[3];
+    Rotate(QuatMul(QuatFromAxisAngle(AxisX, 2.3), Ref2), AxisX, SX);
+    Check(!(Near(SX[0], Ref2X[0], 1e-6) && Near(SX[1], Ref2X[1], 1e-6) && Near(SX[2], Ref2X[2], 1e-6)), "swapped order moves the axis");
+
+    // Axis index and sign helpers.
+    double A[3] = {9.0, 9.0, 9.0};
+    Check(SpinAxisFromIndex(0, A) && A[0] == 1.0 && A[1] == 0.0 && A[2] == 0.0, "axis index 0 is X");
+    Check(SpinAxisFromIndex(1, A) && A[0] == 0.0 && A[1] == 1.0 && A[2] == 0.0, "axis index 1 is Y");
+    Check(SpinAxisFromIndex(2, A) && A[0] == 0.0 && A[1] == 0.0 && A[2] == 1.0, "axis index 2 is Z");
+    A[0] = 9.0;
+    Check(!SpinAxisFromIndex(3, A) && !SpinAxisFromIndex(-1, A) && A[0] == 9.0, "bad axis index rejected, output untouched");
+    double Def[3];
+    Check(SpinAxisFromIndex(kSpinAxisIndexDefault, Def) && Def[0] == kSpinAxisBoneLocal[0] && Def[1] == kSpinAxisBoneLocal[1] && Def[2] == kSpinAxisBoneLocal[2],
+          "default axis index matches kSpinAxisBoneLocal");
+    Check(NormalizeSpinSign(1.0) == 1.0 && NormalizeSpinSign(-1.0) == -1.0 && NormalizeSpinSign(-0.2) == -1.0 && NormalizeSpinSign(3.0) == 1.0, "spin sign is +-1");
+    Check(NormalizeSpinSign(std::nan("")) == kSpinDirectionScale, "NaN sign falls back to default");
+
+    // Direction scale: -1 mirrors the angle. 1000 rpm, 1/60 s = +100 deg; with scale -1 -> 260.
+    Check(Near(AdvanceSpinDeg(0.0, 1000.0, 1.0, 1.0 / 60.0, -1.0), 260.0, 1e-9), "direction scale -1 reverses");
+    // Per-motor: motor_spin [1,-1,-1,1] with equal RPM gives opposite angles on adjacent props.
+    const double Spin[4] = {1.0, -1.0, -1.0, 1.0};
+    const double Ang[4] = {AdvanceSpinDeg(0.0, 1000.0, Spin[0], 1.0 / 60.0), AdvanceSpinDeg(0.0, 1000.0, Spin[1], 1.0 / 60.0),
+                           AdvanceSpinDeg(0.0, 1000.0, Spin[2], 1.0 / 60.0), AdvanceSpinDeg(0.0, 1000.0, Spin[3], 1.0 / 60.0)};
+    Check(Near(Ang[0], 100.0, 1e-9) && Near(Ang[1], 260.0, 1e-9) && Near(Ang[2], 260.0, 1e-9) && Near(Ang[3], 100.0, 1e-9), "FR FL RR RL angles");
+}
+
 static void TestScale()
 {
     double S = -1.0;
@@ -99,6 +191,7 @@ static void TestOpacity()
 int main()
 {
     TestSpin();
+    TestSpinQuat();
     TestScale();
     TestOpacity();
     if (g_failures == 0)
