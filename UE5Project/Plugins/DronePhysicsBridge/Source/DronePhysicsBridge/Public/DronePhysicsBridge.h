@@ -1,3 +1,4 @@
+// Tier: F
 #pragma once
 
 #include "Modules/ModuleManager.h"
@@ -14,9 +15,11 @@ public:
     static bool ResetState(DroneState* State);
     static bool LoadVehicleConfig(const FString& Path, VehicleConfig* OutConfig);
 
-    static bool StepPhysics(DroneState* State, ThermalState* Thermal, const ControlInputs* Inputs, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, const VehicleConfig* Config, double DeltaTime);
-    static bool GetDebugTelemetry(DebugTelemetry* OutTelemetry);
+    // Latch is caller-owned and must be zero-initialized by the caller. Rust sets it on a NaN/Inf step and never clears it.
+    static bool StepPhysics(DroneState* State, ThermalState* Thermal, const ControlInputs* Inputs, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, const VehicleConfig* Config, DebugTelemetry* OutTelemetry, FaultLatch* Latch, double DeltaTime);
 
     static FVector NedToUnrealWorld(const double NedPosition[3]);
+    // Free vector (force N, velocity m/s): axis mapping only, no unit scale. (x, y, z) -> (x, y, -z).
+    static FVector NedToUnrealVector(const float NedVector[3]);
     static FQuat NedToUnrealQuat(const float NedQuat[4]);
 };

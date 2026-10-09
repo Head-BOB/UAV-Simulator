@@ -48,6 +48,18 @@ jobs:
       - name: Build release
         run: cargo build --release
 
+      - name: Generated FFI header matches the committed copy
+        run: |
+          touch build.rs
+          cargo build --release
+          git diff --exit-code -- ../UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public/Generated/drone_ffi.h
+          test ! -e drone_ffi.h
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        with:
+          python-version: '3.12'
+
       - name: Fetch Secure ONNX Binary
         working-directory: .
         run: python tools/fetch_onnx.py
@@ -62,9 +74,40 @@ jobs:
         env:
           ORT_DYLIB_PATH: ${{ github.workspace }}/onnxruntime-linux-x64-1.19.0/lib/libonnxruntime.so
 
+      - name: Pure subset without ONNX Runtime (the part miri runs)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo clippy --no-default-features --all-targets -- -D warnings
+          cargo test --no-default-features
+          if cargo tree --no-default-features -e normal | grep -q ' ort v'; then
+            echo "::error::ort is still in the dependency tree without the onnx feature"
+            exit 1
+          fi
+
+      - name: Unit-test the Python tools
+        working-directory: .
+        run: python -m unittest discover -s tools -p 'test_*.py'
+
+      - name: Unit-test the FEA pipeline code
+        working-directory: .
+        run: python -m unittest discover -s offline_pipeline/fea -p 'test_*.py'
+
+      - name: Unit-test the case runner
+        working-directory: .
+        run: python -m unittest discover -s offline_pipeline -p 'test_run_case.py'
+
       - name: Run Traceability Check
         working-directory: .
         run: python tools/check_traceability.py
+
+      - name: Check Tier headers (first line of every source file)
+        working-directory: .
+        run: python tools/check_tier_headers.py
+
+      - name: Search for mass and inertia literals in non-test code
+        working-directory: .
+        run: python tools/check_mass_literals.py
 
       - name: Install cargo-cyclonedx
         run: cargo install cargo-cyclonedx --locked
@@ -77,3 +120,27 @@ jobs:
         with:
           name: rust-sbom
           path: physics_core/bom.json
+
+  cpp-ffi-layout:
+    name: C++ FFI layout asserts (no Unreal)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - name: Show compiler version
+        run: g++ --version
+
+      - name: Syntax-check static_asserts in DroneFfiLayout.h
+        run: >
+          g++ -std=c++17 -fsyntax-only
+          -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public
+          tools/cpp_ffi_check/ffi_layout_check.cpp
+
+      - name: Build and run NED to Unreal conversion test
+        run: >
+          g++ -std=c++17 -Wall -Wextra -Werror
+          -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public
+          tools/cpp_ffi_check/frame_conversion_test.cpp
+          -o "$RUNNER_TEMP/frame_conversion_test"
+          && "$RUNNER_TEMP/frame_conversion_test"

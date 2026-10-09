@@ -1,0 +1,5 @@
+{
+  "purpose": "Fixed sample for the Rust/Python SHA-256 equality test (WP-10.6). Do not edit.",
+  "non_ascii": "µ °C",
+  "value": 0.1
+}

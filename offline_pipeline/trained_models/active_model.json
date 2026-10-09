@@ -1,0 +1,21 @@
+{
+  "models": {
+    "aero": {
+      "config_hash": "7c6e0bdb951cb5ffeb93d712d53eedc557b7b288b6faafc72cedf74f415a99ef",
+      "geometry_hash": "44a1cfbc59894c48c409414771b2f5234f0821ef1ac459ddf84ac14eebc953f0",
+      "holdout_error": null,
+      "kind": "stub",
+      "path": "offline_pipeline/trained_models/aero_stub.onnx",
+      "sha256": "9cc3391afd053a0652708dbce23f99c6c522a963c1abe7fdd7437b7059b461d4"
+    },
+    "fea": {
+      "config_hash": "7c6e0bdb951cb5ffeb93d712d53eedc557b7b288b6faafc72cedf74f415a99ef",
+      "geometry_hash": "44a1cfbc59894c48c409414771b2f5234f0821ef1ac459ddf84ac14eebc953f0",
+      "holdout_error": null,
+      "kind": "stub",
+      "path": "offline_pipeline/trained_models/fea_stub.onnx",
+      "sha256": "781e1e1a9ae13a56eb2ad37bdedc66083e8130c44a750385dbf9064f0a164ebd"
+    }
+  },
+  "schema_version": 1
+}

@@ -1,3 +1,4 @@
+// Tier: F
 extern crate cbindgen;
 
 use sha2::{Digest, Sha256};
@@ -51,9 +52,28 @@ fn main() {
     let config_hash_result = config_hasher.finalize();
     let config_hash_hex = hex::encode(config_hash_result);
 
+    // Fixed sample whose SHA-256 is also asserted in Python (WP-10.6): proves both
+    // sides hash raw bytes identically.
+    let sample_path = Path::new(&crate_dir)
+        .parent()
+        .unwrap()
+        .join("tools/hash_sample.json");
+
+    let sample_data = fs::read(&sample_path).unwrap_or_else(|_| {
+        panic!("CRITICAL: Hash sample file missing at {:?}", sample_path);
+    });
+
+    let mut sample_hasher = Sha256::new();
+    sample_hasher.update(&sample_data);
+    let sample_hash_hex = hex::encode(sample_hasher.finalize());
+
+    println!("cargo:rustc-env=HASH_SAMPLE_SHA256={}", sample_hash_hex);
+    println!("cargo:rerun-if-changed=../tools/hash_sample.json");
     println!("cargo:rustc-env=GEOMETRY_HASH={}", geo_hash_hex);
     println!("cargo:rustc-env=CONFIG_HASH={}", config_hash_hex);
     println!("cargo:rerun-if-changed=../offline_pipeline/geometry/current_geometry.json");
     println!("cargo:rerun-if-changed=../offline_pipeline/geometry/vehicle_config.json");
+    // The header is generated from src/, so any source edit must rerun cbindgen.
+    println!("cargo:rerun-if-changed=src");
     println!("cargo:rerun-if-changed=build.rs");
 }

@@ -1,3 +1,4 @@
+// Tier: V
 #pragma once
 
 #include "CoreMinimal.h"
@@ -23,6 +24,12 @@ private:
 	DroneState PhysicsState;
 	ThermalState Thermal;
 	VehicleConfig Config;
+	// Caller-owned fault latch: explicitly zero-initialized, cleared only at the start of a run.
+	FaultLatch PhysicsFaultLatch = {};
+
+	// Telemetry of the last successful step. Zero-initialized; only valid once bHaveTelemetry is true.
+	DebugTelemetry LastTelemetry = {};
+	bool bHaveTelemetry = false;
 
 	double Accumulator = 0.0;
 	int32 DroppedTimeEvents = 0;

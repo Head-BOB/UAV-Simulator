@@ -21,3 +21,7 @@ UE5Project/Plugins/DronePhysicsBridge/Intermediate/
 *.suo
 .DS_Store
 .venv/
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+dev-docs/

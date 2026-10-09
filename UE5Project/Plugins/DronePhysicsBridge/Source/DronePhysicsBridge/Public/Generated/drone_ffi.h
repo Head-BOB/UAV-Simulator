@@ -7,6 +7,27 @@
 #include <stdlib.h>
 
 /**
+ * Engineering bound on the model input width, not a physics limit. The widest planned
+ * input today is 4 (aero); raise only by a reviewed change.
+ */
+#define MAX_INPUT_WIDTH 64
+
+/**
+ * Length of `SurrogateQueryResult::predicted_values`.
+ */
+#define PREDICTED_SLOTS 3
+
+/**
+ * Number of inputs the aero surrogate takes: airspeed, angle of attack, sideslip.
+ */
+#define AERO_INPUT_WIDTH 3
+
+/**
+ * Number of inputs the FEA surrogate takes: 4 arm loads, 3 direction components, 1 temperature.
+ */
+#define FEA_INPUT_WIDTH 8
+
+/**
  * Handle to an active ONNX surrogate model session.
  */
 typedef struct SurrogateHandle SurrogateHandle;
@@ -127,7 +148,9 @@ typedef struct VehicleConfig {
    */
   double motor_pos_m[4][3];
   /**
-   * Spin direction of each motor (+1.0 or -1.0).
+   * Spin direction of each motor (+1.0 or -1.0), in the same index order as `motor_pos_m`.
+   * +1.0 means the reaction torque on the airframe is about body +Z (nose right), i.e. the
+   * propeller turns CCW seen from above.
    *
    * # Units
    * Unitless multiplier.
@@ -148,10 +171,11 @@ typedef struct VehicleConfig {
    */
   double thrust_coeff;
   /**
-   * Propeller torque coefficient.
+   * Propeller yaw-torque coefficient: reaction torque per unit of thrust (`kappa`).
+   * Yaw torque on the airframe is `sum(motor_spin * torque_coeff * thrust_n)`.
    *
    * # Units
-   * Unitless.
+   * Newton-metres per Newton of thrust (N*m/N, equivalent to metres).
    */
   double torque_coeff;
   /**
@@ -163,6 +187,9 @@ typedef struct VehicleConfig {
   double max_rpm;
   /**
    * Throttle level required to maintain steady hover.
+   *
+   * Derived at load from mass, C_T, propeller diameter, max RPM and ISA
+   * sea-level density (`aero::hover_throttle`); never read from JSON.
    *
    * # Units
    * Normalized range 0.0 to 1.0.
@@ -243,7 +270,8 @@ typedef struct DebugTelemetry {
    * Flag indicating if an un-trained stub model is currently driving the physics.
    *
    * # Units
-   * Unitless boolean flag (1 if stub loaded, 0 otherwise).
+   * Unitless boolean flag (1 if a surrogate handle passed to this step came
+   * from a model whose `kind` is not `trained`, 0 otherwise).
    */
   int32_t stub_loaded;
   /**
@@ -255,7 +283,8 @@ typedef struct DebugTelemetry {
    */
   int32_t fea_source;
   /**
-   * Latched fault flag indicating a physics NaN or Inf divergence occurred.
+   * Copy of the caller's `FaultLatch`: 1 from the faulting step until the caller clears it.
+   * Data produced while this is 1 is invalid.
    */
   int32_t physics_fault;
   /**
@@ -267,6 +296,25 @@ typedef struct DebugTelemetry {
    */
   int32_t uncalibrated_flags;
 } DebugTelemetry;
+
+/**
+ * Caller-owned latched fault flag for `ffi_step_physics` (WP-4.4).
+ *
+ * The caller allocates it, zero-initializes it, and passes it to every step.
+ * Rust sets `physics_fault` to 1 when a step produces a NaN or Inf state and
+ * NEVER clears it. Only the caller clears it, on purpose (for example at the
+ * start of a new run). Rust holds no copy, so two vehicles or two tests do
+ * not share fault state.
+ *
+ * Data produced while the latch is set is invalid. It must not be used as
+ * validation or pass/fail evidence.
+ */
+typedef struct FaultLatch {
+  /**
+   * 0 = no fault latched, 1 = a NaN/Inf divergence occurred since the caller last cleared it.
+   */
+  int32_t physics_fault;
+} FaultLatch;
 
 /**
  * Standardized return payload for any trained surrogate model query.
@@ -340,6 +388,24 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
  * # Units
  * * `dt` - Timestep in seconds.
  *
+ * # Returns
+ * * `0` - Success
+ * * `1` - Null pointer
+ * * `6` - Aero model error (drag or thrust), including altitude outside ISA 0..=11000 m;
+ *   no output is written
+ * * `7` - Invalid dt (NaN, <= 0 or > 0.01)
+ * * `8` - NaN/Inf in the new state: `state` and `thermal_state` are restored to their
+ *   previous values and `fault_latch` is set to 1.
+ * * `9` - A non-null surrogate handle is not live (never loaded, already unloaded, foreign),
+ *   or `aero_handle` and `fea_handle` are the same non-null handle; nothing is written
+ *
+ * # Fault latch
+ * `fault_latch` is caller-owned and must be zero-initialized by the caller. Rust sets it to 1
+ * on a code-8 step and never clears it; later steps keep running from the restored state and
+ * report `physics_fault = 1` in telemetry. The caller clears it on purpose (for example at
+ * the start of a new run). Data produced while it is set is invalid and must not be used as
+ * validation or pass/fail evidence.
+ *
  * # Safety
  * * `state` must be a valid, aligned, mutable pointer to a DroneState.
  * * `thermal_state` must be a valid, aligned, mutable pointer to a ThermalState.
@@ -347,6 +413,7 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
  * * `aero_handle` and `fea_handle` may be null. If non-null, must be valid SurrogateHandles.
  * * `config` must be a valid, aligned, immutable pointer to a VehicleConfig.
  * * `out_telemetry` must be a valid, aligned, mutable pointer to a DebugTelemetry struct.
+ * * `fault_latch` must be a valid, aligned, mutable pointer to a FaultLatch.
  * * Pointers must not alias or be subject to concurrent mutation.
  */
 int32_t ffi_step_physics(struct DroneState *state,
@@ -356,43 +423,48 @@ int32_t ffi_step_physics(struct DroneState *state,
                          struct SurrogateHandle *fea_handle,
                          const struct VehicleConfig *config,
                          struct DebugTelemetry *out_telemetry,
+                         struct FaultLatch *fault_latch,
                          double dt);
-
-/**
- * Retrieves the most recent physics telemetry data for the UE5 OSD.
- *
- * # Safety
- * * `out_telemetry` must be a valid, aligned, and mutable pointer to a DebugTelemetry struct.
- */
-int32_t ffi_get_debug_telemetry(struct DebugTelemetry *out_telemetry);
 
 /**
  * Loads a trained ONNX surrogate model and returns an opaque handle to C++.
  *
  * # Returns
  * * `0` - Success
- * * `1` - Null pointer provided or Invalid UTF-8 path
+ * * `1` - Null pointer, invalid UTF-8 path, or the path is not a readable file
  * * `2` - Missing provenance metadata
  * * `3` - Geometry hash mismatch
- * * `4` - Engine/ONNX initialization failure
+ * * `4` - Engine/ONNX initialization failure (including a missing ONNX Runtime library)
  * * `5` - Stub model rejected (allow_stub_models feature not enabled)
+ * * `6` - Model inputs/outputs are not the supported shapes
+ * * `7` - Handle registry unavailable; the model is dropped and `out_handle` is untouched
+ * * `8` - Vehicle config hash mismatch (model `config_hash` differs from the compiled `vehicle_config.json`)
  *
  * # Safety
  * * `path` must be a valid, null-terminated C string.
  * * `out_handle` must be a valid, aligned, mutable pointer to a pointer.
  */
-int32_t ffi_load_surrogate_model(const char *path, struct SurrogateHandle **out_handle);
+int32_t ffi_load_surrogate_model(const char *path,
+                                 struct SurrogateHandle **out_handle);
 
 /**
  * Queries a loaded surrogate model.
  *
+ * `input_count` must equal the model's declared input width; no slice is built from it
+ * before that check, so a huge value cannot read out of bounds.
+ *
  * # Returns
  * * `0` - Success
- * * `1` - Null pointer or invalid array length provided
+ * * `1` - Null pointer or negative `input_count`
+ * * `2` - `handle` is not a live handle (never loaded, already unloaded, foreign)
+ * * `3` - `input_count` differs from the model's input width
  * * `4` - Engine/ONNX inference error
+ * * `5` - An input value is NaN or infinite
+ * * `6` - Malformed model output (wrong count, non-finite, envelope flag not 0/1)
  *
  * # Safety
- * * `handle` must be a valid pointer created by `ffi_load_surrogate_model`.
+ * * `handle` must be a pointer created by `ffi_load_surrogate_model` (checked against the
+ *   live registry before use).
  * * `inputs` must point to an array of exactly `input_count` floats.
  * * `out_result` must be a valid, aligned pointer.
  */
@@ -404,11 +476,17 @@ int32_t ffi_query_surrogate(struct SurrogateHandle *handle,
 /**
  * Unloads a surrogate model and frees its memory.
  *
+ * # Returns
+ * * `0` - Freed
+ * * `1` - Null pointer
+ * * `2` - `handle` is not live (never loaded or already unloaded); nothing is freed
+ *
  * # Safety
- * * `handle` must be a valid pointer created by `ffi_load_surrogate_model`.
- * * `handle` must not be accessed after this function returns.
+ * * `handle` must be a pointer created by `ffi_load_surrogate_model` (checked against the
+ *   live registry before it is freed).
+ * * The caller must not use `handle` after this function returns 0.
  */
-void ffi_unload_surrogate_model(struct SurrogateHandle *handle);
+int32_t ffi_unload_surrogate_model(struct SurrogateHandle *handle);
 
 /**
  * Loads a vehicle configuration file.
@@ -421,6 +499,12 @@ void ffi_unload_surrogate_model(struct SurrogateHandle *handle);
  * * `4` - Invalid Mass
  * * `5` - Invalid Inertia
  * * `6` - Invalid Motor Spin
+ * * `7` - Invalid Motor Position (non-finite)
+ * * `8` - Invalid Propeller Diameter
+ * * `9` - Invalid Thrust Coefficient
+ * * `10` - Invalid Torque Coefficient
+ * * `11` - Invalid Max RPM
+ * * `12` - Invalid Hover Throttle (must be in (0, 1])
  *
  * # Safety
  * * `path` must be a valid, null-terminated C string.

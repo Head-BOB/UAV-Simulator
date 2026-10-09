@@ -1,3 +1,4 @@
+// Tier: F
 use serde::Deserialize;
 
 /// Represents the drone's current physical condition.
@@ -92,6 +93,35 @@ impl Default for ThermalState {
     }
 }
 
+/// Caller-owned latched fault flag for `ffi_step_physics` (WP-4.4).
+///
+/// The caller allocates it, zero-initializes it, and passes it to every step.
+/// Rust sets `physics_fault` to 1 when a step produces a NaN or Inf state and
+/// NEVER clears it. Only the caller clears it, on purpose (for example at the
+/// start of a new run). Rust holds no copy, so two vehicles or two tests do
+/// not share fault state.
+///
+/// Data produced while the latch is set is invalid. It must not be used as
+/// validation or pass/fail evidence.
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct FaultLatch {
+    /// 0 = no fault latched, 1 = a NaN/Inf divergence occurred since the caller last cleared it.
+    pub physics_fault: i32,
+}
+
+impl FaultLatch {
+    pub const fn new() -> Self {
+        Self { physics_fault: 0 }
+    }
+}
+
+impl Default for FaultLatch {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Standardized return payload for any trained surrogate model query.
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -117,6 +147,7 @@ pub struct SurrogateQueryResult {
 
 /// Physical properties and layout of the specific airframe being simulated.
 #[derive(Copy, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[repr(C)]
 pub struct VehicleConfig {
     /// Total mass of the vehicle.
@@ -137,7 +168,9 @@ pub struct VehicleConfig {
     /// Meters.
     pub motor_pos_m: [[f64; 3]; 4],
 
-    /// Spin direction of each motor (+1.0 or -1.0).
+    /// Spin direction of each motor (+1.0 or -1.0), in the same index order as `motor_pos_m`.
+    /// +1.0 means the reaction torque on the airframe is about body +Z (nose right), i.e. the
+    /// propeller turns CCW seen from above.
     ///
     /// # Units
     /// Unitless multiplier.
@@ -155,10 +188,11 @@ pub struct VehicleConfig {
     /// Unitless.
     pub thrust_coeff: f64,
 
-    /// Propeller torque coefficient.
+    /// Propeller yaw-torque coefficient: reaction torque per unit of thrust (`kappa`).
+    /// Yaw torque on the airframe is `sum(motor_spin * torque_coeff * thrust_n)`.
     ///
     /// # Units
-    /// Unitless.
+    /// Newton-metres per Newton of thrust (N*m/N, equivalent to metres).
     pub torque_coeff: f64,
 
     /// Maximum rotational speed of the motors.
@@ -169,8 +203,12 @@ pub struct VehicleConfig {
 
     /// Throttle level required to maintain steady hover.
     ///
+    /// Derived at load from mass, C_T, propeller diameter, max RPM and ISA
+    /// sea-level density (`aero::hover_throttle`); never read from JSON.
+    ///
     /// # Units
     /// Normalized range 0.0 to 1.0.
+    #[serde(skip_deserializing)]
     pub hover_throttle: f64,
 }
 
@@ -237,7 +275,8 @@ pub struct DebugTelemetry {
     /// Flag indicating if an un-trained stub model is currently driving the physics.
     ///
     /// # Units
-    /// Unitless boolean flag (1 if stub loaded, 0 otherwise).
+    /// Unitless boolean flag (1 if a surrogate handle passed to this step came
+    /// from a model whose `kind` is not `trained`, 0 otherwise).
     pub stub_loaded: i32,
 
     /// Source of aerodynamic data. 0 = none, 1 = analytic fallback, 2 = surrogate.
@@ -246,7 +285,8 @@ pub struct DebugTelemetry {
     /// Source of structural data. 0 = none, 1 = analytic fallback, 2 = surrogate.
     pub fea_source: i32,
 
-    /// Latched fault flag indicating a physics NaN or Inf divergence occurred.
+    /// Copy of the caller's `FaultLatch`: 1 from the faulting step until the caller clears it.
+    /// Data produced while this is 1 is invalid.
     pub physics_fault: i32,
 
     /// Count of fixed-timestep execution cycles dropped to prevent a "spiral of death".
@@ -266,7 +306,8 @@ impl DebugTelemetry {
             motor_thrusts: [0.0; 4],
             motor_rpms: [0.0; 4],
             motor_temperatures_c: [20.0; 4],
-            structural_safety_margin: 10.0,
+            // WP-7 D.5: no model means no number. NaN, never a fake safe margin (HZ-02).
+            structural_safety_margin: f32::NAN,
             is_validated_envelope: 1,
             stub_loaded: 0,
             aero_source: 0,
@@ -283,6 +324,29 @@ impl Default for DebugTelemetry {
         Self::new()
     }
 }
+
+// WP-4.6 / ADR-001 Decision 7: compile-time layout guard for every repr(C) FFI struct.
+// A layout change fails `cargo build`, not only `cargo test`. Per-field offsets are
+// checked in `tests` below and in `UE5Project/.../Public/DroneFfiLayout.h` (C++).
+// Rules: field at next multiple of its alignment; size rounded up to struct alignment.
+// f64 = 8 B (align 8); f32 and i32 = 4 B (align 4); arrays: n * element size.
+const _: () = {
+    use std::mem::{align_of, size_of};
+    // 3*8 + 3*4 + 4*4 + 3*4 = 64
+    assert!(size_of::<DroneState>() == 64 && align_of::<DroneState>() == 8);
+    // 4*4 = 16
+    assert!(size_of::<ControlInputs>() == 16 && align_of::<ControlInputs>() == 4);
+    // 4*8 = 32
+    assert!(size_of::<ThermalState>() == 32 && align_of::<ThermalState>() == 8);
+    // 1*4 = 4
+    assert!(size_of::<FaultLatch>() == 4 && align_of::<FaultLatch>() == 4);
+    // 3*4 + 4 + 4 = 20
+    assert!(size_of::<SurrogateQueryResult>() == 20 && align_of::<SurrogateQueryResult>() == 4);
+    // 8 + 24 + 96 + 32 + 5*8 = 200
+    assert!(size_of::<VehicleConfig>() == 200 && align_of::<VehicleConfig>() == 8);
+    // 4 vec3 f32 (48) + 3 vec4 f32 (48) + margin f32 (4) + 7 i32 (28) = 128
+    assert!(size_of::<DebugTelemetry>() == 128 && align_of::<DebugTelemetry>() == 4);
+};
 
 #[cfg(test)]
 mod tests {
@@ -301,5 +365,111 @@ mod tests {
         // ThermalState layout verification
         assert_eq!(std::mem::size_of::<ThermalState>(), 32);
         assert_eq!(offset_of!(ThermalState, motor_temp_c), 0);
+    }
+
+    #[test]
+    fn test_fault_latch_layout() {
+        // i32 field: 4 bytes, offset 0. A zeroed latch means "no fault".
+        assert_eq!(std::mem::size_of::<FaultLatch>(), 4);
+        assert_eq!(offset_of!(FaultLatch, physics_fault), 0);
+        assert_eq!(FaultLatch::new().physics_fault, 0);
+    }
+
+    #[test]
+    fn test_control_inputs_layout() {
+        // 4 x f32, no padding: offsets 0, 4, 8, 12; size 16.
+        assert_eq!(std::mem::size_of::<ControlInputs>(), 16);
+        assert_eq!(offset_of!(ControlInputs, throttle), 0);
+        assert_eq!(offset_of!(ControlInputs, roll), 4);
+        assert_eq!(offset_of!(ControlInputs, pitch), 8);
+        assert_eq!(offset_of!(ControlInputs, yaw), 12);
+    }
+
+    #[test]
+    fn test_vehicle_config_layout() {
+        // mass 8 B @0; inertia 3x8=24 @8; motor_pos 4x3x8=96 @32; motor_spin 4x8=32 @128;
+        // then five f64 at 160, 168, 176, 184, 192; total 200 (multiple of align 8).
+        assert_eq!(std::mem::size_of::<VehicleConfig>(), 200);
+        assert_eq!(offset_of!(VehicleConfig, mass_kg), 0);
+        assert_eq!(offset_of!(VehicleConfig, inertia_kgm2), 8);
+        assert_eq!(offset_of!(VehicleConfig, motor_pos_m), 32);
+        assert_eq!(offset_of!(VehicleConfig, motor_spin), 128);
+        assert_eq!(offset_of!(VehicleConfig, prop_diameter_m), 160);
+        assert_eq!(offset_of!(VehicleConfig, thrust_coeff), 168);
+        assert_eq!(offset_of!(VehicleConfig, torque_coeff), 176);
+        assert_eq!(offset_of!(VehicleConfig, max_rpm), 184);
+        assert_eq!(offset_of!(VehicleConfig, hover_throttle), 192);
+    }
+
+    #[test]
+    fn test_debug_telemetry_layout() {
+        // vec3 f32 = 12 B at 0, 12, 24, 36; vec4 f32 = 16 B at 48, 64, 80; margin f32 @96;
+        // seven i32 at 100, 104, ..., 124; total 128.
+        assert_eq!(std::mem::size_of::<DebugTelemetry>(), 128);
+        assert_eq!(offset_of!(DebugTelemetry, net_thrust), 0);
+        assert_eq!(offset_of!(DebugTelemetry, aero_drag), 12);
+        assert_eq!(offset_of!(DebugTelemetry, gravity), 24);
+        assert_eq!(offset_of!(DebugTelemetry, net_force), 36);
+        assert_eq!(offset_of!(DebugTelemetry, motor_thrusts), 48);
+        assert_eq!(offset_of!(DebugTelemetry, motor_rpms), 64);
+        assert_eq!(offset_of!(DebugTelemetry, motor_temperatures_c), 80);
+        assert_eq!(offset_of!(DebugTelemetry, structural_safety_margin), 96);
+        assert_eq!(offset_of!(DebugTelemetry, is_validated_envelope), 100);
+        assert_eq!(offset_of!(DebugTelemetry, stub_loaded), 104);
+        assert_eq!(offset_of!(DebugTelemetry, aero_source), 108);
+        assert_eq!(offset_of!(DebugTelemetry, fea_source), 112);
+        assert_eq!(offset_of!(DebugTelemetry, physics_fault), 116);
+        assert_eq!(offset_of!(DebugTelemetry, dropped_time_events), 120);
+        assert_eq!(offset_of!(DebugTelemetry, uncalibrated_flags), 124);
+    }
+
+    #[test]
+    fn test_surrogate_query_result_layout() {
+        // predicted_values 3x4=12 @0; uncertainty @12; in_validated_envelope @16; total 20.
+        assert_eq!(std::mem::size_of::<SurrogateQueryResult>(), 20);
+        assert_eq!(offset_of!(SurrogateQueryResult, predicted_values), 0);
+        assert_eq!(offset_of!(SurrogateQueryResult, uncertainty), 12);
+        assert_eq!(offset_of!(SurrogateQueryResult, in_validated_envelope), 16);
+    }
+
+    #[test]
+    fn test_ffi_struct_alignments() {
+        // Alignment is that of the widest member: f64 -> 8, f32/i32 -> 4.
+        use std::mem::align_of;
+        assert_eq!(align_of::<DroneState>(), 8);
+        assert_eq!(align_of::<ControlInputs>(), 4);
+        assert_eq!(align_of::<ThermalState>(), 8);
+        assert_eq!(align_of::<FaultLatch>(), 4);
+        assert_eq!(align_of::<SurrogateQueryResult>(), 4);
+        assert_eq!(align_of::<VehicleConfig>(), 8);
+        assert_eq!(align_of::<DebugTelemetry>(), 4);
+    }
+
+    #[test]
+    fn test_cpp_expected_version_matches_rust() {
+        // WP-4.5 / ADR-001 D7: the C++ constant must equal the Rust interface version.
+        // No Unreal needed: parse the one declaration line out of the UE-free C++ header.
+        const HEADER: &str = include_str!(
+            "../../UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public/DroneFfiLayout.h"
+        );
+        const PREFIX: &str = "constexpr std::int32_t kDroneFfiExpectedInterfaceVersion = ";
+        let mut found = HEADER
+            .lines()
+            .filter_map(|l| l.trim().strip_prefix(PREFIX))
+            .map(|rest| rest.trim_end_matches(';').trim().parse::<i32>());
+        let cpp_version = found.next();
+        assert!(found.next().is_none(), "constant declared more than once");
+        assert_eq!(cpp_version, Some(Ok(crate::ffi_get_interface_version())));
+    }
+
+    #[test]
+    fn test_debug_telemetry_default_no_margin() {
+        // HZ-02: a default telemetry must never show a safe-looking margin.
+        let t = DebugTelemetry::new();
+        assert!(t.structural_safety_margin.is_nan());
+        assert_eq!(t.aero_source, 0);
+        assert_eq!(t.fea_source, 0);
+        assert_eq!(t.stub_loaded, 0);
+        assert_eq!(t.physics_fault, 0);
     }
 }

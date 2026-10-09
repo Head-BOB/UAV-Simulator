@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Tier: F
 """Checks code comments for banned AI conversational artifacts.
 
 Enforces Section 6 of UAV_Simulator_Code_Commenting_Standards.

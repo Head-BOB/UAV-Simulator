@@ -1,3 +1,4 @@
+# Tier: D
 import os
 import json
 import hashlib
@@ -14,25 +15,32 @@ def generate_aero_surrogate():
         geo_data = f.read()
     geo_hash = hashlib.sha256(geo_data).hexdigest()
 
+    # Raw-byte SHA-256, same method as build.rs CONFIG_HASH (WP-2.5).
+    cfg_path = os.path.join(base_dir, 'geometry', 'vehicle_config.json')
+    with open(cfg_path, 'rb') as f:
+        cfg_hash = hashlib.sha256(f.read()).hexdigest()
+
     with open(geo_path, 'r') as f:
         geo_json = json.load(f)
     design_rev = str(geo_json.get("design_revision", 1))
 
-    X_info = helper.make_tensor_value_info('inputs', TensorProto.FLOAT, [1, 4])
+    X_info = helper.make_tensor_value_info('inputs', TensorProto.FLOAT, [1, 3])
     Y_pred_info = helper.make_tensor_value_info('predicted_values', TensorProto.FLOAT, [1, 3])
     Y_unc_info = helper.make_tensor_value_info('uncertainty', TensorProto.FLOAT, [1, 1])
     Y_env_info = helper.make_tensor_value_info('in_validated_envelope', TensorProto.FLOAT, [1, 1])
 
-    w_data = np.array([[0.01, 0.0, 0.0],
-                       [0.0, 0.01, 0.0],
-                       [0.0, 0.0, 0.01],
-                       [-0.5, 0.0, -1.2]], dtype=np.float32)
+    # STUB weights, not physics. Inputs (WP-6.8, TODO(HUMAN-VERIFY)): [airspeed_mps, alpha_rad,
+    # beta_rad] from physics_core aero_surrogate::aero_inputs. Output: body-frame force in N
+    # (X fwd, Y right, Z down). Only the airspeed row is non-zero.
+    w_data = np.array([[-0.5, 0.0, -1.2],
+                       [0.0, 0.0, 0.0],
+                       [0.0, 0.0, 0.0]], dtype=np.float32)
 
     node_w = helper.make_node(
         'Constant',
         inputs=[],
         outputs=['W'],
-        value=helper.make_tensor(name='W_val', data_type=TensorProto.FLOAT, dims=[4, 3], vals=w_data.flatten().tolist())
+        value=helper.make_tensor(name='W_val', data_type=TensorProto.FLOAT, dims=[3, 3], vals=w_data.flatten().tolist())
     )
 
     node_pred = helper.make_node('MatMul', inputs=['inputs', 'W'], outputs=['predicted_values'])
@@ -62,6 +70,7 @@ def generate_aero_surrogate():
 
     model_def.metadata_props.add(key="kind", value="stub")
     model_def.metadata_props.add(key="geometry_hash", value=geo_hash)
+    model_def.metadata_props.add(key="config_hash", value=cfg_hash)
     model_def.metadata_props.add(key="design_revision", value=design_rev)
     model_def.metadata_props.add(key="trained_at_utc", value=datetime.now(UTC).isoformat())
     model_def.metadata_props.add(key="trained_by", value=os.environ.get("GITHUB_SHA", "local_dev"))

@@ -1,8 +1,10 @@
 {
-  "clippy_pedantic_baseline": 0,
+  "clippy_pedantic_baseline": 152,
+  "clippy_pedantic_measured": "2026-10-09, physics_core/, rustc/clippy 1.96.0 (clippy 0.1.96 ac68faa20c), cargo clippy --release --message-format=json -- -W clippy::pedantic, count of compiler-message level=warning: 152 (default features). Raised from 134 (measured at item 17c1) after item 19 added 19 findings; see dev-docs/STATUS.md",
   "clang_tidy_baseline": 112,
   "cppcheck_baseline": 4,
-  "last_updated": "2026-09-04",
+  "unmeasured": "clang_tidy_baseline and cppcheck_baseline have no measurement record (items 17c2, 17c3)",
+  "last_updated": "2026-10-09",
   "note": "These numbers only go down. Lowering the baseline requires",
   "note2": "actually fixing findings, not editing this file."
 }

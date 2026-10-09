@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Tier: F
 """Scanner for placeholder physical constants across physics_core.
 
 Enforces release-candidate gate: ensures no unmeasured PLACEHOLDER: constants

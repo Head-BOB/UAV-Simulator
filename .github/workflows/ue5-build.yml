@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Build Rust Physics Core
         working-directory: physics_core
@@ -37,7 +37,7 @@ jobs:
           -build -cook -stage -package 
 
       - name: Upload build output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: ue5-build-output
           path: UE5Project/Saved/StagedBuilds/

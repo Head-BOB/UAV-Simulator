@@ -1,11 +1,14 @@
+// Tier: F
 #include "DronePhysicsBridge.h"
 #include "Modules/ModuleManager.h"
+#include "DroneFfiLayout.h"
+#include "DroneNedToUnreal.h"
 
 IMPLEMENT_MODULE(FDronePhysicsBridgeModule, DronePhysicsBridge)
 
 void FDronePhysicsBridgeModule::StartupModule()
 {
-    int32 ExpectedVersion = 5;
+    int32 ExpectedVersion = kDroneFfiExpectedInterfaceVersion;
     int32 RustVersion = ffi_get_interface_version();
 
     if (RustVersion != ExpectedVersion)
@@ -55,18 +58,26 @@ bool FDronePhysicsBridgeModule::LoadVehicleConfig(const FString& Path, VehicleCo
     return ffi_load_vehicle_config(TCHAR_TO_UTF8(*Path), OutConfig) == 0;
 }
 
-bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, ThermalState* Thermal, const ControlInputs* Inputs, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, const VehicleConfig* Config, DebugTelemetry* OutTelemetry, double DeltaTime)
+bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, ThermalState* Thermal, const ControlInputs* Inputs, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, const VehicleConfig* Config, DebugTelemetry* OutTelemetry, FaultLatch* Latch, double DeltaTime)
 {
-    if (!State || !Thermal || !Inputs || !Config || !OutTelemetry) return false;
-    return ffi_step_physics(State, Thermal, Inputs, AeroHandle, FeaHandle, Config, OutTelemetry, DeltaTime) == 0;
+    if (!State || !Thermal || !Inputs || !Config || !OutTelemetry || !Latch) return false;
+    return ffi_step_physics(State, Thermal, Inputs, AeroHandle, FeaHandle, Config, OutTelemetry, Latch, DeltaTime) == 0;
 }
 
 FVector FDronePhysicsBridgeModule::NedToUnrealWorld(const double NedPosition[3])
 {
-    return FVector(NedPosition[0] * 100.0, NedPosition[1] * 100.0, -NedPosition[2] * 100.0);
+    const DroneUeVec3 V = DroneNedToUePosition(NedPosition);
+    return FVector(V.X, V.Y, V.Z);
+}
+
+FVector FDronePhysicsBridgeModule::NedToUnrealVector(const float NedVector[3])
+{
+    const DroneUeVec3 V = DroneNedToUeVector(NedVector);
+    return FVector(V.X, V.Y, V.Z);
 }
 
 FQuat FDronePhysicsBridgeModule::NedToUnrealQuat(const float NedQuat[4])
 {
-    return FQuat(-NedQuat[0], -NedQuat[1], NedQuat[2], NedQuat[3]);
+    const DroneUeQuat Q = DroneNedToUeQuat(NedQuat);
+    return FQuat(Q.X, Q.Y, Q.Z, Q.W);
 }

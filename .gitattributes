@@ -1,0 +1,2 @@
+# Provenance hashes (geometry_hash, config_hash) are SHA-256 of raw bytes; a CRLF checkout would change them.
+*.json text eol=lf

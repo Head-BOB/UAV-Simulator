@@ -1,3 +1,4 @@
+# Tier: F
 import urllib.request
 import hashlib
 import os

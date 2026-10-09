@@ -1,3 +1,4 @@
+// Tier: V
 #include "DroneTelemetryComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/Engine.h"
@@ -27,19 +28,34 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	{
 		PhysicsState = FDronePhysicsBridgeModule::CreateDefaultState();
 		Thermal = FDronePhysicsBridgeModule::CreateDefaultThermalState();
+		PhysicsFaultLatch.physics_fault = 0;
 
-		FString BasePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
-		FString ConfigPath = BasePath + TEXT("offline_pipeline/geometry/vehicle_config.json");
-		FString AeroPath = BasePath + TEXT("trained_models/aero_stub.onnx");
-		FString FeaPath = BasePath + TEXT("trained_models/fea_stub.onnx");
+		// ProjectDir is UE5Project/; the config and the training output live one level up, in the repo root.
+		FString RepoRoot = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir() / TEXT(".."));
+		FPaths::NormalizeDirectoryName(RepoRoot);
+		FString ConfigPath = RepoRoot / TEXT("offline_pipeline/geometry/vehicle_config.json");
+		FString AeroPath = RepoRoot / TEXT("offline_pipeline/trained_models/aero_stub.onnx");
+		FString FeaPath = RepoRoot / TEXT("offline_pipeline/trained_models/fea_stub.onnx");
 
 		if (!FDronePhysicsBridgeModule::LoadVehicleConfig(ConfigPath, &Config))
 		{
-			UE_LOG(LogTemp, Fatal, TEXT("Failed to load VehicleConfig!"));
+			UE_LOG(LogTemp, Fatal, TEXT("Failed to load VehicleConfig from '%s'"), *ConfigPath);
 		}
 
-		ffi_load_surrogate_model(TCHAR_TO_UTF8(*AeroPath), &AeroHandle);
-		ffi_load_surrogate_model(TCHAR_TO_UTF8(*FeaPath), &FeaHandle);
+		// Rust leaves the out handle untouched on every error, so a failed load keeps the handle null.
+		// TODO(HUMAN-VERIFY): policy B-15, whether a failed model load must be fatal on a Tier F run.
+		const int32 AeroCode = ffi_load_surrogate_model(TCHAR_TO_UTF8(*AeroPath), &AeroHandle);
+		if (AeroCode != 0)
+		{
+			AeroHandle = nullptr;
+			UE_LOG(LogTemp, Error, TEXT("Aero surrogate load failed, code %d, path '%s'. Running without the aero surrogate (codes: ffi_load_surrogate_model in drone_ffi.h)"), AeroCode, *AeroPath);
+		}
+		const int32 FeaCode = ffi_load_surrogate_model(TCHAR_TO_UTF8(*FeaPath), &FeaHandle);
+		if (FeaCode != 0)
+		{
+			FeaHandle = nullptr;
+			UE_LOG(LogTemp, Error, TEXT("FEA surrogate load failed, code %d, path '%s'. Running without the FEA surrogate (codes: ffi_load_surrogate_model in drone_ffi.h)"), FeaCode, *FeaPath);
+		}
 
 		bIsPhysicsInitialized = true;
 	}
@@ -68,23 +84,27 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	Accumulator += (double)DeltaTime;
 	int32 Steps = 0;
 	bool bPhysicsFault = false;
-	DebugTelemetry Telemetry;
 
 	while (Accumulator >= FixedDt && Steps < MaxSubsteps)
 	{
-		if (!FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &Thermal, &LiveInputs, AeroHandle, FeaHandle, &Config, &Telemetry, FixedDt))
+		DebugTelemetry StepTelemetry = {};
+		if (!FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &Thermal, &LiveInputs, AeroHandle, FeaHandle, &Config, &StepTelemetry, &PhysicsFaultLatch, FixedDt))
 		{
 			bPhysicsFault = true;
 			break;
 		}
+		LastTelemetry = StepTelemetry;
+		bHaveTelemetry = true;
 		Accumulator -= FixedDt;
 		++Steps;
 	}
+	const DebugTelemetry& Telemetry = LastTelemetry;
 
 	if (Steps == MaxSubsteps && Accumulator >= FixedDt)
 	{
-		Accumulator = 0.0;
 		++DroppedTimeEvents;
+		UE_LOG(LogTemp, Warning, TEXT("Physics fell behind: dropped %.6f s (cap %d steps per frame), event %d"), Accumulator, MaxSubsteps, DroppedTimeEvents);
+		Accumulator = 0.0;
 	}
 
 	FVector NewPos = FDronePhysicsBridgeModule::NedToUnrealWorld(PhysicsState.position);
@@ -93,15 +113,19 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	FVector ActorLocation = GetOwner()->GetActorLocation();
 	const float ForceScale = 10.0f;
-	FVector NetThrust(Telemetry.net_thrust[0], Telemetry.net_thrust[1], -Telemetry.net_thrust[2]);
-	FVector AeroDrag(Telemetry.aero_drag[0], Telemetry.aero_drag[1], -Telemetry.aero_drag[2]);
-	FVector Gravity(Telemetry.gravity[0], Telemetry.gravity[1], -Telemetry.gravity[2]);
-	FVector NetForce(Telemetry.net_force[0], Telemetry.net_force[1], -Telemetry.net_force[2]);
+	if (bHaveTelemetry)
+	{
+		// Frame conversion only in FDronePhysicsBridgeModule (ADR-001 D5); ForceScale is a display scale.
+		FVector NetThrust = FDronePhysicsBridgeModule::NedToUnrealVector(Telemetry.net_thrust);
+		FVector AeroDrag = FDronePhysicsBridgeModule::NedToUnrealVector(Telemetry.aero_drag);
+		FVector Gravity = FDronePhysicsBridgeModule::NedToUnrealVector(Telemetry.gravity);
+		FVector NetForce = FDronePhysicsBridgeModule::NedToUnrealVector(Telemetry.net_force);
 
-	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (NetThrust * ForceScale), 50.0f, FColor::Blue, false, -1.0f, 0, 3.0f);
-	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (AeroDrag * ForceScale), 50.0f, FColor::Red, false, -1.0f, 0, 2.0f);
-	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (Gravity * ForceScale), 50.0f, FColor::Yellow, false, -1.0f, 0, 2.0f);
-	DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (NetForce * ForceScale), 50.0f, FColor::Green, false, -1.0f, 0, 5.0f);
+		DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (NetThrust * ForceScale), 50.0f, FColor::Blue, false, -1.0f, 0, 3.0f);
+		DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (AeroDrag * ForceScale), 50.0f, FColor::Red, false, -1.0f, 0, 2.0f);
+		DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (Gravity * ForceScale), 50.0f, FColor::Yellow, false, -1.0f, 0, 2.0f);
+		DrawDebugDirectionalArrow(GetWorld(), ActorLocation, ActorLocation + (NetForce * ForceScale), 50.0f, FColor::Green, false, -1.0f, 0, 5.0f);
+	}
 
 	UTextRenderComponent* Hologram = GetOwner()->FindComponentByClass<UTextRenderComponent>();
 	if (!Hologram)
@@ -112,6 +136,19 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		Hologram->SetRelativeLocation(FVector(0, 0, 150.0f));
 		Hologram->SetHorizontalAlignment(EHTA_Center);
 		Hologram->SetWorldSize(26.0f);
+	}
+
+	if (!bHaveTelemetry)
+	{
+		// No step has succeeded yet: never show zeroed telemetry as a margin, temperature or warning state.
+		FString NoDataText = TEXT("Telemetry: NO DATA");
+		if (bPhysicsFault || PhysicsFaultLatch.physics_fault != 0)
+		{
+			NoDataText += TEXT("\n[!] PHYSICS DIVERGENCE (NaN)");
+		}
+		Hologram->SetTextRenderColor(FColor::Red);
+		Hologram->SetText(FText::FromString(NoDataText));
+		return;
 	}
 
 	FString MarginString = FMath::IsNaN(Telemetry.structural_safety_margin) ? TEXT("NaN") : FString::Printf(TEXT("%.2f"), Telemetry.structural_safety_margin);
@@ -131,7 +168,7 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	(double)(Telemetry.motor_rpms[0]), (double)(Telemetry.motor_rpms[1]), (double)(Telemetry.motor_rpms[2]), (double)(Telemetry.motor_rpms[3]),
 	DroppedTimeEvents);
 
-	if (bPhysicsFault || Telemetry.physics_fault == 1)
+	if (bPhysicsFault || PhysicsFaultLatch.physics_fault != 0)
 	{
 		HologramText += TEXT("\n[!] PHYSICS DIVERGENCE (NaN)");
 		Hologram->SetTextRenderColor(FColor::Red);

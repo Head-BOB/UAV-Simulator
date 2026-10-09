@@ -1,3 +1,4 @@
+// Tier: V
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "UAV_Simulator.h"

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Tier: D
 """Automated metadata tagging and dataset placement script.
 
 Computes SHA-256 provenance of the canonical geometry definition,
