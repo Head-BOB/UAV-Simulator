@@ -21,3 +21,9 @@ UE5Project/Plugins/DronePhysicsBridge/Intermediate/
 *.suo
 .DS_Store
 .venv/
+
+# Phase 3 Python environment and test caches
+design_search/venv/
+.pytest_cache/
+__pycache__/
+*.pyc
