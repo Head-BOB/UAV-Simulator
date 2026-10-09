@@ -275,8 +275,10 @@ void ADroneDemoPawn::SetupVisuals()
 				return;
 			}
 			M.RestComponentRot.Add(Ref);
-			UE_LOG(LogTemp, Log, TEXT("DroneDemo: bone '%s' ref rotation (component space) quat xyzw = (%.5f, %.5f, %.5f, %.5f), euler pitch/yaw/roll = %s"),
-				*Bone.ToString(), Ref.X, Ref.Y, Ref.Z, Ref.W, *Ref.Rotator().ToString());
+			// The bone's own X/Y/Z axes expressed in component space: tells which local axis is the shaft.
+			UE_LOG(LogTemp, Log, TEXT("DroneDemo-DIAG: bone '%s' ref quat xyzw = (%.5f, %.5f, %.5f, %.5f), euler (pitch,yaw,roll) = %s, local X in component = %s, local Y = %s, local Z = %s"),
+				*Bone.ToString(), Ref.X, Ref.Y, Ref.Z, Ref.W, *Ref.Rotator().ToString(),
+				*Ref.RotateVector(FVector::XAxisVector).ToString(), *Ref.RotateVector(FVector::YAxisVector).ToString(), *Ref.RotateVector(FVector::ZAxisVector).ToString());
 		}
 	}
 	{

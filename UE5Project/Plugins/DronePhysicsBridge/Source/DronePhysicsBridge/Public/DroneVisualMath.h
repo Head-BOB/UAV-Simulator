@@ -13,14 +13,16 @@ namespace DroneVisual
 // motor_spin = +1 (reaction torque about body +Z, i.e. a propeller turning counter-clockwise seen
 // from above) turn the right way on screen. Both come from the imported skeleton and Unreal's
 // handedness, which cannot be checked without the engine.
+// Default is bone-local X: in the UE skeletal mesh editor, prop_1_jnt's local X runs along the vertical shaft
+// (user observation, not yet confirmed by watching the prop spin).
 // TODO(HUMAN-VERIFY): in Unreal, watch one prop (FR, motor_spin +1) at low throttle. If it turns
 // about the wrong axis, change kSpinAxisBoneLocal; if it turns clockwise seen from above, change
 // kSpinDirectionScale to -1.0. This is the ONLY place either is set.
-constexpr double kSpinAxisBoneLocal[3] = {0.0, 0.0, 1.0};
+constexpr double kSpinAxisBoneLocal[3] = {1.0, 0.0, 0.0};
 constexpr double kSpinDirectionScale = 1.0;
 // Index (0=X, 1=Y, 2=Z) of the default axis above. The console variable drone.SpinAxis starts here.
 // A test checks it agrees with kSpinAxisBoneLocal.
-constexpr int kSpinAxisIndexDefault = 2;
+constexpr int kSpinAxisIndexDefault = 0;
 
 // Axis index (0=X, 1=Y, 2=Z) to a unit vector in the bone's local frame. Returns false (Out
 // untouched) for any other index, so a bad console value is caught by the caller, not guessed.

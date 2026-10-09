@@ -83,10 +83,10 @@ imported skeleton decides which one that is; find it in one Play session, no reb
    opposite ways; that comes from `motor_spin` [1, -1, -1, 1] in config order FR, FL, RR, RL, mapped
    to prop_1, prop_4, prop_2, prop_3 by `DroneModelMap.json`, and is not affected by the sign.
 4. Make the answer permanent: set `kSpinAxisBoneLocal` and `kSpinAxisIndexDefault` (same axis) and
-   `kSpinDirectionScale` in `Public/DroneVisualMath.h`. Defaults are Z (index 2) and +1.
+   `kSpinDirectionScale` in `Public/DroneVisualMath.h`. Defaults are X (index 0, the shaft axis seen on `prop_1_jnt` in the skeletal mesh editor) and +1.
 
-The reference rotations and starting values are in the Output Log lines starting `DroneDemo: bone`
-and `DroneDemo: drone.SpinAxis`. If no axis looks right, send those lines.
+The reference rotations are in the Output Log lines starting `DroneDemo-DIAG` (one per spun bone, with
+its local X/Y/Z in component space), and the starting axis and sign in `DroneDemo: drone.SpinAxis`. If no axis looks right, send those lines.
 
 ## Notes
 
