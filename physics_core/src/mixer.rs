@@ -1,3 +1,4 @@
+#![allow(clippy::needless_range_loop)]
 use crate::types::{ControlInputs, VehicleConfig};
 use glam::{DQuat, DVec3};
 
