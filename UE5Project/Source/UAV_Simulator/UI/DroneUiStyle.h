@@ -29,7 +29,7 @@ inline FLinearColor Text() { return Rgb(DroneUi::kText); }
 inline FLinearColor Muted() { return Rgb(DroneUi::kTextMuted); }
 inline FLinearColor Hairline() { return Rgb(DroneUi::kHairline); }
 inline FLinearColor PanelFill() { return Rgb(DroneUi::kPanelBottom, static_cast<float>(DroneUi::kPanelOpacity)); }
-inline FLinearColor StatusColour(DroneUi::Status S) { return Rgb(DroneUi::StatusColour(S)); }
+inline FLinearColor StatusTint(DroneUi::Status S) { return Rgb(DroneUi::StatusRgb(S)); }
 
 // Roboto only (the engine's default font). Sizes are the type scale in px at 1080p, multiplied by the UI scale
 // by the caller. Index into DroneUi::kTypeScalePx: 0 label, 1 body, 2 value, 3 heading, 4 hero.

@@ -37,7 +37,7 @@ TSharedRef<SWidget> Panel(const TSharedRef<SWidget>& Content, float Pad = 16.0f)
 
 FLinearColor ColourOf(DroneUi::Status S)
 {
-	return StatusColour(S);
+	return DroneUiStyle::StatusTint(S);
 }
 }  // namespace
 

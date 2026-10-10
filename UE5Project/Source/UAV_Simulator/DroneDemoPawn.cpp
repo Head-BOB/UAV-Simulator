@@ -303,10 +303,19 @@ void ADroneDemoPawn::SetupVisuals()
 			const int32 BoneIdx = RefSkel.FindBoneIndex(Bone);
 			const int32 ParentIdx = RefSkel.GetParentIndex(BoneIdx);
 			const FString ParentName = ParentIdx == INDEX_NONE ? FString(TEXT("(root)")) : RefSkel.GetBoneName(ParentIdx).ToString();
-			UE_LOG(LogTemp, Log, TEXT("DroneDemo-DIAG: bone '%s' parent '%s' depth %d ref-local location %s | ref quat xyzw = (%.5f, %.5f, %.5f, %.5f), euler (pitch,yaw,roll) = %s | local X in component = %s, local Y = %s, local Z = %s | spin axis %s sign %+.0f"),
-				*Bone.ToString(), *ParentName, RefBoneDepth(RefSkel, Bone), *RefSkel.GetRefBonePose()[BoneIdx].GetLocation().ToString(),
-				Ref.X, Ref.Y, Ref.Z, Ref.W, *Ref.Rotator().ToString(),
-			*Ref.RotateVector(FVector::XAxisVector).ToString(), *Ref.RotateVector(FVector::YAxisVector).ToString(), *Ref.RotateVector(FVector::ZAxisVector).ToString());
+			// Three short lines, each with its arguments next to its specifiers (all %s get an *FString, all numbers are double/int32).
+			const FString LocationText = RefSkel.GetRefBonePose()[BoneIdx].GetLocation().ToString();
+			const FString EulerText = Ref.Rotator().ToString();
+			const FString LocalX = Ref.RotateVector(FVector::XAxisVector).ToString();
+			const FString LocalY = Ref.RotateVector(FVector::YAxisVector).ToString();
+			const FString LocalZ = Ref.RotateVector(FVector::ZAxisVector).ToString();
+			const FString BoneText = Bone.ToString();
+			const int32 Depth = RefBoneDepth(RefSkel, Bone);
+			UE_LOG(LogTemp, Log, TEXT("DroneDemo-DIAG: bone '%s' parent '%s' depth %d ref-local location %s"), *BoneText, *ParentName, Depth, *LocationText);
+			UE_LOG(LogTemp, Log, TEXT("DroneDemo-DIAG: bone '%s' ref quat xyzw = (%.5f, %.5f, %.5f, %.5f) euler (pitch,yaw,roll) = %s"), *BoneText,
+				static_cast<double>(Ref.X), static_cast<double>(Ref.Y), static_cast<double>(Ref.Z), static_cast<double>(Ref.W), *EulerText);
+			UE_LOG(LogTemp, Log, TEXT("DroneDemo-DIAG: bone '%s' local X in component = %s, local Y = %s, local Z = %s"), *BoneText, *LocalX, *LocalY, *LocalZ);
+			UE_LOG(LogTemp, Log, TEXT("DroneDemo-DIAG: bone '%s' spin axis %s sign %+.0f"), *BoneText, *AxisNow.ToString(), SignNow);
 		}
 	}
 	{

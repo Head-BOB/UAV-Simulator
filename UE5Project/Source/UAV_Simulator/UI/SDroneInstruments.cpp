@@ -9,10 +9,13 @@ namespace DroneDraw
 {
 void Line(FSlateWindowElementList& Out, int32 Layer, const FGeometry& G, const FVector2f& A, const FVector2f& B, const FLinearColor& Color, float Thickness)
 {
-	TArray<FVector2f, TInlineAllocator<2>> P;  // stack storage, no heap
-	P.Add(A);
-	P.Add(B);
-	FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), P, ESlateDrawEffect::None, Color, true, Thickness);
+	// One reusable scratch array (plain TArray<FVector2f>, the type MakeLines accepts): Reset() keeps its memory, so no per-call allocation.
+	// Painting runs on one thread; if that ever changes this must become thread-local.
+	static TArray<FVector2f> Scratch;
+	Scratch.Reset();
+	Scratch.Add(A);
+	Scratch.Add(B);
+	FSlateDrawElement::MakeLines(Out, Layer, G.ToPaintGeometry(), Scratch, ESlateDrawEffect::None, Color, true, Thickness);
 }
 
 void Polyline(FSlateWindowElementList& Out, int32 Layer, const FGeometry& G, const TArray<FVector2f>& Points, const FLinearColor& Color, float Thickness)
@@ -208,7 +211,7 @@ int32 SDroneMotorBars::OnPaint(const FPaintArgs&, const FGeometry& G, const FSla
 		const DroneUi::Status St = DroneUi::StatusFromUtilisation(Fraction >= 0.98 ? 1.0 : Fraction);
 		DroneDraw::Box(Out, L, G, FVector2f(X, 18.0f * Scale), FVector2f(BarW, BarH), DroneUiStyle::Hairline());
 		const float FillH = static_cast<float>(Fraction) * BarH;
-		DroneDraw::Box(Out, L + 1, G, FVector2f(X, 18.0f * Scale + BarH - FillH), FVector2f(BarW, FillH), DroneUiStyle::StatusColour(St));
+		DroneDraw::Box(Out, L + 1, G, FVector2f(X, 18.0f * Scale + BarH - FillH), FVector2f(BarW, FillH), DroneUiStyle::StatusTint(St));
 		DroneDraw::Text(Out, L + 2, G, FVector2f(X, 0.0f), kNames[M], DroneUiStyle::Font(0, true, Scale), DroneUiStyle::Muted());
 		DroneDraw::Text(Out, L + 2, G, FVector2f(X, 18.0f * Scale + BarH + 2.0f), Snap->Text.Rpm[M], DroneUiStyle::Font(0, false, Scale), DroneUiStyle::Text());
 		DroneDraw::Text(Out, L + 2, G, FVector2f(X, 18.0f * Scale + BarH + 18.0f * Scale), Snap->Text.Thrust[M], DroneUiStyle::Font(0, false, Scale), DroneUiStyle::Muted());
@@ -282,7 +285,7 @@ int32 SDroneMarginRow::OnPaint(const FPaintArgs&, const FGeometry& G, const FSla
 	const float Fill = static_cast<float>(FMath::Clamp(Margin / 2.0, 0.0, 1.0)) * BarW;
 	DroneDraw::Text(Out, L, G, FVector2f(0.0f, 2.0f), Label, DroneUiStyle::Font(0, false, Scale), DroneUiStyle::Text());
 	DroneDraw::Box(Out, L, G, FVector2f(BarX, BarY), FVector2f(BarW, 6.0f), DroneUiStyle::Hairline());
-	DroneDraw::Box(Out, L + 1, G, FVector2f(BarX, BarY), FVector2f(Fill, 6.0f), DroneUiStyle::StatusColour(St));
-	DroneDraw::Text(Out, L + 1, G, FVector2f(BarX + BarW + 8.0f, 2.0f), ValueText, DroneUiStyle::Font(0, true, Scale), DroneUiStyle::StatusColour(St));
+	DroneDraw::Box(Out, L + 1, G, FVector2f(BarX, BarY), FVector2f(Fill, 6.0f), DroneUiStyle::StatusTint(St));
+	DroneDraw::Text(Out, L + 1, G, FVector2f(BarX + BarW + 8.0f, 2.0f), ValueText, DroneUiStyle::Font(0, true, Scale), DroneUiStyle::StatusTint(St));
 	return L + 1;
 }

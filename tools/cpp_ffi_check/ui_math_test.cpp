@@ -186,7 +186,7 @@ static void TestStatus()
     // Utilisation is the inverse: 2/3 warns (margin 1.5), 1.0 is critical, 0.5 is fine.
     Check(StatusFromUtilisation(0.5) == Status::Ok && StatusFromUtilisation(2.0 / 3.0) == Status::Warning && StatusFromUtilisation(0.99) == Status::Warning, "utilisation warning band");
     Check(StatusFromUtilisation(1.0) == Status::Critical && StatusFromUtilisation(std::nan("")) == Status::Critical, "utilisation critical");
-    Check(StatusColour(Status::Ok) == kAccent && StatusColour(Status::Warning) == kWarning && StatusColour(Status::Critical) == kCritical, "colours follow status");
+    Check(StatusRgb(Status::Ok) == kAccent && StatusRgb(Status::Warning) == kWarning && StatusRgb(Status::Critical) == kCritical, "colours follow status");
 }
 
 static void TestFormat()

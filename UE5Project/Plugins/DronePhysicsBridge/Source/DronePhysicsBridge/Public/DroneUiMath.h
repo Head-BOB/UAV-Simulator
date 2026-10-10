@@ -260,7 +260,7 @@ inline Status StatusFromUtilisation(double Utilisation)
     return Utilisation >= 1.0 / kOkMargin ? Status::Warning : Status::Ok;
 }
 
-inline std::uint32_t StatusColour(Status S)
+inline std::uint32_t StatusRgb(Status S)
 {
     return S == Status::Ok ? kAccent : (S == Status::Warning ? kWarning : kCritical);
 }
