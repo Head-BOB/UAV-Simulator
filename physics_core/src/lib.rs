@@ -16,7 +16,9 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 #[cfg(feature = "onnx")]
 use surrogate::fea_surrogate::fea_inputs;
 #[cfg(feature = "onnx")]
-use types::{ControlInputs, DebugTelemetry, SurrogateQueryResult, ThermalState, WindInput};
+use types::{
+    ControlInputs, DebugTelemetry, EnvironmentInput, SurrogateQueryResult, ThermalState, WindInput,
+};
 use types::{DroneState, FaultLatch};
 
 // Without the `onnx` feature the FFI entry points that use surrogate handles are compiled out, so
@@ -88,12 +90,13 @@ fn motor_thrusts_n(
     throttles: [f64; 4],
     config: &types::VehicleConfig,
     altitude_m: f64,
+    env: &types::EnvironmentInput,
 ) -> Result<[f64; 4], aero::AeroError> {
     Ok([
-        aero::get_thrust(throttles[0], config, altitude_m)?,
-        aero::get_thrust(throttles[1], config, altitude_m)?,
-        aero::get_thrust(throttles[2], config, altitude_m)?,
-        aero::get_thrust(throttles[3], config, altitude_m)?,
+        aero::get_thrust_env(throttles[0], config, altitude_m, env)?,
+        aero::get_thrust_env(throttles[1], config, altitude_m, env)?,
+        aero::get_thrust_env(throttles[2], config, altitude_m, env)?,
+        aero::get_thrust_env(throttles[3], config, altitude_m, env)?,
     ])
 }
 
@@ -178,7 +181,7 @@ fn rejected_telemetry(latch_value: i32) -> types::DebugTelemetry {
 /// Safe to call at any time.
 #[unsafe(no_mangle)]
 pub extern "C" fn ffi_get_interface_version() -> i32 {
-    guarded_or(FFI_VALUE_PANIC, || 11)
+    guarded_or(FFI_VALUE_PANIC, || 12)
 }
 
 /// Allows UE5 to verify the byte size of DroneState during module initialization.
@@ -284,6 +287,7 @@ fn validate_step_inputs(
     thermal_state: &ThermalState,
     config: &types::VehicleConfig,
     wind: &WindInput,
+    environment: &EnvironmentInput,
     dt: f64,
 ) -> Result<[f32; 4], StepStop> {
     if dt <= 0.0 || dt.is_nan() || dt > 0.01 {
@@ -306,6 +310,10 @@ fn validate_step_inputs(
     if aero::validate_wind(wind).is_err() {
         return Err(StepStop::Silent(12));
     }
+    // Last of all, so every earlier rejection keeps its code. Nothing is written (code 13).
+    if aero::validate_environment(environment).is_err() {
+        return Err(StepStop::Silent(13));
+    }
     Ok(work_orientation)
 }
 
@@ -327,6 +335,13 @@ fn state_has_nan(s: &DroneState) -> bool {
 /// aerodynamic drag uses it, through the air-relative velocity `v_air = v_ground - wind`. Thrust,
 /// thermal convection (ground speed) and everything else are unchanged.
 ///
+/// # Environment (interface v12)
+/// `environment` sets the atmosphere: `site_altitude_m` (height of the NED origin above sea level) and
+/// `temp_offset_c` (air temperature minus the ISA standard day). Air density for thrust and for the
+/// analytic drag fallback comes from `aero::air_density`; the motor thermal ambient becomes
+/// `thermal::AMBIENT_TEMP + temp_offset_c`. All zeros is the v11 behaviour bit for bit. A surrogate
+/// aero answer ignores the environment (it was trained at one density). Humidity is not modelled.
+///
 /// # Units
 /// * `dt` - Timestep in seconds.
 ///
@@ -346,12 +361,15 @@ fn state_has_nan(s: &DroneState) -> bool {
 ///   `types::QUAT_NORM_TOLERANCE` (rejected, never silently rescaled)
 /// * `12` - `wind.wind_ned_mps` has a NaN/Inf component or a component with magnitude above
 ///   `types::MAX_WIND_COMPONENT_MPS` (30 m/s). Rejected before any computation: NOTHING is written.
+/// * `13` - `environment` has a NaN/Inf field, `site_altitude_m` outside 0..=5000, or
+///   `|temp_offset_c| > 40`. Rejected before any computation, after the wind check: NOTHING is written.
+///   (A total height `site_altitude_m` + vehicle altitude outside 0..=11000 m is code 6.)
 /// * `98` - an internal lock was poisoned and recovered; nothing was done, call again
 /// * `99` - a panic was caught, or a handle was faulted by an earlier panic; the run is invalid
 ///
 /// # Behavior on a failed step
 /// * `state` and `thermal_state` are always unchanged.
-/// * Codes 1, 7, 9, 11, 12, 98 and 99 are rejected before any computation: NOTHING is written
+/// * Codes 1, 7, 9, 11, 12, 13, 98 and 99 are rejected before any computation: NOTHING is written
 ///   (telemetry and latch keep their previous values).
 /// * Codes 6 and 8 fail during the tick: `out_telemetry` is overwritten with "no data" (margin
 ///   NaN, `is_validated_envelope` 0, sources 0, `thermal_valid` 0, `physics_fault` = latch value,
@@ -371,6 +389,7 @@ fn state_has_nan(s: &DroneState) -> bool {
 /// * `thermal_state` must be a valid, aligned, mutable pointer to a ThermalState.
 /// * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
 /// * `wind` must be a valid, aligned, immutable pointer to a `WindInput` (null gives code 1).
+/// * `environment` must be a valid, aligned, immutable pointer to an `EnvironmentInput` (null gives code 1).
 /// * `aero_handle` and `fea_handle` may be null. If non-null, must be valid SurrogateHandles.
 /// * `config` must be a valid, aligned, immutable pointer to a VehicleConfig.
 /// * `out_telemetry` must be a valid, aligned, mutable pointer to a DebugTelemetry struct.
@@ -383,6 +402,7 @@ pub unsafe extern "C" fn ffi_step_physics(
     thermal_state: *mut ThermalState,
     controls: *const ControlInputs,
     wind: *const WindInput,
+    environment: *const EnvironmentInput,
     aero_handle: *mut surrogate::SurrogateHandle,
     fea_handle: *mut surrogate::SurrogateHandle,
     config: *const types::VehicleConfig,
@@ -395,6 +415,7 @@ pub unsafe extern "C" fn ffi_step_physics(
             || thermal_state.is_null()
             || controls.is_null()
             || wind.is_null()
+            || environment.is_null()
             || config.is_null()
             || out_telemetry.is_null()
             || fault_latch.is_null()
@@ -408,6 +429,7 @@ pub unsafe extern "C" fn ffi_step_physics(
                 thermal_state,
                 controls,
                 wind,
+                environment,
                 aero_handle,
                 fea_handle,
                 config,
@@ -442,6 +464,7 @@ fn locked_status_to_stop(guard: &Option<SlotGuard<'_>>) -> Option<StepStop> {
 fn drag_in_wind(
     state: &DroneState,
     wind: &WindInput,
+    environment: &EnvironmentInput,
     altitude_m: f64,
     aero_handle: Option<&mut surrogate::SurrogateHandle>,
 ) -> Result<([f32; 3], Option<SurrogateQueryResult>), aero::AeroError> {
@@ -449,7 +472,7 @@ fn drag_in_wind(
         velocity: aero::air_relative_velocity(state.velocity, wind),
         ..*state
     };
-    aero::get_drag_with_fallback(&air_state, altitude_m, aero_handle)
+    aero::get_drag_with_fallback_env(&air_state, altitude_m, environment, aero_handle)
 }
 
 /// Step body after the null checks. Returns `Ok(())` after writing state and telemetry.
@@ -463,6 +486,7 @@ unsafe fn step_checked(
     thermal_state: *mut ThermalState,
     controls: *const ControlInputs,
     wind: *const WindInput,
+    environment: *const EnvironmentInput,
     aero_handle: *mut surrogate::SurrogateHandle,
     fea_handle: *mut surrogate::SurrogateHandle,
     config: *const types::VehicleConfig,
@@ -471,14 +495,30 @@ unsafe fn step_checked(
     dt: f64,
 ) -> Result<(), StepStop> {
     // SAFETY: the caller guarantees the pointers are valid; these are plain Copy reads.
-    let (original_state, original_thermal, current_controls, current_config, current_wind) =
-        unsafe { (*state, *thermal_state, *controls, *config, *wind) };
+    let (
+        original_state,
+        original_thermal,
+        current_controls,
+        current_config,
+        current_wind,
+        current_env,
+    ) = unsafe {
+        (
+            *state,
+            *thermal_state,
+            *controls,
+            *config,
+            *wind,
+            *environment,
+        )
+    };
 
     let work_orientation = validate_step_inputs(
         &original_state,
         &original_thermal,
         &current_config,
         &current_wind,
+        &current_env,
         dt,
     )?;
 
@@ -521,11 +561,12 @@ unsafe fn step_checked(
     let altitude = -work_state.position[2];
     let airspeed = airspeed_mps(work_state.velocity);
 
-    let (drag, aero_result) = drag_in_wind(&work_state, &current_wind, altitude, aero_opt)
-        .map_err(|_| StepStop::NoData(6))?;
+    let (drag, aero_result) =
+        drag_in_wind(&work_state, &current_wind, &current_env, altitude, aero_opt)
+            .map_err(|_| StepStop::NoData(6))?;
     let throttles = mixer::mix_controls(&current_controls);
-    let thrusts =
-        motor_thrusts_n(throttles, &current_config, altitude).map_err(|_| StepStop::NoData(6))?;
+    let thrusts = motor_thrusts_n(throttles, &current_config, altitude, &current_env)
+        .map_err(|_| StepStop::NoData(6))?;
 
     let temps_c = original_thermal.motor_temp_c;
     let fea_in = fea_inputs(thrusts, drag, work_orientation, temps_c);
@@ -533,7 +574,14 @@ unsafe fn step_checked(
 
     let motor_rpms = throttles.map(|t| t * current_config.max_rpm);
     let mut new_thermal = original_thermal;
-    thermal::update_temperatures(&mut new_thermal, &throttles, &motor_rpms, airspeed, dt);
+    thermal::update_temperatures_ambient(
+        &mut new_thermal,
+        &throttles,
+        &motor_rpms,
+        airspeed,
+        dt,
+        thermal::AMBIENT_TEMP + current_env.temp_offset_c,
+    );
 
     let (net_force, net_torque, net_thrust) = mixer::calculate_net_forces(
         thrusts,
@@ -914,6 +962,7 @@ mod tests {
                     &mut thermal,
                     &controls,
                     &WindInput::still(),
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -929,6 +978,7 @@ mod tests {
                     ptr::null_mut(),
                     &controls,
                     &WindInput::still(),
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -944,6 +994,7 @@ mod tests {
                     &mut thermal,
                     ptr::null(),
                     &WindInput::still(),
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -959,6 +1010,7 @@ mod tests {
                     &mut thermal,
                     &controls,
                     &WindInput::still(),
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     ptr::null(),
@@ -974,6 +1026,7 @@ mod tests {
                     &mut thermal,
                     &controls,
                     &WindInput::still(),
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -1008,6 +1061,7 @@ mod tests {
                     &mut thermal,
                     &controls,
                     &WindInput::still(),
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -1023,6 +1077,7 @@ mod tests {
                     &mut thermal,
                     &controls,
                     &WindInput::still(),
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -1038,6 +1093,7 @@ mod tests {
                     &mut thermal,
                     &controls,
                     &WindInput::still(),
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -1053,6 +1109,7 @@ mod tests {
                     &mut thermal,
                     &controls,
                     &WindInput::still(),
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -1089,6 +1146,7 @@ mod tests {
                     &mut thermal,
                     &controls,
                     &WindInput::still(),
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -1129,6 +1187,7 @@ mod tests {
                 &mut thermal,
                 &controls,
                 &WindInput::still(),
+                &EnvironmentInput::standard(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1148,8 +1207,17 @@ mod tests {
     #[test]
     fn test_motor_thrusts_n_propagates_error() {
         let cfg = dummy_config();
-        assert!(motor_thrusts_n([0.5; 4], &cfg, 12000.0).is_err());
-        let t = motor_thrusts_n([0.5; 4], &cfg, 1000.0).unwrap();
+        assert!(
+            motor_thrusts_n(
+                [0.5; 4],
+                &cfg,
+                12000.0,
+                &types::EnvironmentInput::standard()
+            )
+            .is_err()
+        );
+        let t =
+            motor_thrusts_n([0.5; 4], &cfg, 1000.0, &types::EnvironmentInput::standard()).unwrap();
         for v in t {
             assert!((v - 3.3171047909823668).abs() < 1e-12, "v = {v}");
         }
@@ -1179,6 +1247,7 @@ mod tests {
                 &mut thermal,
                 &controls,
                 &WindInput::still(),
+                &EnvironmentInput::standard(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1212,6 +1281,7 @@ mod tests {
                 &mut thermal,
                 &controls,
                 &WindInput::still(),
+                &EnvironmentInput::standard(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1346,6 +1416,7 @@ mod tests {
                 &mut thermal,
                 &controls,
                 &WindInput::still(),
+                &EnvironmentInput::standard(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1370,6 +1441,7 @@ mod tests {
                     &mut thermal,
                     &controls,
                     &WindInput::still(),
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -1391,6 +1463,7 @@ mod tests {
                 &mut thermal,
                 &controls,
                 &WindInput::still(),
+                &EnvironmentInput::standard(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1421,6 +1494,7 @@ mod tests {
                 &mut thermal,
                 &controls,
                 &WindInput::still(),
+                &EnvironmentInput::standard(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1453,6 +1527,7 @@ mod tests {
                 &mut thermal,
                 &controls,
                 &WindInput::still(),
+                &EnvironmentInput::standard(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1479,7 +1554,7 @@ mod tests {
 
     #[test]
     fn test_ffi_interface_version() {
-        assert_eq!(ffi_get_interface_version(), 11);
+        assert_eq!(ffi_get_interface_version(), 12);
     }
 
     #[test]
@@ -1611,6 +1686,7 @@ mod tests {
                     &mut thermal,
                     &controls,
                     &WindInput::still(),
+                    &EnvironmentInput::standard(),
                     aero,
                     fea,
                     &config,
@@ -1691,6 +1767,7 @@ mod tests {
                 &mut thermal,
                 &controls,
                 &WindInput::still(),
+                &EnvironmentInput::standard(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1754,6 +1831,7 @@ mod tests {
                 &mut thermal,
                 &controls,
                 &WindInput::still(),
+                &EnvironmentInput::standard(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1819,7 +1897,7 @@ mod tests {
             with_injected_panic(|| unsafe { ffi_load_vehicle_config(path.as_ptr(), &mut cfg) });
         assert_eq!(code, 99);
         // The next call is not poisoned by the caught panic.
-        assert_eq!(ffi_get_interface_version(), 11);
+        assert_eq!(ffi_get_interface_version(), 12);
     }
 
     // Deliberate panic through the step and the three handle functions.
@@ -1842,6 +1920,7 @@ mod tests {
                 &mut thermal,
                 &controls,
                 &WindInput::still(),
+                &EnvironmentInput::standard(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -1947,6 +2026,7 @@ mod tests {
                 thermal,
                 controls,
                 &WindInput::still(),
+                &EnvironmentInput::standard(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 config,
@@ -2226,6 +2306,7 @@ mod tests {
                     &mut thermal,
                     &controls,
                     &WindInput::still(),
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -2319,6 +2400,7 @@ mod tests {
                 &mut thermal,
                 &controls,
                 wind,
+                &EnvironmentInput::standard(),
                 ptr::null_mut(),
                 ptr::null_mut(),
                 &config,
@@ -2457,6 +2539,7 @@ mod tests {
                     &mut thermal,
                     &controls,
                     ptr::null(),
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -2473,6 +2556,7 @@ mod tests {
                     &mut thermal,
                     &controls,
                     &bad_wind,
+                    &EnvironmentInput::standard(),
                     ptr::null_mut(),
                     ptr::null_mut(),
                     &config,
@@ -2483,5 +2567,274 @@ mod tests {
                 7
             );
         }
+    }
+
+    // ---- interface v12: environment ----------------------------------------------------------
+
+    #[cfg(feature = "onnx")]
+    fn step_with_env(
+        state: &mut DroneState,
+        wind: &WindInput,
+        env: *const EnvironmentInput,
+        throttle: f32,
+        telemetry: &mut DebugTelemetry,
+        latch: &mut FaultLatch,
+    ) -> i32 {
+        let mut thermal = ThermalState::new();
+        let controls = ControlInputs {
+            throttle,
+            ..zero_controls()
+        };
+        let config = dummy_config();
+        // SAFETY: every pointer is valid, aligned and unaliased for the call (`env` may be null on purpose).
+        unsafe {
+            ffi_step_physics(
+                state,
+                &mut thermal,
+                &controls,
+                wind,
+                env,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                &config,
+                telemetry,
+                latch,
+                0.002,
+            )
+        }
+    }
+
+    // Hand calc (python3, f64): site 3000 m, +9.5 K -> rho = 0.8780770469291939 kg/m3;
+    // T(0.5) = 0.11 * rho * (0.5 * 10000 / 60)^2 * 0.25^4 = 2.6201300770999163 N per motor
+    // (dummy config: C_T 0.11, D 0.25 m, 10000 rpm). Telemetry is f32: tolerance 1e-6 N.
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_env_ffi_step_thrust_at_3000_m_site() {
+        let mut state = ffi_create_default_drone_state();
+        let mut telemetry = DebugTelemetry::new();
+        let mut latch = FaultLatch::new();
+        let env = EnvironmentInput {
+            site_altitude_m: 3000.0,
+            temp_offset_c: 9.5,
+        };
+        assert_eq!(
+            step_with_env(
+                &mut state,
+                &WindInput::still(),
+                &env,
+                0.5,
+                &mut telemetry,
+                &mut latch
+            ),
+            0
+        );
+        for t in telemetry.motor_thrusts {
+            assert!((f64::from(t) - 2.6201300770999163).abs() < 1e-6, "t = {t}");
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_env_ffi_null_environment_is_code_1_and_writes_nothing() {
+        let mut state = ffi_create_default_drone_state();
+        let before = state;
+        let mut telemetry = DebugTelemetry::new();
+        let mut latch = FaultLatch::new();
+        let code = step_with_env(
+            &mut state,
+            &WindInput::still(),
+            ptr::null(),
+            0.5,
+            &mut telemetry,
+            &mut latch,
+        );
+        assert_eq!(code, 1);
+        assert_eq!(state.position, before.position);
+        assert_eq!(telemetry.motor_thrusts, [0.0; 4]);
+    }
+
+    // Each bad environment gives code 13 and changes NOTHING (state, telemetry, latch).
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_env_ffi_invalid_environment_is_code_13_and_writes_nothing() {
+        let bad = [
+            EnvironmentInput {
+                site_altitude_m: f64::NAN,
+                temp_offset_c: 0.0,
+            },
+            EnvironmentInput {
+                site_altitude_m: 0.0,
+                temp_offset_c: f64::INFINITY,
+            },
+            EnvironmentInput {
+                site_altitude_m: -1.0,
+                temp_offset_c: 0.0,
+            },
+            EnvironmentInput {
+                site_altitude_m: 5000.5,
+                temp_offset_c: 0.0,
+            },
+            EnvironmentInput {
+                site_altitude_m: 0.0,
+                temp_offset_c: 40.5,
+            },
+            EnvironmentInput {
+                site_altitude_m: 0.0,
+                temp_offset_c: -40.5,
+            },
+        ];
+        for env in bad {
+            let mut state = ffi_create_default_drone_state();
+            let before = state;
+            let mut telemetry = DebugTelemetry::new();
+            let mut latch = FaultLatch::new();
+            let code = step_with_env(
+                &mut state,
+                &WindInput::still(),
+                &env,
+                0.5,
+                &mut telemetry,
+                &mut latch,
+            );
+            assert_eq!(
+                code, 13,
+                "env ({}, {})",
+                env.site_altitude_m, env.temp_offset_c
+            );
+            assert_eq!(state.position, before.position);
+            assert_eq!(state.velocity, before.velocity);
+            assert_eq!(telemetry.motor_thrusts, [0.0; 4]);
+            assert_eq!(latch.physics_fault, 0);
+        }
+    }
+
+    // The environment is checked after the wind: a bad wind AND a bad environment report code 12.
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_env_ffi_wind_error_is_reported_before_environment_error() {
+        let mut state = ffi_create_default_drone_state();
+        let mut telemetry = DebugTelemetry::new();
+        let mut latch = FaultLatch::new();
+        let bad_wind = WindInput {
+            wind_ned_mps: [31.0, 0.0, 0.0],
+        };
+        let bad_env = EnvironmentInput {
+            site_altitude_m: -5.0,
+            temp_offset_c: 0.0,
+        };
+        assert_eq!(
+            step_with_env(
+                &mut state,
+                &bad_wind,
+                &bad_env,
+                0.5,
+                &mut telemetry,
+                &mut latch
+            ),
+            12
+        );
+    }
+
+    // Total height outside the ISA range (site 5000 + vehicle 6001 = 11001 m) is the existing code 6.
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_env_ffi_total_height_above_isa_range_is_code_6() {
+        let mut state = ffi_create_default_drone_state();
+        state.position[2] = -6001.0;
+        let mut telemetry = DebugTelemetry::new();
+        let mut latch = FaultLatch::new();
+        let env = EnvironmentInput {
+            site_altitude_m: 5000.0,
+            temp_offset_c: 0.0,
+        };
+        assert_eq!(
+            step_with_env(
+                &mut state,
+                &WindInput::still(),
+                &env,
+                0.5,
+                &mut telemetry,
+                &mut latch
+            ),
+            6
+        );
+        assert_eq!(latch.physics_fault, 0);
+    }
+
+    // Thermal ambient follows the offset: throttle 0, zero RPM, 5 s of 0.002 s steps at +15 K.
+    // The motor starts at 20 C (ThermalState::new) and relaxes toward 35 C: after 2500 steps
+    // t = 5 s the temperature must have risen above 20 C and stay below 35 C.
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_env_ffi_thermal_ambient_follows_temp_offset() {
+        let mut state = ffi_create_default_drone_state();
+        let mut thermal = ThermalState::new();
+        let controls = zero_controls();
+        let config = dummy_config();
+        let env = EnvironmentInput {
+            site_altitude_m: 0.0,
+            temp_offset_c: 15.0,
+        };
+        let mut telemetry = DebugTelemetry::new();
+        let mut latch = FaultLatch::new();
+        for _ in 0..2500 {
+            // SAFETY: all pointers are valid, aligned and unaliased for the call.
+            let code = unsafe {
+                ffi_step_physics(
+                    &mut state,
+                    &mut thermal,
+                    &controls,
+                    &WindInput::still(),
+                    &env,
+                    ptr::null_mut(),
+                    ptr::null_mut(),
+                    &config,
+                    &mut telemetry,
+                    &mut latch,
+                    0.002,
+                )
+            };
+            assert_eq!(code, 0);
+            state.position = [0.0, 0.0, -100.0];
+            state.velocity = [0.0; 3];
+        }
+        for t in thermal.motor_temp_c {
+            assert!(t > 20.0 && t < 35.0, "t = {t}");
+        }
+    }
+
+    // Analytic drag through the step uses the environment: ground velocity (4, 0, 0), still air, identity
+    // attitude. Drag = -0.5 rho 16 Cd_x(1.0) A_x(0.02); the +20 K / standard ratio is
+    // 1.1455047361519344 / 1.2250122659906946 = 0.9350965438909621 (python3). Telemetry is f32: rel 1e-6.
+    #[test]
+    #[cfg(feature = "onnx")]
+    fn test_env_ffi_step_drag_uses_density() {
+        let drag_x = |temp_offset_c: f64| {
+            let mut state = ffi_create_default_drone_state();
+            state.velocity = [4.0, 0.0, 0.0];
+            let mut telemetry = DebugTelemetry::new();
+            let mut latch = FaultLatch::new();
+            let env = EnvironmentInput {
+                site_altitude_m: 0.0,
+                temp_offset_c,
+            };
+            let code = step_with_env(
+                &mut state,
+                &WindInput::still(),
+                &env,
+                0.0,
+                &mut telemetry,
+                &mut latch,
+            );
+            assert_eq!(code, 0);
+            f64::from(telemetry.aero_drag[0])
+        };
+        let standard = drag_x(0.0);
+        // -0.5 * 1.2250122659906946 * 16 * 1.0 * 0.02 = -0.19600196255851114
+        assert!(
+            (standard + 0.196_001_962_558_511_14).abs() < 1e-6,
+            "standard = {standard}"
+        );
+        assert!((drag_x(20.0) / standard - 0.9350965438909621).abs() < 1e-6);
     }
 }

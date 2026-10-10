@@ -17,7 +17,7 @@ public:
 
     // Wind is NED m/s, all zeros = still air; Rust rejects a non-finite or >30 m/s component (code 12).
     // Latch is caller-owned and must be zero-initialized by the caller. Rust sets it on a NaN/Inf step and never clears it.
-    static bool StepPhysics(DroneState* State, ThermalState* Thermal, const ControlInputs* Inputs, const WindInput* Wind, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, const VehicleConfig* Config, DebugTelemetry* OutTelemetry, FaultLatch* Latch, double DeltaTime);
+    static bool StepPhysics(DroneState* State, ThermalState* Thermal, const ControlInputs* Inputs, const WindInput* Wind, const EnvironmentInput* Environment, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, const VehicleConfig* Config, DebugTelemetry* OutTelemetry, FaultLatch* Latch, double DeltaTime);
 
     static FVector NedToUnrealWorld(const double NedPosition[3]);
     // Free vector (force N, velocity m/s): axis mapping only, no unit scale. (x, y, z) -> (x, y, -z).

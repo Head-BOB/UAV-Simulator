@@ -58,10 +58,10 @@ bool FDronePhysicsBridgeModule::LoadVehicleConfig(const FString& Path, VehicleCo
     return ffi_load_vehicle_config(TCHAR_TO_UTF8(*Path), OutConfig) == 0;
 }
 
-bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, ThermalState* Thermal, const ControlInputs* Inputs, const WindInput* Wind, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, const VehicleConfig* Config, DebugTelemetry* OutTelemetry, FaultLatch* Latch, double DeltaTime)
+bool FDronePhysicsBridgeModule::StepPhysics(DroneState* State, ThermalState* Thermal, const ControlInputs* Inputs, const WindInput* Wind, const EnvironmentInput* Environment, SurrogateHandle* AeroHandle, SurrogateHandle* FeaHandle, const VehicleConfig* Config, DebugTelemetry* OutTelemetry, FaultLatch* Latch, double DeltaTime)
 {
-    if (!State || !Thermal || !Inputs || !Wind || !Config || !OutTelemetry || !Latch) return false;
-    return ffi_step_physics(State, Thermal, Inputs, Wind, AeroHandle, FeaHandle, Config, OutTelemetry, Latch, DeltaTime) == 0;
+    if (!State || !Thermal || !Inputs || !Wind || !Environment || !Config || !OutTelemetry || !Latch) return false;
+    return ffi_step_physics(State, Thermal, Inputs, Wind, Environment, AeroHandle, FeaHandle, Config, OutTelemetry, Latch, DeltaTime) == 0;
 }
 
 FVector FDronePhysicsBridgeModule::NedToUnrealWorld(const double NedPosition[3])

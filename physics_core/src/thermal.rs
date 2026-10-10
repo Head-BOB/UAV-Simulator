@@ -11,7 +11,7 @@ const MOTOR_WINDING_RESISTANCE: f64 = 0.05;
 // Nominal battery voltage, V.
 const BATT_VOLTAGE_NOMINAL: f64 = 22.2;
 // Ambient temperature, deg C.
-const AMBIENT_TEMP: f64 = 20.0;
+pub const AMBIENT_TEMP: f64 = 20.0;
 // Motor heat capacity, J/K (used as C in C dT/dt = P - h A (T - Ta)).
 const MOTOR_HEAT_CAPACITY_J_PER_K: f64 = 50.0;
 // Convective cooling area, m^2.
@@ -59,8 +59,25 @@ pub fn update_temperatures(
     airspeed: f64,
     dt: f64,
 ) {
+    update_temperatures_ambient(state, throttles, motor_rpms, airspeed, dt, AMBIENT_TEMP);
+}
+
+/// `update_temperatures` with an explicit ambient air temperature (degrees C).
+///
+/// The `ffi_step_physics` path passes `AMBIENT_TEMP + temp_offset_c`: the placeholder 20 C baseline
+/// shifted by how much warmer or colder than the ISA day the environment is (interface v12).
+/// TODO(HUMAN-VERIFY): the 20 C baseline is not the ISA 15 C, and the convection coefficient `h`
+/// does not depend on air density; both are unvalidated like the rest of this model.
+pub fn update_temperatures_ambient(
+    state: &mut ThermalState,
+    throttles: &[f64; 4],
+    motor_rpms: &[f64; 4],
+    airspeed: f64,
+    dt: f64,
+    ambient_c: f64,
+) {
     let h = 10.0 + 3.0 * airspeed;
-    step_motor_temps(state, throttles, motor_rpms, h, dt);
+    step_motor_temps_ambient(state, throttles, motor_rpms, h, dt, ambient_c);
 }
 
 /// Below this `h * A` (W/K) the exponential form divides by ~0, so the adiabatic limit
@@ -72,12 +89,26 @@ const ADIABATIC_HA_LIMIT_W_PER_K: f64 = 1.0e-12;
 ///
 /// Split out of [`update_temperatures`] so the no-cooling case (`h = 0`) can be tested against
 /// the closed form `rise = P t / C`; production code always passes `h >= 10`.
+// Used only by the tests below (production calls `step_motor_temps_ambient`).
+#[cfg_attr(not(test), allow(dead_code))]
 fn step_motor_temps(
     state: &mut ThermalState,
     throttles: &[f64; 4],
     motor_rpms: &[f64; 4],
     h_w_per_m2k: f64,
     dt: f64,
+) {
+    step_motor_temps_ambient(state, throttles, motor_rpms, h_w_per_m2k, dt, AMBIENT_TEMP);
+}
+
+/// `step_motor_temps` with an explicit ambient temperature, degrees C (finite).
+fn step_motor_temps_ambient(
+    state: &mut ThermalState,
+    throttles: &[f64; 4],
+    motor_rpms: &[f64; 4],
+    h_w_per_m2k: f64,
+    dt: f64,
+    ambient_c: f64,
 ) {
     let total_resistance = BATT_INTERNAL_RESISTANCE + ESC_RESISTANCE + MOTOR_WINDING_RESISTANCE;
     let k_e = 60.0 / (2.0 * std::f64::consts::PI * MOTOR_KV_RPM_PER_V);
@@ -100,7 +131,7 @@ fn step_motor_temps(
             state.motor_temp_c[i] += heat_power * dt / MOTOR_HEAT_CAPACITY_J_PER_K;
             continue;
         }
-        let equilibrium_temp = AMBIENT_TEMP + (heat_power / h_a_w_per_k);
+        let equilibrium_temp = ambient_c + (heat_power / h_a_w_per_k);
 
         state.motor_temp_c[i] =
             equilibrium_temp + (state.motor_temp_c[i] - equilibrium_temp) * exp_term;
@@ -282,5 +313,46 @@ mod tests {
         };
         step_motor_temps(&mut warm, &[1.0; 4], &[0.0; 4], 0.0, 1.0);
         assert!((warm.motor_temp_c[0] - 127.00625).abs() < 1e-6);
+    }
+
+    // Ambient override. Throttle 0 and a very long step: the motor settles to the ambient air
+    // temperature (equilibrium = ambient + 0 / hA), so 35 C ambient gives 35 C (tolerance 1e-6, as
+    // the existing 20 C test).
+    #[test]
+    fn test_thermal_ambient_override_settles_to_ambient() {
+        let mut state = ThermalState::new();
+        update_temperatures_ambient(&mut state, &[0.0; 4], &[0.0; 4], 0.0, 10000.0, 35.0);
+        for t in state.motor_temp_c {
+            assert!((t - 35.0).abs() < 1e-6, "t = {t}");
+        }
+    }
+
+    // Same heating, ambient 15 K higher: the settled temperature is exactly 15 K higher (the heat
+    // term P / (h A) does not depend on ambient). Tolerance 1e-9 (double rounding of the sum).
+    #[test]
+    fn test_thermal_ambient_shifts_equilibrium_one_for_one() {
+        let mut base = ThermalState::new();
+        let mut warm = ThermalState::new();
+        update_temperatures_ambient(&mut base, &[0.5; 4], &[5000.0; 4], 10.0, 10000.0, 20.0);
+        update_temperatures_ambient(&mut warm, &[0.5; 4], &[5000.0; 4], 10.0, 10000.0, 35.0);
+        for i in 0..4 {
+            assert!(
+                (warm.motor_temp_c[i] - base.motor_temp_c[i] - 15.0).abs() < 1e-9,
+                "i = {i}"
+            );
+        }
+    }
+
+    // The default entry point keeps the 20 C placeholder baseline bit for bit.
+    #[test]
+    fn test_thermal_default_ambient_is_unchanged() {
+        let mut a = ThermalState::new();
+        let mut b = ThermalState::new();
+        update_temperatures(&mut a, &[0.7; 4], &[6000.0; 4], 3.0, 0.002);
+        update_temperatures_ambient(&mut b, &[0.7; 4], &[6000.0; 4], 3.0, 0.002, AMBIENT_TEMP);
+        assert_eq!(
+            a.motor_temp_c.map(f64::to_bits),
+            b.motor_temp_c.map(f64::to_bits)
+        );
     }
 }

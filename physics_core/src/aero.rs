@@ -5,7 +5,10 @@ use crate::surrogate::SurrogateHandle;
 use crate::surrogate::aero_surrogate::{body_to_ned, query_aero};
 #[cfg(feature = "onnx")]
 use crate::types::SurrogateQueryResult;
-use crate::types::{DroneState, MAX_WIND_COMPONENT_MPS, VehicleConfig, WindInput};
+use crate::types::{
+    DroneState, EnvironmentInput, MAX_SITE_ALTITUDE_M, MAX_TEMP_OFFSET_C, MAX_WIND_COMPONENT_MPS,
+    VehicleConfig, WindInput,
+};
 use glam::{DQuat, DVec3};
 
 const DRAG_COEFF_X: f64 = 1.0;
@@ -29,16 +32,61 @@ pub enum AeroError {
 
 /// Computes the air density at a given altitude using the International Standard Atmosphere (ISA) model.
 fn compute_air_density(altitude: f64) -> Result<f64, AeroError> {
-    if !(0.0..=11000.0).contains(&altitude) {
+    air_density(altitude, &EnvironmentInput::standard())
+}
+
+/// Air density `rho = p / (R T)` at the vehicle, kg/m^3 (interface v12).
+///
+/// Total height `h = env.site_altitude_m + altitude_m` (metres above sea level, 0..=11000, the
+/// ISA troposphere range). Pressure is the ISA value at `h`: `p = p0 (T_isa(h) / T0)^(g / (R L))`.
+/// Temperature is `T = T_isa(h) + env.temp_offset_c`, with `T_isa(h) = T0 - L h`. The standard
+/// environment (both fields zero) gives exactly the v11 value, bit for bit. Humidity is ignored
+/// (dry air, `R` = 287.05 J/(kg K)); the pressure of a real weather day is not modelled.
+/// `env` must have passed `validate_environment` (so `T > 0`).
+///
+/// # Errors
+/// `AltitudeOutOfRange` if `h` is outside 0..=11000 m or NaN.
+pub fn air_density(altitude_m: f64, env: &EnvironmentInput) -> Result<f64, AeroError> {
+    let total_m = env.site_altitude_m + altitude_m;
+    if !(0.0..=11000.0).contains(&total_m) {
         return Err(AeroError::AltitudeOutOfRange);
     }
-    let temp_at_alt = STD_TEMP - (TEMP_LAPSE_RATE * altitude);
+    let temp_isa = STD_TEMP - (TEMP_LAPSE_RATE * total_m);
     let exponent = GRAVITY / (SPECIFIC_GAS_CONST * TEMP_LAPSE_RATE);
 
-    let pressure_ratio = (temp_at_alt / STD_TEMP).powf(exponent);
+    let pressure_ratio = (temp_isa / STD_TEMP).powf(exponent);
     let pressure_at_alt = STD_PRESSURE * pressure_ratio;
 
-    Ok(pressure_at_alt / (SPECIFIC_GAS_CONST * temp_at_alt))
+    Ok(pressure_at_alt / (SPECIFIC_GAS_CONST * (temp_isa + env.temp_offset_c)))
+}
+
+/// Why an `EnvironmentInput` was rejected.
+#[derive(Debug, PartialEq, Eq)]
+pub enum EnvError {
+    /// A field is NaN or infinite.
+    NonFinite,
+    /// `site_altitude_m` is outside 0..=`MAX_SITE_ALTITUDE_M`.
+    SiteAltitude,
+    /// `|temp_offset_c|` is above `MAX_TEMP_OFFSET_C`.
+    TempOffset,
+}
+
+/// Checks the environment: finite fields, site altitude in 0..=5000 m, |offset| <= 40 K.
+/// Both bounds are inclusive.
+///
+/// # Errors
+/// `NonFinite` first (NaN/Inf in either field), then `SiteAltitude`, then `TempOffset`.
+pub fn validate_environment(env: &EnvironmentInput) -> Result<(), EnvError> {
+    if !env.site_altitude_m.is_finite() || !env.temp_offset_c.is_finite() {
+        return Err(EnvError::NonFinite);
+    }
+    if !(0.0..=MAX_SITE_ALTITUDE_M).contains(&env.site_altitude_m) {
+        return Err(EnvError::SiteAltitude);
+    }
+    if env.temp_offset_c.abs() > MAX_TEMP_OFFSET_C {
+        return Err(EnvError::TempOffset);
+    }
+    Ok(())
 }
 
 /// Why a `WindInput` was rejected.
@@ -92,7 +140,16 @@ pub fn air_relative_velocity(v_ground_ned_mps: [f32; 3], wind: &WindInput) -> [f
 
 /// Computes the aerodynamic drag force vector.
 pub fn get_drag(state: &DroneState, altitude: f64) -> Result<[f32; 3], AeroError> {
-    let density = compute_air_density(altitude)?;
+    get_drag_env(state, altitude, &EnvironmentInput::standard())
+}
+
+/// `get_drag` in the given atmosphere (`air_density`); the standard environment is bit-identical.
+pub fn get_drag_env(
+    state: &DroneState,
+    altitude: f64,
+    env: &EnvironmentInput,
+) -> Result<[f32; 3], AeroError> {
+    let density = air_density(altitude, env)?;
 
     let vel_world = DVec3::new(
         state.velocity[0] as f64,
@@ -146,7 +203,20 @@ pub fn get_thrust(
     config: &VehicleConfig,
     altitude_m: f64,
 ) -> Result<f64, AeroError> {
-    let density = compute_air_density(altitude_m)?;
+    get_thrust_env(throttle, config, altitude_m, &EnvironmentInput::standard())
+}
+
+/// `get_thrust` in the given atmosphere (`air_density`); the standard environment is bit-identical.
+///
+/// # Errors
+/// `AltitudeOutOfRange` if the total height is outside 0..=11000 m (including NaN).
+pub fn get_thrust_env(
+    throttle: f64,
+    config: &VehicleConfig,
+    altitude_m: f64,
+    env: &EnvironmentInput,
+) -> Result<f64, AeroError> {
+    let density = air_density(altitude_m, env)?;
     let clamped_throttle = throttle.clamp(0.0, 1.0);
     let rps = (clamped_throttle * config.max_rpm) / 60.0;
 
@@ -196,6 +266,18 @@ pub fn get_drag_with_fallback(
     altitude: f64,
     aero_handle: Option<&mut SurrogateHandle>,
 ) -> Result<([f32; 3], Option<SurrogateQueryResult>), AeroError> {
+    get_drag_with_fallback_env(state, altitude, &EnvironmentInput::standard(), aero_handle)
+}
+
+/// `get_drag_with_fallback` in the given atmosphere. Only the analytic fallback uses the density:
+/// a surrogate answer was trained at one fixed density and ignores `env` (documented limitation).
+#[cfg(feature = "onnx")]
+pub fn get_drag_with_fallback_env(
+    state: &DroneState,
+    altitude: f64,
+    env: &EnvironmentInput,
+    aero_handle: Option<&mut SurrogateHandle>,
+) -> Result<([f32; 3], Option<SurrogateQueryResult>), AeroError> {
     if let Some(handle) = aero_handle
         && let Ok(result) = query_aero(handle, state)
     {
@@ -203,7 +285,7 @@ pub fn get_drag_with_fallback(
         return Ok((result.predicted_values, Some(result)));
     }
 
-    Ok((get_drag(state, altitude)?, None))
+    Ok((get_drag_env(state, altitude, env)?, None))
 }
 
 #[cfg(test)]
@@ -396,6 +478,23 @@ mod tests {
         assert!((tau - 0.5015112082212391).abs() < 1e-12, "tau = {tau}");
     }
 
+    // Reference build (APC 12x6E, MN3508): offline_pipeline/geometry/quad_ref_build_config.json loads
+    // (validated) and hovers at tau = sqrt(m g / (4 Ct rho0 (rpm/60)^2 D^4)) with m = 1.516 kg,
+    // Ct = 0.100256, rho0 = 1.2250122659906946, rpm = 8100, D = 0.3048 m
+    // = sqrt(14.8668314 / 77.2678...) = 0.4386224371767256 (python3, f64) -> 3552.84 RPM.
+    // Inputs are the UIUC static fit and ASSUMED catalog masses: the config is not validated.
+    #[test]
+    fn test_hover_throttle_reference_build_config() {
+        let cfg = crate::config::load_vehicle_config(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../offline_pipeline/geometry/quad_ref_build_config.json"
+        ))
+        .unwrap();
+        let tau = hover_throttle(&cfg, 0.0).unwrap();
+        assert!((tau - 0.4386224371767256).abs() < 1e-12, "tau = {tau}");
+        assert!((cfg.hover_throttle - tau).abs() < 1e-15);
+    }
+
     #[test]
     fn test_hover_throttle_one_kg() {
         let cfg = dummy_config(); // mass_kg = 1.0
@@ -572,6 +671,142 @@ mod tests {
                     "component {k}, value {bad}"
                 );
             }
+        }
+    }
+
+    // v12 environment. Reference values are from an independent f64 python3 evaluation of
+    // rho = p / (R T), p = p0 (T_isa / T0)^(g / (R L)), T = T_isa(h) + dT, with the constants of this file
+    // (p0 = 101325, T0 = 288.15, L = 0.0065, R = 287.05, g = 9.80665). exponent g / (R L) = 5.255932362359814.
+    fn env(site_altitude_m: f64, temp_offset_c: f64) -> EnvironmentInput {
+        EnvironmentInput {
+            site_altitude_m,
+            temp_offset_c,
+        }
+    }
+
+    #[test]
+    fn test_env_standard_density_is_bit_identical_to_isa() {
+        for alt in [0.0, 1.0, 123.456, 500.0, 5000.0, 11000.0] {
+            let a = air_density(alt, &EnvironmentInput::standard()).unwrap();
+            let b = compute_air_density(alt).unwrap();
+            assert_eq!(a.to_bits(), b.to_bits(), "alt {alt}");
+        }
+    }
+
+    // Sea level, standard day: 101325 / (287.05 * 288.15) = 1.2250122659906946 kg/m3 (python3, f64).
+    // Tolerance 1e-12: only the last bits of the powf/divide chain can differ.
+    #[test]
+    fn test_env_sea_level_standard_day_density() {
+        let rho = air_density(0.0, &env(0.0, 0.0)).unwrap();
+        assert!((rho - 1.2250122659906946).abs() < 1e-12, "rho = {rho}");
+    }
+
+    // Site 3000 m, air 5 C: T_isa(3000) = 288.15 - 0.0065 * 3000 = 268.65 K = -4.5 C, so dT = 5 - (-4.5) = +9.5 K.
+    // p = 101325 * (268.65 / 288.15)^5.255932362359814 = 101325 * 0.6919148121361276 = 70108.26833969312 Pa.
+    // T = 268.65 + 9.5 = 278.15 K; rho = 70108.26833969312 / (287.05 * 278.15) = 0.8780770469291939 kg/m3.
+    #[test]
+    fn test_env_3000_m_5_c_density_hand_calc() {
+        let rho = air_density(0.0, &env(3000.0, 9.5)).unwrap();
+        assert!((rho - 0.8780770469291939).abs() < 1e-12, "rho = {rho}");
+    }
+
+    // Sea level, +20 K: rho = 101325 / (287.05 * 308.15) = 1.1455047361519344; -20 K: 1.3163799531800062.
+    #[test]
+    fn test_env_temperature_offset_sign() {
+        let hot = air_density(0.0, &env(0.0, 20.0)).unwrap();
+        let cold = air_density(0.0, &env(0.0, -20.0)).unwrap();
+        assert!((hot - 1.1455047361519344).abs() < 1e-12, "hot = {hot}");
+        assert!((cold - 1.3163799531800062).abs() < 1e-12, "cold = {cold}");
+        assert!(hot < cold);
+    }
+
+    // Site 3000 m + vehicle 100 m is the same total height as site 3100 m + 0 m. Hand value at
+    // total 3100 m, dT = 9.5: 0.8689988332494722 kg/m3 (python3). Integer sums are exact, so bit-equal.
+    #[test]
+    fn test_env_site_and_vehicle_altitude_add() {
+        let a = air_density(100.0, &env(3000.0, 9.5)).unwrap();
+        let b = air_density(0.0, &env(3100.0, 9.5)).unwrap();
+        assert_eq!(a.to_bits(), b.to_bits());
+        assert!((a - 0.8689988332494722).abs() < 1e-12, "a = {a}");
+    }
+
+    #[test]
+    fn test_env_total_height_range() {
+        // Total height 11000 is the last accepted value; 11000.5, negative and NaN are errors.
+        assert!(air_density(6000.0, &env(5000.0, 0.0)).is_ok());
+        assert!(matches!(
+            air_density(6000.5, &env(5000.0, 0.0)),
+            Err(AeroError::AltitudeOutOfRange)
+        ));
+        assert!(matches!(
+            air_density(-1.0, &env(0.0, 0.0)),
+            Err(AeroError::AltitudeOutOfRange)
+        ));
+        // A vehicle below the origin is fine when the site is high enough: total 999 m.
+        assert!(air_density(-1.0, &env(1000.0, 0.0)).is_ok());
+        assert!(air_density(f64::NAN, &env(0.0, 0.0)).is_err());
+    }
+
+    // Thrust is proportional to density: T(hot, +20 K) / T(standard) = 1.1455047361519344 / 1.2250122659906946
+    // = 0.9350965438909621 (python3).
+    #[test]
+    fn test_env_thrust_scales_with_density() {
+        let cfg = dummy_config();
+        let t_std = get_thrust_env(0.5, &cfg, 0.0, &env(0.0, 0.0)).unwrap();
+        let t_hot = get_thrust_env(0.5, &cfg, 0.0, &env(0.0, 20.0)).unwrap();
+        assert!((t_hot / t_std - 0.9350965438909621).abs() < 1e-12);
+        assert_eq!(
+            t_std.to_bits(),
+            get_thrust(0.5, &cfg, 0.0).unwrap().to_bits()
+        );
+    }
+
+    // Analytic drag is proportional to density too: |F| at +20 K is 0.9350965438909621 of the standard day.
+    #[test]
+    fn test_env_drag_scales_with_density() {
+        let mut state = DroneState {
+            velocity: [4.0, 0.0, 0.0],
+            ..crate::ffi_create_default_drone_state()
+        };
+        state.orientation = [0.0, 0.0, 0.0, 1.0];
+        let std = get_drag_env(&state, 0.0, &env(0.0, 0.0)).unwrap();
+        let hot = get_drag_env(&state, 0.0, &env(0.0, 20.0)).unwrap();
+        assert!(std[0] < 0.0);
+        assert!((f64::from(hot[0]) / f64::from(std[0]) - 0.9350965438909621).abs() < 1e-6);
+        assert_eq!(std, get_drag(&state, 0.0).unwrap());
+    }
+
+    #[test]
+    fn test_validate_environment_truth_table() {
+        let ok = |a: f64, t: f64| validate_environment(&env(a, t)).is_ok();
+        // Inclusive bounds: site 0 and 5000, offset -40 and +40.
+        assert!(ok(0.0, 0.0) && ok(5000.0, 0.0) && ok(0.0, 40.0) && ok(0.0, -40.0));
+        assert_eq!(
+            validate_environment(&env(-0.1, 0.0)),
+            Err(EnvError::SiteAltitude)
+        );
+        assert_eq!(
+            validate_environment(&env(5000.0001, 0.0)),
+            Err(EnvError::SiteAltitude)
+        );
+        assert_eq!(
+            validate_environment(&env(0.0, 40.0001)),
+            Err(EnvError::TempOffset)
+        );
+        assert_eq!(
+            validate_environment(&env(0.0, -40.0001)),
+            Err(EnvError::TempOffset)
+        );
+        // NaN / Inf in either field is NonFinite, checked before the range.
+        for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            assert_eq!(
+                validate_environment(&env(bad, 0.0)),
+                Err(EnvError::NonFinite)
+            );
+            assert_eq!(
+                validate_environment(&env(0.0, bad)),
+                Err(EnvError::NonFinite)
+            );
         }
     }
 }

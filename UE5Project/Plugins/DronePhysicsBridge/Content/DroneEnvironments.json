@@ -1,0 +1,26 @@
+{
+  "_comment": "Five demo environments. EVERY number is ASSUMED (typical climate for the place name, no source): TODO(HUMAN-VERIFY: demo value). level_asset_path is TODO(HUMAN-FILL): the friend downloads a free Fab environment, imports it, and writes its asset path here (e.g. /Game/Environments/Beach/L_Beach). An empty or missing level falls back to the default level and the screen says so. site_altitude_m is the height of the NED origin above sea level; ambient_temp_c is the air temperature at that height; humidity_pct is shown but NOT modelled by the physics core. wind_toward_deg is the direction the wind blows TOWARD, degrees clockwise from north (DroneWind.h). Limits are in DroneEnvironment.h and the Rust core.",
+  "default_environment": "Beach",
+  "environments": [
+    {"id": "Beach", "name": "Beach", "level_asset_path": "", "player_start_cm": [0.0, 0.0, 0.0], "player_yaw_deg": 0.0,
+     "site_altitude_m": 0.0, "ambient_temp_c": 26.0, "humidity_pct": 70.0,
+     "wind_speed_mps": 4.0, "wind_toward_deg": 270.0, "gust_sigma_mps": 1.0,
+     "sky_tint_rgb": [0.55, 0.75, 1.0], "fog_density": 0.002, "light_intensity_scale": 1.0},
+    {"id": "Hills", "name": "Rolling Hills", "level_asset_path": "", "player_start_cm": [0.0, 0.0, 0.0], "player_yaw_deg": 0.0,
+     "site_altitude_m": 300.0, "ambient_temp_c": 18.0, "humidity_pct": 60.0,
+     "wind_speed_mps": 5.0, "wind_toward_deg": 90.0, "gust_sigma_mps": 1.5,
+     "sky_tint_rgb": [0.6, 0.78, 1.0], "fog_density": 0.003, "light_intensity_scale": 1.0},
+    {"id": "Mountains", "name": "Mountains", "level_asset_path": "", "player_start_cm": [0.0, 0.0, 0.0], "player_yaw_deg": 0.0,
+     "site_altitude_m": 2500.0, "ambient_temp_c": 2.0, "humidity_pct": 45.0,
+     "wind_speed_mps": 8.0, "wind_toward_deg": 45.0, "gust_sigma_mps": 2.5,
+     "sky_tint_rgb": [0.45, 0.65, 1.0], "fog_density": 0.001, "light_intensity_scale": 1.1},
+    {"id": "Desert", "name": "Desert", "level_asset_path": "", "player_start_cm": [0.0, 0.0, 0.0], "player_yaw_deg": 0.0,
+     "site_altitude_m": 600.0, "ambient_temp_c": 38.0, "humidity_pct": 15.0,
+     "wind_speed_mps": 6.0, "wind_toward_deg": 180.0, "gust_sigma_mps": 2.0,
+     "sky_tint_rgb": [0.75, 0.8, 0.9], "fog_density": 0.004, "light_intensity_scale": 1.2},
+    {"id": "Tropical", "name": "Tropical", "level_asset_path": "", "player_start_cm": [0.0, 0.0, 0.0], "player_yaw_deg": 0.0,
+     "site_altitude_m": 50.0, "ambient_temp_c": 31.0, "humidity_pct": 85.0,
+     "wind_speed_mps": 3.0, "wind_toward_deg": 315.0, "gust_sigma_mps": 1.0,
+     "sky_tint_rgb": [0.5, 0.8, 0.95], "fog_density": 0.006, "light_intensity_scale": 0.95}
+  ]
+}

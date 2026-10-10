@@ -96,6 +96,27 @@ jobs:
           "-Wl,-rpath,$PWD/physics_core/target/release"
           && "$RUNNER_TEMP/demo_flight_sim"
 
+      - name: Mission runner tests against the real physics (g++, release library)
+        working-directory: .
+        run: >
+          g++ -std=c++17 -Wall -Wextra -Werror
+          -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public
+          tools/cpp_ffi_check/mission_runner_test.cpp
+          -o "$RUNNER_TEMP/mission_runner_test"
+          -Lphysics_core/target/release -lphysics_core
+          "-Wl,-rpath,$PWD/physics_core/target/release"
+          && "$RUNNER_TEMP/mission_runner_test"
+
+      - name: Mission runner smoke test (writes the report files, checks the JSON parses)
+        working-directory: .
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror \
+            -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public \
+            tools/cpp_ffi_check/mission_runner.cpp -o "$RUNNER_TEMP/mission_runner" \
+            -Lphysics_core/target/release -lphysics_core "-Wl,-rpath,$PWD/physics_core/target/release"
+          "$RUNNER_TEMP/mission_runner" --out "$RUNNER_TEMP/reports" --env Beach
+          python -c "import json,sys; r=json.load(open(sys.argv[1])); assert r['findings'] and r['verdict']['text']" "$RUNNER_TEMP/reports/Beach/report.json"
+
       - name: Unit-test the Python tools
         working-directory: .
         run: python -m unittest discover -s tools -p 'test_*.py'
@@ -107,6 +128,18 @@ jobs:
       - name: Unit-test the case runner
         working-directory: .
         run: python -m unittest discover -s offline_pipeline -p 'test_run_case.py'
+
+      - name: Install hashed Python dependencies (numpy, onnx for the aero trainer test)
+        working-directory: .
+        run: python -m pip install --require-hashes -r offline_pipeline/requirements.txt
+
+      - name: Unit-test the demo data, geometry and CFD tools
+        working-directory: .
+        run: |
+          python -m unittest discover -s tools/props -p 'test_*.py'
+          python -m unittest discover -s tools/geometry -p 'test_*.py'
+          python -m unittest discover -s offline_pipeline/components -p 'test_*.py'
+          python -m unittest discover -s offline_pipeline/cfd -p 'test_*.py'
 
       - name: Run Traceability Check
         working-directory: .
@@ -163,6 +196,46 @@ jobs:
           tools/cpp_ffi_check/wind_test.cpp
           -o "$RUNNER_TEMP/wind_test"
           && "$RUNNER_TEMP/wind_test"
+
+      - name: Build and run the environment presets and weather validation test
+        run: >
+          g++ -std=c++17 -Wall -Wextra -Werror
+          -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public
+          tools/cpp_ffi_check/environment_test.cpp
+          -o "$RUNNER_TEMP/environment_test"
+          && "$RUNNER_TEMP/environment_test"
+
+      - name: Build and run the UI math test (contrast, smoothing, ticks, horizon, formatting)
+        run: >
+          g++ -std=c++17 -Wall -Wextra -Werror
+          -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public
+          tools/cpp_ffi_check/ui_math_test.cpp
+          -o "$RUNNER_TEMP/ui_math_test"
+          && "$RUNNER_TEMP/ui_math_test"
+
+      - name: Build and run the electrical formulas test
+        run: >
+          g++ -std=c++17 -Wall -Wextra -Werror
+          -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public
+          tools/cpp_ffi_check/electrical_test.cpp
+          -o "$RUNNER_TEMP/electrical_test"
+          && "$RUNNER_TEMP/electrical_test"
+
+      - name: Build and run the mission script test
+        run: >
+          g++ -std=c++17 -Wall -Wextra -Werror
+          -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public
+          tools/cpp_ffi_check/mission_test.cpp
+          -o "$RUNNER_TEMP/mission_test"
+          && "$RUNNER_TEMP/mission_test"
+
+      - name: Build and run the report engine test
+        run: >
+          g++ -std=c++17 -Wall -Wextra -Werror
+          -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public
+          tools/cpp_ffi_check/report_test.cpp
+          -o "$RUNNER_TEMP/report_test"
+          && "$RUNNER_TEMP/report_test"
 
       - name: Build and run the prop spin, scale and disc math test
         run: >

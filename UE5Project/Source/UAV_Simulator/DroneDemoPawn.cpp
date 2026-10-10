@@ -11,11 +11,15 @@
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
 #include "DrawDebugHelpers.h"
+#include "DroneDataPaths.h"
+#include "DroneMissionRunner.h"
 #include "DroneVisualMath.h"
 #include "Engine/Engine.h"
 #include "Engine/SkeletalMesh.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "GameFramework/GameModeBase.h"
+#include "Kismet/GameplayStatics.h"
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -99,6 +103,19 @@ bool RefPoseComponentRotation(const FReferenceSkeleton& RefSkel, const FName& Bo
 	OutRot = Q.GetNormalized();
 	return true;
 }
+
+// Number of parents above a bone (root = 0). Bounded by the bone count, so a corrupt cyclic skeleton ends.
+int32 RefBoneDepth(const FReferenceSkeleton& RefSkel, const FName& Bone)
+{
+	int32 Index = RefSkel.FindBoneIndex(Bone);
+	int32 Depth = 0;
+	while (Index != INDEX_NONE && Depth <= RefSkel.GetNum())
+	{
+		Index = RefSkel.GetParentIndex(Index);
+		if (Index != INDEX_NONE) ++Depth;
+	}
+	return Depth;
+}
 }  // namespace
 
 ADroneDemoPawn::ADroneDemoPawn()
@@ -138,13 +155,12 @@ bool ADroneDemoPawn::LoadPhysics()
 	Thermal = FDronePhysicsBridgeModule::CreateDefaultThermalState();
 	PhysicsFaultLatch.physics_fault = 0;
 
-	// ProjectDir is UE5Project/; the config lives one level up, in the repo root.
-	FString RepoRoot = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir() / TEXT(".."));
-	FPaths::NormalizeDirectoryName(RepoRoot);
-	const FString ConfigPath = RepoRoot / TEXT("offline_pipeline/geometry/vehicle_config.json");
-	if (!FDronePhysicsBridgeModule::LoadVehicleConfig(ConfigPath, &Config))
+	// The demo flies the REFERENCE BUILD (APC 12x6E, MN3508; masses ASSUMED, see components/catalog.json), not the
+	// shipped test config. Found without absolute paths: Content/DroneData (packaged) or the repo root (editor).
+	const FString ConfigPath = DroneData::Resolve(TEXT("offline_pipeline/geometry/quad_ref_build_config.json"));
+	if (ConfigPath.IsEmpty() || !FDronePhysicsBridgeModule::LoadVehicleConfig(ConfigPath, &Config))
 	{
-		UE_LOG(LogTemp, Error, TEXT("DroneDemo: failed to load VehicleConfig from '%s'. Physics is disabled."), *ConfigPath);
+		UE_LOG(LogTemp, Error, TEXT("DroneDemo: failed to load the reference-build VehicleConfig ('%s'). Physics is disabled."), *ConfigPath);
 		return false;
 	}
 	return true;
@@ -152,7 +168,7 @@ bool ADroneDemoPawn::LoadPhysics()
 
 bool ADroneDemoPawn::LoadModelMap(double& OutModelLeftRightM, double& OutModelFrontRearM)
 {
-	const FString MapPath = FPaths::ConvertRelativePathToFull(FPaths::ProjectPluginsDir() / TEXT("DronePhysicsBridge/Content/DroneModelMap.json"));
+	const FString MapPath = DroneData::Resolve(TEXT("UE5Project/Plugins/DronePhysicsBridge/Content/DroneModelMap.json"));
 	FString Text;
 	if (!FFileHelper::LoadFileToString(Text, *MapPath))
 	{
@@ -262,6 +278,9 @@ void ADroneDemoPawn::SetupVisuals()
 	for (FMotorVisual& M : Motors)
 	{
 		M.RestComponentRot.Reset();
+		// Parents before children, so an absolute ComponentSpace write of a child is not undone by a
+		// later write of its parent. Stable sort keeps the JSON order among bones of equal depth.
+		M.SpinBones.StableSort([&RefSkel](const FName& A, const FName& B) { return RefBoneDepth(RefSkel, A) < RefBoneDepth(RefSkel, B); });
 		for (const FName& Bone : M.SpinBones)
 		{
 			FQuat Ref;
@@ -275,10 +294,19 @@ void ADroneDemoPawn::SetupVisuals()
 				return;
 			}
 			M.RestComponentRot.Add(Ref);
-			// The bone's own X/Y/Z axes expressed in component space: tells which local axis is the shaft.
-			UE_LOG(LogTemp, Log, TEXT("DroneDemo-DIAG: bone '%s' ref quat xyzw = (%.5f, %.5f, %.5f, %.5f), euler (pitch,yaw,roll) = %s, local X in component = %s, local Y = %s, local Z = %s"),
-				*Bone.ToString(), Ref.X, Ref.Y, Ref.Z, Ref.W, *Ref.Rotator().ToString(),
-				*Ref.RotateVector(FVector::XAxisVector).ToString(), *Ref.RotateVector(FVector::YAxisVector).ToString(), *Ref.RotateVector(FVector::ZAxisVector).ToString());
+			// One line per spun bone: parent, ref pose (quat + euler) in component space, the bone's own
+			// X/Y/Z axes in component space (which local axis is the shaft), ref location, and the
+			// axis/sign applied now. Location is the bone's offset from its parent (ref skeleton).
+			FVector AxisNow;
+			double SignNow;
+			ReadSpinSelection(AxisNow, SignNow);
+			const int32 BoneIdx = RefSkel.FindBoneIndex(Bone);
+			const int32 ParentIdx = RefSkel.GetParentIndex(BoneIdx);
+			const FString ParentName = ParentIdx == INDEX_NONE ? FString(TEXT("(root)")) : RefSkel.GetBoneName(ParentIdx).ToString();
+			UE_LOG(LogTemp, Log, TEXT("DroneDemo-DIAG: bone '%s' parent '%s' depth %d ref-local location %s | ref quat xyzw = (%.5f, %.5f, %.5f, %.5f), euler (pitch,yaw,roll) = %s | local X in component = %s, local Y = %s, local Z = %s | spin axis %s sign %+.0f"),
+				*Bone.ToString(), *ParentName, RefBoneDepth(RefSkel, Bone), *RefSkel.GetRefBonePose()[BoneIdx].GetLocation().ToString(),
+				Ref.X, Ref.Y, Ref.Z, Ref.W, *Ref.Rotator().ToString(),
+			*Ref.RotateVector(FVector::XAxisVector).ToString(), *Ref.RotateVector(FVector::YAxisVector).ToString(), *Ref.RotateVector(FVector::ZAxisVector).ToString());
 		}
 	}
 	{
@@ -453,21 +481,140 @@ void ADroneDemoPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SelectStartEnvironment();
 	bPhysicsReady = LoadPhysics();
 	if (bPhysicsReady)
 	{
 		// No surrogate models are loaded on purpose: with no aero handle the Rust step uses the
 		// analytic drag model, which is the path the wind acts on. (The stubs are not validated.)
 		DroneDemo::Tuning Tune;
-		Tune.HoverThrottle = Config.hover_throttle;
+		// config.hover_throttle is derived at sea-level ISA density; thin or hot air needs more throttle
+		// (DroneEnv::HoverThrottleScale). Above 1 means this site cannot hover: say so, do not hide it.
+		double HoverScale = 1.0;
+		DroneEnv::HoverThrottleScale(AirDensityKgM3, &HoverScale);
+		Tune.HoverThrottle = Config.hover_throttle * HoverScale;
+		if (Tune.HoverThrottle > 1.0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("DroneDemo: hover needs throttle %.3f > 1 at this site (density %.4f kg/m3): the vehicle cannot hover here."), Tune.HoverThrottle, AirDensityKgM3);
+			EnvironmentNotice = FString::Printf(TEXT("Cannot hover here: needs %.0f%% throttle"), Tune.HoverThrottle * 100.0);
+			Tune.HoverThrottle = 1.0;
+		}
 		Controller = MakeUnique<DroneDemo::Controller>(Tune);
 	}
 	WindGenerator = DroneWind::Generator(DroneWind::Generator::kDefaultSeed);
 
 	PlaceOnGround();
 	SetupEnvironment();
+	ApplyEnvironmentLook(Catalog.Find(EnvironmentName));
 	SetupVisuals();
 	UpdateVisuals(0.0f);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Environment
+// ---------------------------------------------------------------------------------------------
+
+void ADroneDemoPawn::SelectStartEnvironment()
+{
+	FString Error;
+	if (!Catalog.Load(Error))
+	{
+		EnvironmentNotice = FString::Printf(TEXT("%s: standard day, default wind"), *Error);
+		UE_LOG(LogTemp, Warning, TEXT("DroneDemo: %s"), *EnvironmentNotice);
+		return;
+	}
+	// The start menu opens the level with "?Env=<id>"; no option means the table's default.
+	FString Wanted;
+	if (const UWorld* World = GetWorld())
+	{
+		if (const AGameModeBase* Mode = World->GetAuthGameMode()) Wanted = UGameplayStatics::ParseOption(Mode->OptionsString, TEXT("Env"));
+	}
+	const FDroneEnvironmentEntry* Entry = Wanted.IsEmpty() ? Catalog.Default() : Catalog.Find(Wanted);
+	if (!Entry)
+	{
+		EnvironmentNotice = FString::Printf(TEXT("Unknown environment '%s': using the default"), *Wanted);
+		Entry = Catalog.Default();
+	}
+	FString Message;
+	if (Entry && !ApplyEnvironment(*Entry, Message))
+	{
+		EnvironmentNotice = Message;
+		UE_LOG(LogTemp, Warning, TEXT("DroneDemo: environment rejected: %s"), *Message);
+	}
+}
+
+bool ADroneDemoPawn::ApplyEnvironment(const FDroneEnvironmentEntry& Entry, FString& OutMessage)
+{
+	const DroneEnv::Preset& P = Entry.Preset;
+	if (!Entry.ValidationMessage.IsEmpty())
+	{
+		OutMessage = FString::Printf(TEXT("%s: %s"), UTF8_TO_TCHAR(P.Name.c_str()), *Entry.ValidationMessage);
+		return false;
+	}
+	double Direction = 0.0;
+	DroneEnv::WrapDirectionDeg(P.WindTowardDeg, &Direction);
+	if (!SetWeather(P.WindSpeedMps, Direction, P.GustSigmaMps, P.SiteAltitudeM, P.AmbientTempC, P.HumidityPct, OutMessage)) return false;
+	EnvironmentName = UTF8_TO_TCHAR(P.Id.c_str());
+	ApplyEnvironmentLook(&Entry);  // harmless before BeginPlay finished: the level lights do not exist yet
+	return true;
+}
+
+bool ADroneDemoPawn::SetWeather(double WindSpeedMps, double WindTowardDeg, double GustSigmaMps, double SiteAltM, double AmbientC,
+								double HumidityPercent, FString& OutMessage)
+{
+	double Env[2] = {0.0, 0.0};
+	const DroneEnv::Status Status = DroneEnv::ValidateWeather(WindSpeedMps, GustSigmaMps, SiteAltM, AmbientC, HumidityPercent, Env);
+	double Direction = 0.0;
+	if (Status == DroneEnv::Status::Ok && !DroneEnv::WrapDirectionDeg(WindTowardDeg, &Direction))
+	{
+		OutMessage = TEXT("wind direction is not a number");
+		return false;
+	}
+	if (Status != DroneEnv::Status::Ok)
+	{
+		OutMessage = UTF8_TO_TCHAR(DroneEnv::CheckMessage(Status));
+		return false;
+	}
+	double Rho = 0.0;
+	if (!DroneEnv::DensityKgM3(SiteAltM, AmbientC, &Rho))
+	{
+		OutMessage = TEXT("air density is outside the model range");
+		return false;
+	}
+	// Everything checked: now change state, all at once.
+	PhysicsEnvironment.site_altitude_m = Env[0];
+	PhysicsEnvironment.temp_offset_c = Env[1];
+	WindParams.SteadySpeedMps = WindSpeedMps;
+	WindParams.SteadyDirectionDeg = Direction;
+	WindParams.GustSigmaMps = GustSigmaMps;
+	WindParams.bGustsEnabled = GustSigmaMps > 0.0;
+	SiteAltitudeM = SiteAltM;
+	AmbientTempC = AmbientC;
+	HumidityPct = HumidityPercent;
+	AirDensityKgM3 = Rho;
+	UE_LOG(LogTemp, Log, TEXT("DroneDemo: weather set: site %.0f m, ambient %.1f C (offset %+.2f K from the standard day), density %.4f kg/m3, wind %.1f m/s toward %03.0f deg, gust sigma %.1f m/s, humidity %.0f%% (shown only, not modelled)."),
+		SiteAltM, AmbientC, Env[1], Rho, WindSpeedMps, Direction, GustSigmaMps, HumidityPercent);
+	OutMessage = TEXT("ok");
+	return true;
+}
+
+void ADroneDemoPawn::ApplyEnvironmentLook(const FDroneEnvironmentEntry* Entry)
+{
+	// Secondary effect only. TODO(HUMAN-VERIFY: demo value, Unreal API): tint, fog and light scale per environment.
+	UWorld* World = GetWorld();
+	if (!World || !Entry) return;
+	for (TActorIterator<AActor> It(World); It; ++It)
+	{
+		if (UExponentialHeightFogComponent* Fog = It->FindComponentByClass<UExponentialHeightFogComponent>())
+		{
+			Fog->SetFogDensity(static_cast<float>(Entry->FogDensity));
+			Fog->SetFogInscatteringColor(Entry->SkyTint);
+		}
+		if (UDirectionalLightComponent* Sun = It->FindComponentByClass<UDirectionalLightComponent>())
+		{
+			Sun->SetIntensity(Sun->Intensity * static_cast<float>(Entry->LightScale));
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -477,7 +624,7 @@ void ADroneDemoPawn::BeginPlay()
 void ADroneDemoPawn::ReadInput(APlayerController* PC, DroneDemo::Command& OutCommand)
 {
 	OutCommand = DroneDemo::Command();
-	if (!PC || !Controller) return;
+	if (!PC || !Controller || !bPilotInputEnabled) return;  // the control panel pauses pilot input
 
 	if (PC->WasInputKeyJustPressed(EKeys::T) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Bottom))
 	{
@@ -564,6 +711,11 @@ void ADroneDemoPawn::PinToGround()
 	PhysicsState.orientation[2] = static_cast<float>(FMath::Sin(Half));
 	PhysicsState.orientation[3] = static_cast<float>(FMath::Cos(Half));
 	Controller->NotifyOnGround();
+	if (bFlewSinceLanding)
+	{
+		bLandedEvent = true;  // the HUD opens the flight report once
+		bFlewSinceLanding = false;
+	}
 }
 
 void ADroneDemoPawn::StepFixed(double FixedDt, const DroneDemo::Command& Command)
@@ -593,7 +745,7 @@ void ADroneDemoPawn::StepFixed(double FixedDt, const DroneDemo::Command& Command
 	Inputs.yaw = static_cast<float>(Out.Yaw);
 
 	DebugTelemetry StepTelemetry = {};
-	if (!FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &Thermal, &Inputs, &Wind, nullptr, nullptr, &Config, &StepTelemetry, &PhysicsFaultLatch, FixedDt))
+	if (!FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &Thermal, &Inputs, &Wind, &PhysicsEnvironment, nullptr, nullptr, &Config, &StepTelemetry, &PhysicsFaultLatch, FixedDt))
 	{
 		bPhysicsFault = true;
 		return;
@@ -601,6 +753,24 @@ void ADroneDemoPawn::StepFixed(double FixedDt, const DroneDemo::Command& Command
 	bPhysicsFault = false;
 	LastTelemetry = StepTelemetry;
 	bHaveTelemetry = true;
+	FlightTimeS += FixedDt;
+	bFlewSinceLanding = true;
+
+	// Electrical operating point per motor (same model as the report: DroneRun::ComputeMotorPoint).
+	{
+		double Total = 0.0;
+		for (int32 M = 0; M < 4; ++M)
+		{
+			const DroneRun::MotorPoint Mp = DroneRun::ComputeMotorPoint(ReportBuild, static_cast<double>(StepTelemetry.motor_rpms[M]), AirDensityKgM3);
+			LastMotorCurrentA[M] = Mp.CurrentA;
+			Total += Mp.BatteryA;
+		}
+		LastBatteryA = Total;
+		double Vt = ReportBuild.BatteryVoc;
+		DroneElec::PackTerminalV(ReportBuild.BatteryVoc, Total, ReportBuild.BatteryResistanceOhm, &Vt);
+		LastPackV = Vt;
+		BatteryUsedAh += Total * FixedDt / 3600.0;
+	}
 
 	if (DroneDemo::ShouldTouchDown(Controller->GetMode(), -PhysicsState.position[2]))
 	{
@@ -617,10 +787,15 @@ void ADroneDemoPawn::Tick(float DeltaTime)
 		return;
 	}
 
+	if (!bSimulationActive)
+	{
+		Accumulator = 0.0;  // start menu: nothing advances
+		return;
+	}
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	DroneDemo::Command Command;
 	ReadInput(PC, Command);
-	ReadWindKeys(PC);
+	if (bPilotInputEnabled) ReadWindKeys(PC);
 
 	Accumulator += static_cast<double>(DeltaTime);
 	int32 Steps = 0;
@@ -685,6 +860,20 @@ void ADroneDemoPawn::UpdateVisuals(float DeltaTime)
 			}
 		}
 
+		if (!bUseFallbackShapes)
+		{
+			// Above ~kBladeHideRpm the blades alias into a wobble: hide the hub (prop) bone's mesh and
+			// let the motion disc carry the look. TODO(HUMAN-VERIFY: hides only that bone's weighted
+			// vertices; if the nut/cap vanish with it, list those bones to keep.)
+			const bool bHide = DroneVisual::BladesHidden(M.bBladesHidden, Rpm);
+			if (bHide != M.bBladesHidden)
+			{
+				M.bBladesHidden = bHide;
+				if (bHide) PoseMesh->HideBoneByName(M.HubBone, PBO_None);
+				else PoseMesh->UnHideBoneByName(M.HubBone);
+			}
+		}
+
 		if (MotionDiscs.IsValidIndex(I))
 		{
 			FVector HubWorld;
@@ -731,6 +920,9 @@ void ADroneDemoPawn::DrawWindArrows() const
 
 void ADroneDemoPawn::DrawHud() const
 {
+	// The Slate HUD (ADroneDemoHUD) replaces this debug text; `drone.DebugHud 1` brings it back.
+	static TAutoConsoleVariable<int32> CVarDebugHud(TEXT("drone.DebugHud"), 0, TEXT("1 shows the old on-screen debug text next to the Slate HUD."), ECVF_Default);
+	if (CVarDebugHud.GetValueOnGameThread() == 0 && bPhysicsReady) return;
 	if (!GEngine) return;
 	auto Line = [](int32 Key, const FColor& Color, const FString& Text) { GEngine->AddOnScreenDebugMessage(Key, 0.0f, Color, Text); };
 
@@ -774,6 +966,101 @@ void ADroneDemoPawn::DrawHud() const
 	}
 	if (!bPhysicsReady)
 	{
-		Line(110, FColor::Red, TEXT("Physics disabled: vehicle_config.json could not be loaded (see the log)"));
+		Line(110, FColor::Red, TEXT("Physics disabled: quad_ref_build_config.json could not be loaded (see the log)"));
 	}
+}
+
+// ---------------------------------------------------------------------------------------------
+// UI hooks
+// ---------------------------------------------------------------------------------------------
+
+void ADroneDemoPawn::RequestTakeoffFromUi()
+{
+	if (Controller) Controller->RequestTakeoff(-PhysicsState.position[2]);
+}
+
+void ADroneDemoPawn::RequestLandFromUi()
+{
+	if (Controller) Controller->RequestLand();
+}
+
+bool ADroneDemoPawn::ConsumeLandedEvent()
+{
+	const bool bEvent = bLandedEvent;
+	bLandedEvent = false;
+	return bEvent;
+}
+
+FString ADroneDemoPawn::GetModeString() const
+{
+	if (!bPhysicsReady || !Controller) return TEXT("PHYSICS OFF");
+	if (bPhysicsFault) return TEXT("PHYSICS FAULT");
+	switch (Controller->GetMode())
+	{
+		case DroneDemo::Mode::OnGround: return TEXT("ON GROUND");
+		case DroneDemo::Mode::Takeoff: return TEXT("TAKEOFF");
+		case DroneDemo::Mode::Flying: return TEXT("FLYING");
+		case DroneDemo::Mode::Landing: return TEXT("LANDING");
+	}
+	return TEXT("?");
+}
+
+DroneReport::EnvInfo ADroneDemoPawn::MakeEnvInfo() const
+{
+	DroneReport::EnvInfo E;
+	E.Id = TCHAR_TO_UTF8(*EnvironmentName);
+	E.Name = TCHAR_TO_UTF8(*EnvironmentName);
+	E.SiteAltitudeM = SiteAltitudeM;
+	E.AmbientTempC = AmbientTempC;
+	E.HumidityPct = HumidityPct;
+	E.WindSpeedMps = WindParams.SteadySpeedMps;
+	E.WindTowardDeg = WindParams.SteadyDirectionDeg;
+	E.GustSigmaMps = WindParams.bGustsEnabled ? WindParams.GustSigmaMps : 0.0;
+	E.TempOffsetC = PhysicsEnvironment.temp_offset_c;
+	return E;
+}
+
+void ADroneDemoPawn::FillUiRaw(FDroneUiRaw& Out) const
+{
+	const double Q[4] = {PhysicsState.orientation[0], PhysicsState.orientation[1], PhysicsState.orientation[2], PhysicsState.orientation[3]};
+	const DroneDemo::Euler Att = DroneDemo::QuatToEuler(Q);
+	Out.AltitudeM = -PhysicsState.position[2];
+	Out.SpeedMps = FMath::Sqrt(static_cast<double>(PhysicsState.velocity[0]) * PhysicsState.velocity[0] + static_cast<double>(PhysicsState.velocity[1]) * PhysicsState.velocity[1]);
+	const double Rel[3] = {PhysicsState.velocity[0] - WindSample.Total[0], PhysicsState.velocity[1] - WindSample.Total[1], PhysicsState.velocity[2] - WindSample.Total[2]};
+	Out.AirspeedMps = FMath::Sqrt(Rel[0] * Rel[0] + Rel[1] * Rel[1] + Rel[2] * Rel[2]);
+	Out.ClimbMps = -static_cast<double>(PhysicsState.velocity[2]);
+	Out.HeadingDeg = DroneUi::WrapDeg360(Att.YawRad * 180.0 / DroneUi::kPi);
+	Out.RollRad = Att.RollRad;
+	Out.PitchRad = Att.PitchRad;
+	Out.WindMps = FMath::Sqrt(WindSample.Total[0] * WindSample.Total[0] + WindSample.Total[1] * WindSample.Total[1] + WindSample.Total[2] * WindSample.Total[2]);
+	Out.WindTowardDeg = Out.WindMps > 0.05 ? DroneUi::WrapDeg360(FMath::Atan2(WindSample.Total[1], WindSample.Total[0]) * 180.0 / DroneUi::kPi) : WindParams.SteadyDirectionDeg;
+	Out.GustMps = FMath::Sqrt(WindSample.Gust[0] * WindSample.Gust[0] + WindSample.Gust[1] * WindSample.Gust[1] + WindSample.Gust[2] * WindSample.Gust[2]);
+	const double MaxRpm = Config.max_rpm > 0.0 ? Config.max_rpm : 1.0;
+	const double Nmax = MaxRpm / 60.0;
+	const double TMax = Config.thrust_coeff * AirDensityKgM3 * Nmax * Nmax * FMath::Pow(Config.prop_diameter_m, 4.0);
+	double Mean = 0.0, MaxUtil = 0.0;
+	for (int32 M = 0; M < 4; ++M)
+	{
+		const double Rpm = bHaveTelemetry ? static_cast<double>(LastTelemetry.motor_rpms[M]) : 0.0;
+		const double Th = bHaveTelemetry ? static_cast<double>(LastTelemetry.motor_thrusts[M]) : 0.0;
+		Out.Rpm[M] = Rpm;
+		Out.RpmFraction[M] = Rpm / MaxRpm;
+		Out.ThrustN[M] = Th;
+		Out.MotorTempC[M] = bHaveTelemetry ? static_cast<double>(LastTelemetry.motor_temperatures_c[M]) : 0.0;
+		Mean += Rpm / MaxRpm / 4.0;
+		if (TMax > 0.0) MaxUtil = FMath::Max(MaxUtil, Th / TMax);
+	}
+	Out.ThrottleMean = Mean;
+	Out.MaxThrustMarginUtil = MaxUtil;
+	Out.MotorCurrentMaxA = FMath::Max(FMath::Max(LastMotorCurrentA[0], LastMotorCurrentA[1]), FMath::Max(LastMotorCurrentA[2], LastMotorCurrentA[3]));
+	Out.BatteryA = LastBatteryA;
+	Out.PackV = LastPackV > 0.0 ? LastPackV : ReportBuild.BatteryVoc;
+	const double Usable = ReportBuild.BatteryCapacityAh * ReportBuild.BatteryUsable;
+	Out.BatteryUsedFraction = Usable > 0.0 ? BatteryUsedAh / Usable : 0.0;
+	Out.AirDensityKgM3 = AirDensityKgM3;
+	Out.SiteAltitudeM = SiteAltitudeM;
+	Out.AmbientTempC = AmbientTempC;
+	Out.FlightTimeS = FlightTimeS;
+	Out.bPhysicsFault = bPhysicsFault;
+	Out.bHaveTelemetry = bHaveTelemetry;
 }

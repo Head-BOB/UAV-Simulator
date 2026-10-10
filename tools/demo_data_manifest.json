@@ -1,0 +1,18 @@
+{
+  "_comment": "Files the packaged demo needs at run time (paths relative to the repo root). Staged by UAV_Simulator.Build.cs to <Project>/DroneData/<path>; checked by tools/test_demo_packaging.py and tools/verify_package.py. The Rust DLL is staged by DronePhysicsBridge.Build.cs next to the executable.",
+  "data_files": [
+    "offline_pipeline/geometry/quad_ref_build_config.json",
+    "offline_pipeline/geometry/vehicle_config.json",
+    "UE5Project/Plugins/DronePhysicsBridge/Content/DroneEnvironments.json",
+    "UE5Project/Plugins/DronePhysicsBridge/Content/DroneModelMap.json",
+    "offline_pipeline/components/catalog.json",
+    "offline_pipeline/props/apce_12x6.json",
+    "offline_pipeline/trained_models/active_model.json",
+    "offline_pipeline/trained_models/aero_stub.onnx",
+    "offline_pipeline/trained_models/fea_stub.onnx"
+  ],
+  "optional_data_files": [
+    "offline_pipeline/trained_models/aero_quad_cfd.onnx"
+  ],
+  "dll": "physics_core.dll"
+}

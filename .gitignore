@@ -4,7 +4,10 @@ physics_core/target/
 
 # Unreal Engine Core
 UE5Project/Binaries/
-UE5Project/Build/
+UE5Project/Build/*
+!UE5Project/Build/Windows/
+UE5Project/Build/Windows/*
+!UE5Project/Build/Windows/Application.ico
 UE5Project/DerivedDataCache/
 UE5Project/Intermediate/
 UE5Project/Saved/

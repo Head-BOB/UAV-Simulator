@@ -40,6 +40,8 @@
  */
 #define FEA_INPUT_WIDTH 8
 
+#define AMBIENT_TEMP 20.0
+
 /**
  * True only when every thermal constant above has a sourced, verified value (item B-4).
  * Stays `false` until a human closes B-4; reported as `DebugTelemetry::thermal_valid`.
@@ -59,6 +61,20 @@
  * (30 m/s is about gale force); it is not a validated aerodynamic limit of the drag model.
  */
 #define MAX_WIND_COMPONENT_MPS 30.0
+
+/**
+ * Largest accepted `EnvironmentInput::site_altitude_m`, m.
+ * TODO(HUMAN-VERIFY: demo value) The tallest demo site is a mountain preset; 5000 m keeps the
+ * total height (site plus flight) inside the ISA troposphere model (11000 m) with room to fly.
+ */
+#define MAX_SITE_ALTITUDE_M 5000.0
+
+/**
+ * Largest accepted |`EnvironmentInput::temp_offset_c`|, K.
+ * TODO(HUMAN-VERIFY: demo value) A sanity bound for the demo (about -40..+40 K around the standard
+ * day covers polar to desert air); it is not a validated limit of any model here.
+ */
+#define MAX_TEMP_OFFSET_C 40.0
 
 /**
  * Largest accepted deviation of a state quaternion's norm from 1 at the FFI boundary.
@@ -179,6 +195,32 @@ typedef struct WindInput {
    */
   double wind_ned_mps[3];
 } WindInput;
+
+/**
+ * Atmosphere for one `ffi_step_physics` call (interface v12): where the NED origin sits above sea
+ * level and how much warmer or colder than the ISA standard day the air is.
+ *
+ * All zeros is the ISA standard day at sea level, which reproduces the v11 behaviour bit for bit.
+ * Air density at the vehicle comes from the ISA pressure at the total height (`site_altitude_m`
+ * plus the vehicle altitude above the origin) and the ISA temperature at that height PLUS
+ * `temp_offset_c` (`aero::air_density`). Humidity is not modelled.
+ */
+typedef struct EnvironmentInput {
+  /**
+   * Height of the NED origin above sea level.
+   *
+   * # Units
+   * Metres, f64, finite, 0..=`MAX_SITE_ALTITUDE_M`.
+   */
+  double site_altitude_m;
+  /**
+   * Air temperature minus the ISA standard-day temperature at the same height.
+   *
+   * # Units
+   * Kelvin (equal to degrees C for a difference), f64, finite, |value| <= `MAX_TEMP_OFFSET_C`.
+   */
+  double temp_offset_c;
+} EnvironmentInput;
 
 /**
  * Physical properties and layout of the specific airframe being simulated.
@@ -468,6 +510,13 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
  * aerodynamic drag uses it, through the air-relative velocity `v_air = v_ground - wind`. Thrust,
  * thermal convection (ground speed) and everything else are unchanged.
  *
+ * # Environment (interface v12)
+ * `environment` sets the atmosphere: `site_altitude_m` (height of the NED origin above sea level) and
+ * `temp_offset_c` (air temperature minus the ISA standard day). Air density for thrust and for the
+ * analytic drag fallback comes from `aero::air_density`; the motor thermal ambient becomes
+ * `thermal::AMBIENT_TEMP + temp_offset_c`. All zeros is the v11 behaviour bit for bit. A surrogate
+ * aero answer ignores the environment (it was trained at one density). Humidity is not modelled.
+ *
  * # Units
  * * `dt` - Timestep in seconds.
  *
@@ -487,12 +536,15 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
  *   `types::QUAT_NORM_TOLERANCE` (rejected, never silently rescaled)
  * * `12` - `wind.wind_ned_mps` has a NaN/Inf component or a component with magnitude above
  *   `types::MAX_WIND_COMPONENT_MPS` (30 m/s). Rejected before any computation: NOTHING is written.
+ * * `13` - `environment` has a NaN/Inf field, `site_altitude_m` outside 0..=5000, or
+ *   `|temp_offset_c| > 40`. Rejected before any computation, after the wind check: NOTHING is written.
+ *   (A total height `site_altitude_m` + vehicle altitude outside 0..=11000 m is code 6.)
  * * `98` - an internal lock was poisoned and recovered; nothing was done, call again
  * * `99` - a panic was caught, or a handle was faulted by an earlier panic; the run is invalid
  *
  * # Behavior on a failed step
  * * `state` and `thermal_state` are always unchanged.
- * * Codes 1, 7, 9, 11, 12, 98 and 99 are rejected before any computation: NOTHING is written
+ * * Codes 1, 7, 9, 11, 12, 13, 98 and 99 are rejected before any computation: NOTHING is written
  *   (telemetry and latch keep their previous values).
  * * Codes 6 and 8 fail during the tick: `out_telemetry` is overwritten with "no data" (margin
  *   NaN, `is_validated_envelope` 0, sources 0, `thermal_valid` 0, `physics_fault` = latch value,
@@ -512,6 +564,7 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
  * * `thermal_state` must be a valid, aligned, mutable pointer to a ThermalState.
  * * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
  * * `wind` must be a valid, aligned, immutable pointer to a `WindInput` (null gives code 1).
+ * * `environment` must be a valid, aligned, immutable pointer to an `EnvironmentInput` (null gives code 1).
  * * `aero_handle` and `fea_handle` may be null. If non-null, must be valid SurrogateHandles.
  * * `config` must be a valid, aligned, immutable pointer to a VehicleConfig.
  * * `out_telemetry` must be a valid, aligned, mutable pointer to a DebugTelemetry struct.
@@ -522,6 +575,7 @@ int32_t ffi_step_physics(struct DroneState *state,
                          struct ThermalState *thermal_state,
                          const struct ControlInputs *controls,
                          const struct WindInput *wind,
+                         const struct EnvironmentInput *environment,
                          struct SurrogateHandle *aero_handle,
                          struct SurrogateHandle *fea_handle,
                          const struct VehicleConfig *config,

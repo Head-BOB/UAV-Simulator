@@ -27,7 +27,9 @@ Model: Animated Drone by hartwelkisaka, CC BY 4.0
 4. **Motion-disc material (optional, editor).** Create `/Game/Drone/M_MotionDisc`: Blend Mode
    Translucent, Shading Model Unlit, a Scalar Parameter `Opacity` into Opacity and a Vector
    Parameter `Color` into Emissive Color. Without it the demo hides the motion discs and logs a Warning.
-5. **Copy the DLLs** to `UE5Project\Binaries\Win64\` (create the folder if needed):
+5. **The DLL.** `DronePhysicsBridge.Build.cs` now copies `physics_core.dll` next to the game executable (and into a packaged
+   build) as a runtime dependency; packaging steps are in `UE5Project/PACKAGING_README.md`. If you still want to copy by hand,
+   put it in `UE5Project\Binaries\Win64\`:
    `physics_core.dll` from step 2. `onnxruntime.dll` is NOT needed by this demo (it loads no
    surrogate model); if you want it there anyway, put it in the same folder.
    TODO(HUMAN-VERIFY): the final DLL staging for packaged builds is not decided (HUMAN-TODO B-13).
@@ -42,6 +44,8 @@ Model: Animated Drone by hartwelkisaka, CC BY 4.0
 
 | Keys | Action |
 | :--- | :--- |
+| Tab | open / close the control panel (weather, environment, take off, land, report); pilot input is paused while it is open |
+| R | flight report (also opens by itself after landing) |
 | T / L | take off (to 2 m) / land |
 | W S / A D | forward, back / left, right (heading frame, up to 3 m/s) |
 | Q E | yaw left / right (1 rad/s) |
@@ -58,7 +62,7 @@ arrow: the gust part.
 
 ## What to check on the first run
 
-1. The Output Log has no `Rust FFI Version Mismatch` (interface version 11) and no `static_assert` failure at build.
+1. The Output Log has no `Rust FFI Version Mismatch` (interface version 12) and no `static_assert` failure at build.
 2. One `DroneDemo: uniform mesh scale ...` line: scale about 2.342 and a front-rear leftover of
    about -0.0597 m (the model is not square, the config is; props are not distorted).
 3. No `DroneDemo: bone '...' is missing` Error. If you see one, the demo draws simple shapes instead.

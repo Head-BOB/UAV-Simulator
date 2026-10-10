@@ -1,0 +1,228 @@
+{
+  "_comment": "Reference build for the Monday demo (human decision 2026-10-10). Every field is CITED (source URL) or ASSUMED. Nothing here is validated against hardware. Cited T-Motor values read from the store page 2026-10-10 by an AI reader: TODO(HUMAN-VERIFY) against the page.",
+  "motor": {
+    "model": "T-Motor MN3508 KV700",
+    "kv_rpm_per_v": {
+      "value": 700,
+      "unit": "rpm/V",
+      "status": "CITED",
+      "source": "https://store.tmotor.com/goods-354-MN3508.html",
+      "todo": null
+    },
+    "resistance_ohm": {
+      "value": 0.072,
+      "unit": "ohm",
+      "status": "CITED",
+      "source": "https://store.tmotor.com/goods-354-MN3508.html",
+      "todo": null
+    },
+    "no_load_current_a": {
+      "value": 0.5,
+      "unit": "A",
+      "status": "CITED",
+      "source": "https://store.tmotor.com/goods-354-MN3508.html (at 10 V)",
+      "todo": null
+    },
+    "mass_kg": {
+      "value": 0.104,
+      "unit": "kg",
+      "status": "CITED",
+      "source": "https://store.tmotor.com/goods-354-MN3508.html (with cables; 82 g without)",
+      "todo": null
+    },
+    "max_continuous_current_a": {
+      "value": 23,
+      "unit": "A",
+      "status": "CITED",
+      "source": "https://store.tmotor.com/goods-354-MN3508.html (180 s rating)",
+      "todo": null
+    },
+    "max_power_w": {
+      "value": 510,
+      "unit": "W",
+      "status": "CITED",
+      "source": "https://store.tmotor.com/goods-354-MN3508.html (180 s rating)",
+      "todo": null
+    },
+    "cells_min_max": {
+      "value": [
+        3,
+        4
+      ],
+      "unit": "S",
+      "status": "CITED",
+      "source": "https://store.tmotor.com/goods-354-MN3508.html",
+      "todo": null
+    },
+    "loaded_max_rpm_proxy": {
+      "value": 8100,
+      "unit": "rpm",
+      "status": "ASSUMED",
+      "source": "https://store.tmotor.com/goods-354-MN3508.html thrust table, 12x4 CF at 14.8 V, 100% throttle. value is CITED for the 12x4 CF prop, but USING it for the 12x6 is an ASSUMPTION (proxy)",
+      "todo": "TODO(HUMAN-VERIFY): the 12x6 loads the motor more; measure or derive"
+    },
+    "temp_limit_c": {
+      "value": 120,
+      "unit": "C",
+      "status": "ASSUMED",
+      "source": "same placeholder as physics_core thermal::MOTOR_TEMP_LIMIT_C (itself unvalidated)",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    }
+  },
+  "esc": {
+    "model": "generic 20 A class (4 x)",
+    "rated_current_a": {
+      "value": 20,
+      "unit": "A",
+      "status": "CITED",
+      "source": "human decision 2026-10-10: class only, no datasheet URL",
+      "todo": "TODO(HUMAN-VERIFY): add the datasheet URL"
+    },
+    "mass_kg": {
+      "value": 0.025,
+      "unit": "kg",
+      "status": "ASSUMED",
+      "source": "typical small ESC, no datasheet",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "efficiency": {
+      "value": 0.95,
+      "unit": "-",
+      "status": "ASSUMED",
+      "source": "typical, no datasheet",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    }
+  },
+  "battery": {
+    "model": "generic 4S LiPo 5000 mAh",
+    "cells": {
+      "value": 4,
+      "unit": "S",
+      "status": "ASSUMED",
+      "source": "human decision 2026-10-10",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "nominal_voltage_v": {
+      "value": 14.8,
+      "unit": "V",
+      "status": "ASSUMED",
+      "source": "4 x 3.7 V nominal-cell convention",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "capacity_ah": {
+      "value": 5.0,
+      "unit": "Ah",
+      "status": "ASSUMED",
+      "source": "human decision 2026-10-10 (about 5000 mAh)",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "mass_kg": {
+      "value": 0.45,
+      "unit": "kg",
+      "status": "ASSUMED",
+      "source": "human decision 2026-10-10 (about 450 g)",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "internal_resistance_ohm": {
+      "value": 0.02,
+      "unit": "ohm",
+      "status": "ASSUMED",
+      "source": "pack total, typical order for a 4S LiPo, no datasheet",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "max_discharge_c": {
+      "value": 25,
+      "unit": "C",
+      "status": "ASSUMED",
+      "source": "generic, no datasheet",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "usable_fraction": {
+      "value": 0.8,
+      "unit": "-",
+      "status": "ASSUMED",
+      "source": "stop at 80 % depth of discharge, common practice",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    }
+  },
+  "prop": {
+    "model": "APC Thin Electric 12x6 (12x6E)",
+    "diameter_m": {
+      "value": 0.3048,
+      "unit": "m",
+      "status": "CITED",
+      "source": "UIUC volume 4, 12 inch nominal x 0.0254 m/in exact",
+      "todo": null
+    },
+    "mass_kg": {
+      "value": 0.02,
+      "unit": "kg",
+      "status": "ASSUMED",
+      "source": "typical 12 inch plastic prop, no datasheet",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "data_file": "offline_pipeline/props/apce_12x6.json"
+  },
+  "frame": {
+    "motor_spacing_m": {
+      "value": 0.4,
+      "unit": "m",
+      "status": "CITED",
+      "source": "human decision 2026-10-10 and vehicle_config.json motor_pos_m (+-0.2, +-0.2)",
+      "todo": null
+    },
+    "frame_mass_kg": {
+      "value": 0.35,
+      "unit": "kg",
+      "status": "ASSUMED",
+      "source": "plates plus four arms, no design",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "avionics_payload_mass_kg": {
+      "value": 0.12,
+      "unit": "kg",
+      "status": "ASSUMED",
+      "source": "flight controller, wiring, receiver, no list",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "body_half_width_m": {
+      "value": 0.06,
+      "unit": "m",
+      "status": "ASSUMED",
+      "source": "centre plate half width; prop clearance needs body half width < 0.13 m",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "arm_tube_outer_diameter_m": {
+      "value": 0.016,
+      "unit": "m",
+      "status": "ASSUMED",
+      "source": "hollow carbon tube, no design",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "arm_tube_wall_m": {
+      "value": 0.0015,
+      "unit": "m",
+      "status": "ASSUMED",
+      "source": "no design",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "arm_allowable_bending_stress_pa": {
+      "value": 300000000.0,
+      "unit": "Pa",
+      "status": "ASSUMED",
+      "source": "conservative laminate allowable, NOT a tested value",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    },
+    "central_body_box_m": {
+      "value": [
+        0.2,
+        0.2,
+        0.1
+      ],
+      "unit": "m",
+      "status": "ASSUMED",
+      "source": "for the inertia estimate only",
+      "todo": "TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+    }
+  }
+}

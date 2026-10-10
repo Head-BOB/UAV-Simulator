@@ -109,6 +109,24 @@ inline Quat SpinOnRefRotation(const Quat& RefRotation, const double AxisBoneLoca
     return QuatMul(RefRotation, QuatFromAxisAngle(AxisBoneLocal, AngleRad));
 }
 
+// Blade-to-disc switch. Above about this RPM the blades alias on screen (a frame-rate artefact that
+// looks like wobble), so the blades are hidden and the motion disc carries the look.
+// TODO(HUMAN-VERIFY: demo value) 1500 RPM and 200 RPM hysteresis are look-and-feel choices (ASSUMED).
+constexpr double kBladeHideRpm = 1500.0;
+constexpr double kBladeHideHysteresisRpm = 200.0;
+
+// Whether the blades should be hidden this frame. Hysteresis stops flicker around the threshold:
+// visible -> hidden at Rpm >= Threshold + Hysteresis; hidden -> visible at Rpm <= Threshold - Hysteresis.
+// Non-finite RPM or invalid parameters keep the blades visible (the safe, honest picture).
+inline bool BladesHidden(bool WasHidden, double Rpm, double ThresholdRpm = kBladeHideRpm, double HysteresisRpm = kBladeHideHysteresisRpm)
+{
+    if (!std::isfinite(Rpm) || !std::isfinite(ThresholdRpm) || !std::isfinite(HysteresisRpm) || HysteresisRpm < 0.0 || ThresholdRpm <= HysteresisRpm)
+    {
+        return false;
+    }
+    return WasHidden ? Rpm > ThresholdRpm - HysteresisRpm : Rpm >= ThresholdRpm + HysteresisRpm;
+}
+
 // Uniform scale = span in the config / span in the model. Returns false (Out untouched) if either
 // span is not a finite positive number.
 inline bool ComputeUniformScale(double ConfigSpanM, double ModelSpanM, double* Out)

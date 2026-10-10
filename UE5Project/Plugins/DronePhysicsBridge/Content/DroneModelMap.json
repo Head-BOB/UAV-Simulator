@@ -21,6 +21,7 @@
   "camera_bones": ["CameraHandle_jnt", "camera_jnt"],
   "camera_front_hint": "camera bones sit on the +Z side in the glTF, which is the vehicle front",
   "notes": [
+    "prop_motor_base_N_jnt exists in the UE skeleton but is NOT in any spin list (assumed static, part of the motor). TODO(HUMAN-VERIFY): if it visibly belongs to the rotor, add it to that motor's spin_bones.",
     "Spinning bones: prop, nut, cap and bolt per motor. If the motor bell looks wrong, add motor_N_jnt to that motor's spin list and re-test.",
     "Rotate bones with UPoseableMeshComponent::SetBoneRotationByName each tick; do not use the baked animations.",
     "Spin direction per motor comes from motor_spin in vehicle_config.json (config order FR, FL, RR, RL).",

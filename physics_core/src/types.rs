@@ -104,6 +104,56 @@ impl Default for WindInput {
 /// (30 m/s is about gale force); it is not a validated aerodynamic limit of the drag model.
 pub const MAX_WIND_COMPONENT_MPS: f64 = 30.0;
 
+/// Atmosphere for one `ffi_step_physics` call (interface v12): where the NED origin sits above sea
+/// level and how much warmer or colder than the ISA standard day the air is.
+///
+/// All zeros is the ISA standard day at sea level, which reproduces the v11 behaviour bit for bit.
+/// Air density at the vehicle comes from the ISA pressure at the total height (`site_altitude_m`
+/// plus the vehicle altitude above the origin) and the ISA temperature at that height PLUS
+/// `temp_offset_c` (`aero::air_density`). Humidity is not modelled.
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct EnvironmentInput {
+    /// Height of the NED origin above sea level.
+    ///
+    /// # Units
+    /// Metres, f64, finite, 0..=`MAX_SITE_ALTITUDE_M`.
+    pub site_altitude_m: f64,
+
+    /// Air temperature minus the ISA standard-day temperature at the same height.
+    ///
+    /// # Units
+    /// Kelvin (equal to degrees C for a difference), f64, finite, |value| <= `MAX_TEMP_OFFSET_C`.
+    pub temp_offset_c: f64,
+}
+
+impl EnvironmentInput {
+    /// ISA standard day at sea level (both fields zero).
+    #[must_use]
+    pub const fn standard() -> Self {
+        Self {
+            site_altitude_m: 0.0,
+            temp_offset_c: 0.0,
+        }
+    }
+}
+
+impl Default for EnvironmentInput {
+    fn default() -> Self {
+        Self::standard()
+    }
+}
+
+/// Largest accepted `EnvironmentInput::site_altitude_m`, m.
+/// TODO(HUMAN-VERIFY: demo value) The tallest demo site is a mountain preset; 5000 m keeps the
+/// total height (site plus flight) inside the ISA troposphere model (11000 m) with room to fly.
+pub const MAX_SITE_ALTITUDE_M: f64 = 5000.0;
+
+/// Largest accepted |`EnvironmentInput::temp_offset_c`|, K.
+/// TODO(HUMAN-VERIFY: demo value) A sanity bound for the demo (about -40..+40 K around the standard
+/// day covers polar to desert air); it is not a validated limit of any model here.
+pub const MAX_TEMP_OFFSET_C: f64 = 40.0;
+
 /// State container for the thermal and electrical simulation.
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -425,6 +475,7 @@ const _: () = {
     assert!(size_of::<ThermalState>() == 32 && align_of::<ThermalState>() == 8);
     // 3*8 = 24
     assert!(size_of::<WindInput>() == 24 && align_of::<WindInput>() == 8);
+    assert!(size_of::<EnvironmentInput>() == 16 && align_of::<EnvironmentInput>() == 8);
     // 1*4 = 4
     assert!(size_of::<FaultLatch>() == 4 && align_of::<FaultLatch>() == 4);
     // 3*4 + 4 + 4 = 20
@@ -468,6 +519,11 @@ mod tests {
         assert_eq!(std::mem::size_of::<WindInput>(), 24);
         assert_eq!(std::mem::align_of::<WindInput>(), 8);
         assert_eq!(offset_of!(WindInput, wind_ned_mps), 0);
+        // EnvironmentInput (v12): 2 * 8 = 16, align 8.
+        assert_eq!(std::mem::size_of::<EnvironmentInput>(), 16);
+        assert_eq!(std::mem::align_of::<EnvironmentInput>(), 8);
+        assert_eq!(offset_of!(EnvironmentInput, site_altitude_m), 0);
+        assert_eq!(offset_of!(EnvironmentInput, temp_offset_c), 8);
         assert_eq!(WindInput::still().wind_ned_mps, [0.0; 3]);
     }
 
@@ -593,6 +649,27 @@ mod tests {
         let cpp_version = found.next();
         assert!(found.next().is_none(), "constant declared more than once");
         assert_eq!(cpp_version, Some(Ok(crate::ffi_get_interface_version())));
+    }
+
+    // The demo's UE-free environment header must use the same limits as the core, or a preset it
+    // accepts could be rejected with code 13 (or the reverse). Parses `constexpr double NAME = VALUE;`.
+    #[test]
+    fn test_cpp_environment_limits_match_rust() {
+        const HEADER: &str = include_str!(
+            "../../UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public/DroneEnvironment.h"
+        );
+        let value = |name: &str| -> f64 {
+            let prefix = format!("constexpr double {name} = ");
+            let mut found = HEADER
+                .lines()
+                .filter_map(|l| l.trim().strip_prefix(prefix.as_str()))
+                .map(|rest| rest.split(';').next().unwrap_or("").trim().parse::<f64>());
+            let v = found.next();
+            assert!(found.next().is_none(), "{name} declared more than once");
+            v.expect("constant not found").expect("not a number")
+        };
+        assert_eq!(value("kMaxSiteAltitudeM"), MAX_SITE_ALTITUDE_M);
+        assert_eq!(value("kMaxTempOffsetC"), MAX_TEMP_OFFSET_C);
     }
 
     #[test]

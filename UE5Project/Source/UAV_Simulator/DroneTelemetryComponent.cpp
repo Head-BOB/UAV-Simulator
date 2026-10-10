@@ -79,6 +79,7 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	}
 
 	const WindInput StillAir = {{0.0, 0.0, 0.0}};
+	const EnvironmentInput StandardAtmosphere = {0.0, 0.0};  // ISA standard day at sea level
 	constexpr double FixedDt = 0.002;
 	constexpr int32 MaxSubsteps = 20;
 
@@ -89,7 +90,7 @@ void UDroneTelemetryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	while (Accumulator >= FixedDt && Steps < MaxSubsteps)
 	{
 		DebugTelemetry StepTelemetry = {};
-		if (!FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &Thermal, &LiveInputs, &StillAir, AeroHandle, FeaHandle, &Config, &StepTelemetry, &PhysicsFaultLatch, FixedDt))
+		if (!FDronePhysicsBridgeModule::StepPhysics(&PhysicsState, &Thermal, &LiveInputs, &StillAir, &StandardAtmosphere, AeroHandle, FeaHandle, &Config, &StepTelemetry, &PhysicsFaultLatch, FixedDt))
 		{
 			bPhysicsFault = true;
 			break;

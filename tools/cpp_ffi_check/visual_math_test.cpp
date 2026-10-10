@@ -149,6 +149,19 @@ static void TestSpinQuat()
     Check(Near(Ang[0], 100.0, 1e-9) && Near(Ang[1], 260.0, 1e-9) && Near(Ang[2], 260.0, 1e-9) && Near(Ang[3], 100.0, 1e-9), "FR FL RR RL angles");
 }
 
+static void TestBladeFade()
+{
+    // Defaults: threshold 1500, hysteresis 200 -> hide at >= 1700, show again at <= 1300.
+    Check(!BladesHidden(false, 1699.0), "visible below 1700");
+    Check(BladesHidden(false, 1700.0), "hidden at 1700");
+    Check(BladesHidden(true, 1301.0), "stays hidden above 1300");
+    Check(!BladesHidden(true, 1300.0), "visible again at 1300");
+    Check(!BladesHidden(false, 1500.0) && BladesHidden(true, 1500.0), "inside the band the state is kept");
+    Check(!BladesHidden(true, std::nan("")), "NaN rpm keeps blades visible");
+    Check(!BladesHidden(false, 5000.0, 100.0, 100.0), "threshold <= hysteresis rejected");
+    Check(!BladesHidden(false, 5000.0, 1500.0, -1.0), "negative hysteresis rejected");
+}
+
 static void TestScale()
 {
     double S = -1.0;
@@ -192,6 +205,7 @@ int main()
 {
     TestSpin();
     TestSpinQuat();
+    TestBladeFade();
     TestScale();
     TestOpacity();
     if (g_failures == 0)

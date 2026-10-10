@@ -11,6 +11,7 @@
 // Lives outside the plugin Source/ tree so UnrealBuildTool never compiles it.
 
 #include "DroneDemoControl.h"
+#include "DroneEnvironment.h"
 #include "DroneWind.h"
 #include "Generated/drone_ffi.h"
 
@@ -37,6 +38,7 @@ struct Sim
     DroneState State;
     ThermalState Thermal;
     VehicleConfig Config;
+    EnvironmentInput Env = {0.0, 0.0};  // ISA standard day at sea level; scenarios may change it
     FaultLatch Latch;
     DebugTelemetry Tele;
     DroneDemo::Controller Ctl;
@@ -90,7 +92,7 @@ struct Sim
         In.roll = static_cast<float>(O.Roll);
         In.pitch = static_cast<float>(O.Pitch);
         In.yaw = static_cast<float>(O.Yaw);
-        const int Code = ffi_step_physics(&State, &Thermal, &In, &W, nullptr, nullptr, &Config, &Tele, &Latch, kDt);
+        const int Code = ffi_step_physics(&State, &Thermal, &In, &W, &Env, nullptr, nullptr, &Config, &Tele, &Latch, kDt);
         if (Code != 0) ++BadSteps;
 
         const DroneDemo::Euler Att = DroneDemo::QuatToEuler(E.QuatXyzw);
@@ -125,9 +127,14 @@ struct Sim
     }
 };
 
-static bool LoadConfig(VehicleConfig* C)
+// The shipped test config and the demo's reference build (APC 12x6E, MN3508; masses ASSUMED): the same
+// closed-loop checks run on both, so a controller that only works for one vehicle is caught.
+static const char* const kConfigPaths[] = {"offline_pipeline/geometry/vehicle_config.json",
+                                           "offline_pipeline/geometry/quad_ref_build_config.json"};
+
+static bool LoadConfig(const char* Path, VehicleConfig* C)
 {
-    return ffi_load_vehicle_config("offline_pipeline/geometry/vehicle_config.json", C) == 0;
+    return ffi_load_vehicle_config(Path, C) == 0;
 }
 
 static DroneDemo::Command None() { return DroneDemo::Command(); }
@@ -215,6 +222,29 @@ static void TestSteadyWind(const VehicleConfig& C)
     Check(A.PitchRad < 0.0, "wind from the north: the quad leans into it (nose down)");
 }
 
+// A mountain site (2500 m, 2 C: dT +3.25 K): thin air, so hover needs more throttle. The pawn scales the
+// controller's hover throttle with DroneEnv::HoverThrottleScale; the vehicle must still hold 2 m and, at hover,
+// the four thrusts must add up to the weight (mass * 9.80665) within 2 %, hand: the weight is the only force.
+static void TestMountainSite(const VehicleConfig& C)
+{
+    Sim S(C);
+    S.Env.site_altitude_m = 2500.0;
+    S.Env.temp_offset_c = 3.25;
+    double Rho = 0.0, Scale = 0.0;
+    Check(DroneEnv::DensityKgM3(2500.0, 2.0, &Rho) && DroneEnv::HoverThrottleScale(Rho, &Scale) && Scale > 1.0, "mountain: density and hover scale");
+    DroneDemo::Tuning T;
+    T.HoverThrottle = C.hover_throttle * Scale;
+    S.Ctl = DroneDemo::Controller(T);
+    S.Ctl.RequestTakeoff(S.Altitude());
+    S.Run(15.0, None());
+    Check(S.BadSteps == 0, "mountain: no step error");
+    Check(std::fabs(S.Altitude() - 2.0) < 0.3, "mountain: holds 2 m +-0.3");
+    const double Weight = C.mass_kg * 9.80665;
+    double Sum = 0.0;
+    for (const float F : S.Tele.motor_thrusts) Sum += F;
+    Check(std::fabs(Sum - Weight) < 0.02 * Weight, "mountain: thrust balances weight at hover (+-2 %)");
+}
+
 static void TestGusts(const VehicleConfig& C)
 {
     Sim S(C);
@@ -261,19 +291,24 @@ static void TestDeterminism(const VehicleConfig& C)
 
 int main()
 {
-    VehicleConfig C;
-    if (!LoadConfig(&C))
+    for (const char* Path : kConfigPaths)
     {
-        std::printf("FAIL: could not load vehicle_config.json (run from the repo root)\n");
-        return 1;
+        VehicleConfig C;
+        if (!LoadConfig(Path, &C))
+        {
+            std::printf("FAIL: could not load %s (run from the repo root)\n", Path);
+            return 1;
+        }
+        std::printf("demo_flight_sim: %s\n", Path);
+        TestTakeoffAndHover(C);
+        TestForwardClimbYaw(C);
+        TestSidewaysAndHeadingFrame(C);
+        TestSteadyWind(C);
+        TestMountainSite(C);
+        TestGusts(C);
+        TestLanding(C);
+        TestDeterminism(C);
     }
-    TestTakeoffAndHover(C);
-    TestForwardClimbYaw(C);
-    TestSidewaysAndHeadingFrame(C);
-    TestSteadyWind(C);
-    TestGusts(C);
-    TestLanding(C);
-    TestDeterminism(C);
     if (g_failures == 0)
     {
         std::printf("demo_flight_sim: all passed\n");
