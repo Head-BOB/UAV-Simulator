@@ -238,66 +238,93 @@ inline void Run(DrawList& L, const AppModel& M)
         const float Dw = static_cast<float>(Ui::kControlsDockWidthPx), Pad = static_cast<float>(Ui::kControlsDockPaddingXPx), Iw = Dw - 2.0f * Pad;
         L.Fill(0, Top, Dw, Hgt - Top - BarH, Palette::Solid());
         L.VLine(Dw, Top, Hgt - Top - BarH, Palette::LineStrong());
+        // Fixed footer: Results / Conditions buttons + footer note (above the instrument bar)
+        const float FooterY = Hgt - BarH - 82.0f;
+        L.HLine(Pad, FooterY, Iw, Palette::Line());
+        Button(L, Pad, FooterY + 8.0f, Iw / 2.0f - 6.0f, 44.0f, "Results", true, Act::Navigate, "Results");
+        Button(L, Pad + Iw / 2.0f + 6.0f, FooterY + 8.0f, Iw / 2.0f - 6.0f, 44.0f, "Conditions", false, Act::Navigate, "Conditions");
+        L.Text(Pad, FooterY + 58.0f, Iw, "Replay only: edit conditions and run again to change a result.", 14.0f, Palette::Ink46());
+        // Scrollable content area above the footer
         float Y = Top + 26.0f;
         L.Text(Pad, Y, Iw, "Replay", 24.0f, Palette::Ink(), Weight::Medium);
         L.Text(Pad, Y + 8.0f, Iw, "Tab to close", 14.0f, Palette::Ink46(), Weight::Regular, Align::Right);
         Y += 52.0f;
         L.Text(Pad, Y, Iw, "Recorded tests", 15.0f, Palette::Ink70());
         Y += 26.0f;
-        for (const auto& T : M.Camp.Tests)
+        for (const auto& T2 : M.Camp.Tests)
         {
-            if (T.SeriesFiles.empty()) continue;
-            const bool Sel = T.Name == M.ReplayTest;
+            if (T2.SeriesFiles.empty() || Y >= FooterY - 4.0f) continue;
+            const bool Sel = T2.Name == M.ReplayTest;
             L.HLine(Pad, Y, Iw, Palette::Line());
-            L.Text(Pad, Y + 8.0f, Iw, T.Name, 20.0f, Sel ? Palette::Ink() : Palette::Ink46());
-            L.Text(Pad, Y + 12.0f, Iw, T.Outcome(), 14.0f, Palette::Ink46(), Weight::Regular, Align::Right);
-            L.AddHit(Pad, Y, Iw, 38.0f, Act::PickTest, T.Name);
+            L.Text(Pad, Y + 8.0f, Iw, T2.Name, 20.0f, Sel ? Palette::Ink() : Palette::Ink46());
+            L.Text(Pad, Y + 12.0f, Iw, T2.Outcome(), 14.0f, Palette::Ink46(), Weight::Regular, Align::Right);
+            L.AddHit(Pad, Y, Iw, 38.0f, Act::PickTest, T2.Name);
             Y += 38.0f;
         }
         L.HLine(Pad, Y, Iw, Palette::Line());
         Y += 24.0f;
-        L.Text(Pad, Y, Iw, "Time", 15.0f, Palette::Ink70());
-        L.Text(Pad, Y + 20.0f, Iw, Num1(P.TimeS), 46.0f, Palette::Ink(), Weight::Light);
-        L.Text(Pad + 150.0f, Y + 42.0f, Iw, "s of " + Num1(M.Rep.End()), 17.0f, Palette::Ink70());
-        Y += 90.0f;
-        // seek bar with event ticks
-        const float Bx = Pad, By = Y + 14.0f;
-        L.Fill(Bx, By, Iw, 3.0f, Palette::Line());
-        L.Fill(Bx, By, Iw * static_cast<float>(M.Rep.Fraction()), 3.0f, Palette::Accent());
-        L.Fill(Bx + Iw * static_cast<float>(M.Rep.Fraction()) - 1.0f, By - 6.0f, 3.0f, 15.0f, Palette::Ink());
-        if (const TestData* TD = M.Camp.Find(M.ReplayTest))
-            for (const auto& E : TD->Events)
-                if (E.Occurred && M.Rep.DurationS() > 0.0)
-                    L.Fill(Bx + Iw * static_cast<float>((E.FirstS - M.Rep.Start()) / M.Rep.DurationS()), By - 12.0f, 1.0f, 8.0f, Palette::Warn());
-        L.AddHit(Bx, By - 14.0f, Iw, 34.0f, Act::SeekBar, "bar");
-        Y += 52.0f;
-        Button(L, Pad, Y, 190.0f, 48.0f, M.Rep.Playing() ? "Pause" : "Play", true, Act::PlayPause);
-        Button(L, Pad + 204.0f, Y, 150.0f, 48.0f, "Restart", false, Act::Restart);
-        Y += 70.0f;
-        L.Text(Pad, Y + 8.0f, 120.0f, "Speed", 15.0f, Palette::Ink70());
-        Button(L, Pad + 100.0f, Y, 56.0f, 40.0f, "-", false, Act::Slower);
-        L.Text(Pad + 164.0f, Y + 6.0f, 80.0f, Num1(M.Rep.Speed()) + "x", 22.0f, Palette::Ink(), Weight::Medium, Align::Centre);
-        Button(L, Pad + 252.0f, Y, 56.0f, 40.0f, "+", false, Act::Faster);
-        Y += 62.0f;
-        if (const TestData* TD = M.Camp.Find(M.ReplayTest))
+        if (Y < FooterY - 110.0f)
         {
-            L.Text(Pad, Y, Iw, "Events in this run", 15.0f, Palette::Ink70());
-            Y += 24.0f;
-            int Shown = 0;
-            for (const auto& E : TD->Events)
+            // Show time in mm:ss format
+            auto MmSs = [](double S) -> std::string {
+                if (!(S >= 0.0)) return "0:00";
+                const int Ss = static_cast<int>(S);
+                char B[16]; std::snprintf(B, sizeof B, "%d:%02d", Ss / 60, Ss % 60);
+                return B;
+            };
+            L.Text(Pad, Y, Iw, "Time", 15.0f, Palette::Ink70());
+            const std::string TimeStr = MmSs(P.TimeS) + " / " + MmSs(M.Rep.End());
+            L.Text(Pad, Y + 20.0f, Iw, TimeStr, 32.0f, Palette::Ink(), Weight::Light);
+            Y += 68.0f;
+            // seek bar with event ticks
+            if (Y < FooterY - 60.0f)
             {
-                if (!E.Occurred || Shown >= 6) continue;
-                L.Text(Pad, Y, Iw, E.Name, 15.0f, Palette::Ink70());
-                L.Text(Pad, Y, Iw, Num1(E.FirstS) + " s", 15.0f, Palette::Ink46(), Weight::Regular, Align::Right);
-                Y += 24.0f;
-                ++Shown;
+                const float Bx = Pad, By2 = Y + 14.0f;
+                L.Fill(Bx, By2, Iw, 3.0f, Palette::Line());
+                L.Fill(Bx, By2, Iw * static_cast<float>(M.Rep.Fraction()), 3.0f, Palette::Accent());
+                L.Fill(Bx + Iw * static_cast<float>(M.Rep.Fraction()) - 1.0f, By2 - 6.0f, 3.0f, 15.0f, Palette::Ink());
+                if (const TestData* TD = M.Camp.Find(M.ReplayTest))
+                    for (const auto& E : TD->Events)
+                        if (E.Occurred && M.Rep.DurationS() > 0.0)
+                            L.Fill(Bx + Iw * static_cast<float>((E.FirstS - M.Rep.Start()) / M.Rep.DurationS()), By2 - 12.0f, 1.0f, 8.0f, Palette::Warn());
+                L.AddHit(Bx, By2 - 14.0f, Iw, 34.0f, Act::SeekBar, "bar");
+                Y += 52.0f;
             }
-            if (Shown == 0) L.Text(Pad, Y, Iw, "none", 15.0f, Palette::Ink46());
+            if (Y < FooterY - 70.0f)
+            {
+                Button(L, Pad, Y, 190.0f, 48.0f, M.Rep.Playing() ? "Pause" : "Play", true, Act::PlayPause);
+                Button(L, Pad + 204.0f, Y, 150.0f, 48.0f, "Restart", false, Act::Restart);
+                Y += 70.0f;
+            }
+            if (Y < FooterY - 44.0f)
+            {
+                L.Text(Pad, Y + 8.0f, 120.0f, "Speed", 15.0f, Palette::Ink70());
+                Button(L, Pad + 100.0f, Y, 56.0f, 40.0f, "-", false, Act::Slower);
+                L.Text(Pad + 164.0f, Y + 6.0f, 80.0f, Num1(M.Rep.Speed()) + "x", 22.0f, Palette::Ink(), Weight::Medium, Align::Centre);
+                Button(L, Pad + 252.0f, Y, 56.0f, 40.0f, "+", false, Act::Faster);
+                Y += 62.0f;
+            }
+            if (const TestData* TD = M.Camp.Find(M.ReplayTest))
+            {
+                if (Y < FooterY - 30.0f)
+                {
+                    L.Text(Pad, Y, Iw, "Events in this run", 15.0f, Palette::Ink70());
+                    Y += 24.0f;
+                    int Shown = 0;
+                    for (const auto& E : TD->Events)
+                    {
+                        if (!E.Occurred || Y >= FooterY - 4.0f) continue;
+                        L.Text(Pad, Y, Iw, E.Name, 14.0f, Palette::Ink70());
+                        L.Text(Pad, Y, Iw, Num1(E.FirstS) + " s", 14.0f, Palette::Ink46(), Weight::Regular, Align::Right);
+                        Y += 22.0f;
+                        ++Shown;
+                    }
+                    if (Shown == 0 && Y < FooterY - 4.0f) L.Text(Pad, Y, Iw, "none", 14.0f, Palette::Ink46());
+                }
+            }
         }
-        Button(L, Pad, Hgt - BarH - 76.0f, Iw / 2.0f - 6.0f, 44.0f, "Results", true, Act::Navigate, "Results");
-        Button(L, Pad + Iw / 2.0f + 6.0f, Hgt - BarH - 76.0f, Iw / 2.0f - 6.0f, 44.0f, "Conditions", false, Act::Navigate, "Conditions");
-        L.Text(Pad, Hgt - BarH - 26.0f, Iw, "Replay only: edit conditions and run again to change a result.", 14.0f, Palette::Ink46());
     }
 }
 }  // namespace Screens
 }  // namespace DroneApp
+

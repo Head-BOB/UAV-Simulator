@@ -32,8 +32,13 @@ inline void BannerList(DrawList& L, const ReportData& R, float X, float& Y, floa
     {
         if (N++ >= Max) break;
         L.Fill(X, Y + 2.0f, 4.0f, 22.0f, BannerRgba(B.Level));
-        L.Text(X + 14.0f, Y, Wd - 14.0f, Shorten(B.Text, 150), 15.0f, Palette::Ink70());
-        Y += 28.0f;
+        // Wrap instead of truncating so caveats are never clipped with "~".
+        for (const auto& Ln : Wrap(B.Text, 140, 2))
+        {
+            L.Text(X + 14.0f, Y, Wd - 14.0f, Ln, 14.0f, Palette::Ink70());
+            Y += 20.0f;
+        }
+        Y += 8.0f;
     }
 }
 
@@ -51,12 +56,22 @@ inline void Results(DrawList& L, const AppModel& M)
         StatusLine(L, M, X, 240.0f, 1500.0f);
         return;
     }
+    // Sticky bottom action bar (always at the bottom, content never drawn under it).
+    constexpr float kActionBarY = 984.0f;
+    L.Fill(0, kActionBarY, W, Hgt - kActionBarY, Palette::Bar());
+    L.HLine(0, kActionBarY, W, Palette::Line());
+    Button(L, X, kActionBarY + 16.0f, 280.0f, 52.0f, "Replay a run", true, Act::Navigate, "Run");
+    Button(L, X + 300.0f, kActionBarY + 16.0f, 280.0f, 52.0f, "Report", false, Act::Navigate, "Report");
+    const bool HasImages = !R.CfdImageNames.empty() && !M.H.CfdDir.empty();
+    if (HasImages) Button(L, X + 600.0f, kActionBarY + 16.0f, 260.0f, 52.0f, "Open flow images", false, Act::OpenCfdFolder);
+    StatusLine(L, M, X + (HasImages ? 890.0f : 620.0f), kActionBarY + 30.0f, HasImages ? 800.0f : 1000.0f);
+
     L.Text(X, 84.0f, 900.0f, "Results", 56.0f, Palette::Ink(), Weight::Light);
     Verdict(L, R, X, 156.0f, 1700.0f);
     float By = 250.0f;
     BannerList(L, R, X, By, 1700.0f, 4);
     // left column: tests and breaking points
-    float Y = std::max(By + 20.0f, 340.0f);
+    float Y = std::max(By + 20.0f, 320.0f);
     const float Lw = 980.0f, Rx = 1200.0f, Rw = 624.0f;
     L.Text(X, Y, Lw, "Tests and breaking points", 15.0f, Palette::Ink70(), Weight::Medium);
     Y += 28.0f;
@@ -64,16 +79,27 @@ inline void Results(DrawList& L, const AppModel& M)
     {
         L.HLine(X, Y, Lw, Palette::Line());
         L.Text(X, Y + 9.0f, 220.0f, T.Test, 20.0f, Palette::Ink());
-        L.Text(X + 230.0f, Y + 12.0f, 250.0f, T.Outcome, 15.0f, T.Outcome == "BREAKING_POINT_FOUND" ? Palette::Warn() : Palette::Ink70());
+        // NOT_REACHED_WITHIN_BOUND: limit-bound result, show as capability not a number.
+        const bool LimitBound = T.Outcome == "NOT_REACHED_WITHIN_BOUND";
+        const std::string OutcomeText = LimitBound ? "no failure found up to test limit" : T.Outcome;
+        const Rgba OutcomeC = (T.Outcome == "BREAKING_POINT_FOUND") ? Palette::Warn() : (LimitBound ? Palette::Ink70() : Palette::Ink70());
+        L.Text(X + 230.0f, Y + 12.0f, 250.0f, OutcomeText, 15.0f, OutcomeC);
         if (T.HasBreakingPoint)
-            L.Text(X + 490.0f, Y + 10.0f, Lw - 490.0f, NumText(T.Breaking.LastPass) + " holds, " + NumText(T.Breaking.FirstFail) + " " + T.Breaking.Unit + " fails (" + T.Breaking.Criterion +
+            L.Text(X + 490.0f, Y + 10.0f, Lw - 490.0f, Fmt("%.3g", T.Breaking.LastPass) + " holds, " + Fmt("%.3g", T.Breaking.FirstFail) + " " + T.Breaking.Unit + " fails (" + T.Breaking.Criterion +
                                                          ", step " + NumText(T.Breaking.Resolution) + ")", 16.0f, Palette::Ink70());
         else if (!T.Metrics.empty())
-            L.Text(X + 490.0f, Y + 10.0f, Lw - 490.0f, T.Metrics[0].Name + " " + NumText(T.Metrics[0].Value), 16.0f, Palette::Ink70());
+        {
+            // Limit-bound metrics: append "(at least X, test limit)" for clarity.
+            std::string MetricText = T.Metrics[0].Name + " " + NumText(T.Metrics[0].Value);
+            if (LimitBound) MetricText += " (at least, test limit)";
+            L.Text(X + 490.0f, Y + 10.0f, Lw - 490.0f, MetricText, 16.0f, Palette::Ink70());
+        }
         Y += 42.0f;
+        if (Y > kActionBarY - 10.0f) break;   // don't draw under the action bar
     }
     for (const auto& N : R.NotTested)
     {
+        if (Y > kActionBarY - 10.0f) break;
         L.HLine(X, Y, Lw, Palette::Line());
         L.Text(X, Y + 9.0f, 220.0f, N.Test, 20.0f, Palette::Ink46());
         Chip(L, X + 230.0f, Y + 10.0f, "Not implemented", Palette::Ink46());
@@ -82,27 +108,35 @@ inline void Results(DrawList& L, const AppModel& M)
     L.HLine(X, Y, Lw, Palette::Line());
     // events (first rows)
     Y += 30.0f;
-    L.Text(X, Y, Lw, "Event timeline", 15.0f, Palette::Ink70(), Weight::Medium);
-    Y += 28.0f;
-    int Shown = 0;
-    for (const auto& E : R.Events)
+    if (Y < kActionBarY - 60.0f)
     {
-        if (Shown++ >= 5) break;
-        L.HLine(X, Y, Lw, Palette::Line());
-        L.Text(X, Y + 5.0f, 200.0f, E.Test, 15.0f, Palette::Ink70());
-        L.Text(X + 210.0f, Y + 4.0f, 420.0f, E.Event, 17.0f, Palette::Ink());
-        L.Text(X + 640.0f, Y + 5.0f, 330.0f, NumText(E.FirstS) + " s  to  " + NumText(E.LastS) + " s", 15.0f, Palette::Ink70());
-        Y += 32.0f;
+        L.Text(X, Y, Lw, "Event timeline", 15.0f, Palette::Ink70(), Weight::Medium);
+        Y += 28.0f;
+        int Shown = 0;
+        for (const auto& E : R.Events)
+        {
+            if (Shown++ >= 5 || Y > kActionBarY - 10.0f) break;
+            L.HLine(X, Y, Lw, Palette::Line());
+            L.Text(X, Y + 5.0f, 200.0f, E.Test, 15.0f, Palette::Ink70());
+            L.Text(X + 210.0f, Y + 4.0f, 420.0f, E.Event, 17.0f, Palette::Ink());
+            L.Text(X + 640.0f, Y + 5.0f, 330.0f, NumText(E.FirstS) + " s  to  " + NumText(E.LastS) + " s", 15.0f, Palette::Ink70());
+            Y += 32.0f;
+        }
+        if (R.Events.empty()) L.Text(X, Y, Lw, "No event flag was raised in any test.", 16.0f, Palette::Ink46());
+        else if (R.Events.size() > 5 && Y < kActionBarY - 24.0f)
+            L.Text(X, Y + 6.0f, Lw, "... and " + std::to_string(R.Events.size() - 5) + " more in the report", 14.0f, Palette::Ink46());
     }
-    if (R.Events.empty()) L.Text(X, Y, Lw, "No event flag was raised in any test.", 16.0f, Palette::Ink46());
-    else if (R.Events.size() > 5) L.Text(X, Y + 6.0f, Lw, "... and " + std::to_string(R.Events.size() - 5) + " more in the report", 14.0f, Palette::Ink46());
 
-    // right column: limiting components, validation, CFD
-    float Ry = std::max(By + 20.0f, 340.0f);
-    L.Text(Rx, Ry, Rw, "Limiting components (margin = limit / peak)", 15.0f, Palette::Ink70(), Weight::Medium);
+    // right column: limiting components, validation (no CFD block per spec)
+    float Ry = std::max(By + 20.0f, 320.0f);
+    // Headline: margin < 1.0 = over limit; >= 1.0 = closest to limit
+    const bool LimitExceeded = !R.Margins.empty() && R.Margins.front().Margin < 1.0;
+    const std::string LimHeadline = std::string("Limiting components (margin = limit / peak") + (LimitExceeded ? "; margin <1 = limit exceeded)" : "; margin <1.5 = caution)");
+    L.Text(Rx, Ry, Rw, LimHeadline, 15.0f, Palette::Ink70(), Weight::Medium);
     Ry += 28.0f;
     for (const auto& Mg : R.Margins)
     {
+        if (Ry > kActionBarY - 10.0f) break;
         const Status St = StatusOfMargin(Mg.Margin);
         L.HLine(Rx, Ry, Rw, Palette::Line());
         L.Text(Rx, Ry + 8.0f, 380.0f, Mg.Label, 17.0f, Palette::Ink70());
@@ -111,17 +145,22 @@ inline void Results(DrawList& L, const AppModel& M)
     }
     L.HLine(Rx, Ry, Rw, Palette::Line());
     Ry += 30.0f;
-    L.Text(Rx, Ry, Rw, "Validation against published data", 15.0f, Palette::Ink70(), Weight::Medium);
-    Ry += 28.0f;
-    for (const auto& V : R.ValidationSections)
+    if (Ry < kActionBarY - 80.0f)
     {
-        L.HLine(Rx, Ry, Rw, Palette::Line());
-        L.Text(Rx, Ry + 6.0f, 300.0f, V.Name, 16.0f, Palette::Ink70());
-        L.Text(Rx, Ry + 6.0f, Rw, V.Status == "NO_PUBLISHED_DATA" ? std::string("no published data") : "largest error " + Fmt("%.1f", V.MaxAbsPercent) + " %", 16.0f,
-               (!std::isnan(V.MaxAbsPercent) && V.MaxAbsPercent > R.ValidationFlagPercent) ? Palette::Warn() : Palette::Ink(), Weight::Regular, Align::Right);
-        Ry += 32.0f;
+        L.Text(Rx, Ry, Rw, "Validation against published data", 15.0f, Palette::Ink70(), Weight::Medium);
+        Ry += 28.0f;
+        for (const auto& V : R.ValidationSections)
+        {
+            if (Ry > kActionBarY - 10.0f) break;
+            L.HLine(Rx, Ry, Rw, Palette::Line());
+            L.Text(Rx, Ry + 6.0f, 300.0f, V.Name, 16.0f, Palette::Ink70());
+            L.Text(Rx, Ry + 6.0f, Rw, V.Status == "NO_PUBLISHED_DATA" ? std::string("no published data") : "largest error " + Fmt("%.1f", V.MaxAbsPercent) + " %", 16.0f,
+                   (!std::isnan(V.MaxAbsPercent) && V.MaxAbsPercent > R.ValidationFlagPercent) ? Palette::Warn() : Palette::Ink(), Weight::Regular, Align::Right);
+            Ry += 32.0f;
+        }
+        if (Ry < kActionBarY - 24.0f)
+            L.Text(Rx, Ry + 8.0f, Rw, std::to_string(R.FlaggedCount()) + " rows differ by more than " + Fmt("%.0f", R.ValidationFlagPercent) + " % (listed in the report)", 14.0f, R.FlaggedCount() ? Palette::Warn() : Palette::Ink46());
     }
-    L.Text(Rx, Ry + 8.0f, Rw, std::to_string(R.FlaggedCount()) + " rows differ by more than " + Fmt("%.0f", R.ValidationFlagPercent) + " % (listed in the report)", 14.0f, R.FlaggedCount() ? Palette::Warn() : Palette::Ink46());
     Ry += 44.0f;
     {
         // "no CFD run" is the only status that needs the "CFD:" prefix; every other status already says what it is
@@ -143,13 +182,8 @@ inline void Results(DrawList& L, const AppModel& M)
             L.Text(Rx, Cy, Rw, "Flow images: " + (R.CfdImageNames.empty() ? std::string("no flow images") : Shorten(Names, 90)), 14.0f, Palette::Ink46());
         }
     }
-    Button(L, X, 980.0f, 280.0f, 52.0f, "Replay a run", true, Act::Navigate, "Run");
-    Button(L, X + 300.0f, 980.0f, 280.0f, 52.0f, "Report", false, Act::Navigate, "Report");
-    // the flow images are files in the CFD folder (the report embeds them): the button opens that folder in the system viewer
-    const bool HasImages = !R.CfdImageNames.empty() && !M.H.CfdDir.empty();
-    if (HasImages) Button(L, X + 600.0f, 980.0f, 260.0f, 52.0f, "Open flow images", false, Act::OpenCfdFolder);
-    StatusLine(L, M, X + (HasImages ? 890.0f : 620.0f), 994.0f, HasImages ? 800.0f : 1000.0f);
 }
+
 
 // ----------------------------------------------------------------------------------------------------------------------------- 7 Compare
 inline void Compare(DrawList& L, const AppModel& M)
@@ -231,6 +265,24 @@ inline void ReportScreen(DrawList& L, const AppModel& M)
         StatusLine(L, M, X, 310.0f, 1500.0f);
         return;
     }
+    // Sticky bottom action bar: drawn first so we know the safe content bottom.
+    constexpr float kActionBarY = 984.0f;
+    L.Fill(0, kActionBarY, W, Hgt - kActionBarY, Palette::Bar());
+    L.HLine(0, kActionBarY, W, Palette::Line());
+    Button(L, X, kActionBarY + 16.0f, 260.0f, 52.0f, "Open report", true, Act::OpenReport, "", !M.ReportDir.empty());
+    Button(L, X + 280.0f, kActionBarY + 16.0f, 220.0f, 52.0f, "Open folder", false, Act::OpenFolder);
+    Button(L, X + 520.0f, kActionBarY + 16.0f, 220.0f, 52.0f, "Write again", false, Act::WriteReport, "", !M.Busy());
+    // File path: wraps across at most 2 lines with a hint to copy.
+    const std::string PathHint = "report.html, report.json, CSV files in: " + M.ReportDir;
+    float Bx = X + 760.0f;
+    for (const auto& Ln : Wrap(PathHint, 80, 2))
+    {
+        L.Text(Bx, kActionBarY + 18.0f + (Ln == PathHint || &Ln == &Wrap(PathHint, 80, 2).front() ? 0.0f : 18.0f), 1100.0f, Ln, 14.0f, Palette::Ink46());
+        Bx = X + 760.0f;
+        (void)Bx;
+    }
+    StatusLine(L, M, X, kActionBarY + 58.0f, 1500.0f);
+
     Verdict(L, R, X, 156.0f, 1680.0f);
     float By = 250.0f;
     BannerList(L, R, X, By, 1680.0f, 6);
@@ -241,10 +293,11 @@ inline void ReportScreen(DrawList& L, const AppModel& M)
     Y += 28.0f;
     for (const auto& S : R.Summary)
     {
+        if (Y > kActionBarY - 10.0f) break;   // don't draw under the action bar
         L.HLine(X, Y, Lw, Palette::Line());
         L.Text(X, Y + 8.0f, 460.0f, S.Label, 20.0f, Palette::Ink());
         L.Text(X + 470.0f, Y + 8.0f, 500.0f, S.ValueText, 20.0f, S.Value != S.Value && S.ValueText == "not tested" ? Palette::Ink46() : Palette::Ink(), Weight::Regular, Align::Right);
-        if (!S.Detail.empty()) L.Text(X, Y + 34.0f, Lw, Shorten(S.Detail, 110), 14.0f, Palette::Ink46());
+        if (!S.Detail.empty()) L.Text(X, Y + 34.0f, Lw, S.Detail, 14.0f, Palette::Ink46());
         Y += S.Detail.empty() ? 40.0f : 58.0f;
     }
     L.HLine(X, Y, Lw, Palette::Line());
@@ -258,17 +311,14 @@ inline void ReportScreen(DrawList& L, const AppModel& M)
                                                         {"Code version", R.GitHash.empty() ? std::string("unknown") : R.GitHash}};
     for (const auto& F : Facts)
     {
+        if (Ry > kActionBarY - 10.0f) break;
         L.HLine(Rx, Ry, Rw, Palette::Line());
         L.Text(Rx, Ry + 8.0f, 300.0f, F.first, 16.0f, Palette::Ink70());
-        L.Text(Rx, Ry + 6.0f, Rw, Shorten(F.second, 24), 18.0f, Palette::Ink(), Weight::Regular, Align::Right);
+        L.Text(Rx, Ry + 6.0f, Rw, F.second, 18.0f, Palette::Ink(), Weight::Regular, Align::Right);
         Ry += 38.0f;
     }
     L.HLine(Rx, Ry, Rw, Palette::Line());
-    Button(L, X, 930.0f, 260.0f, 52.0f, "Open report", true, Act::OpenReport, "", !M.ReportDir.empty());
-    Button(L, X + 280.0f, 930.0f, 220.0f, 52.0f, "Open folder", false, Act::OpenFolder);
-    Button(L, X + 520.0f, 930.0f, 220.0f, 52.0f, "Write again", false, Act::WriteReport, "", !M.Busy());
-    L.Text(X, 1000.0f, 1500.0f, "report.html (print it to PDF from the browser), report.json and CSV files are in: " + M.ReportDir, 14.0f, Palette::Ink46());
-    StatusLine(L, M, X, 1030.0f, 1500.0f);
 }
 }  // namespace Screens
 }  // namespace DroneApp
+

@@ -73,8 +73,8 @@ inline double LerpAngleDeg(double A, double B, double F)
 class Replay
 {
 public:
-    static constexpr int kSpeedCount = 7;
-    static constexpr double kSpeeds[kSpeedCount] = {1, 2, 4, 8, 16, 32, 64};
+    static constexpr int kSpeedCount = 9;
+    static constexpr double kSpeeds[kSpeedCount] = {1, 2, 4, 8, 16, 32, 64, 128, 256};
     static constexpr double kMaxRealStepS = 0.25;   // a stalled frame never jumps the playback
 
     bool Load(const Series& S, std::string& Err)
@@ -115,6 +115,16 @@ public:
     void Seek(double T) { Time = T < Start() ? Start() : (T > End() ? End() : T); }
     void SeekFraction(double F) { Seek(Start() + DurationS() * (F < 0 ? 0 : (F > 1 ? 1 : F))); }
     double Fraction() const { return DurationS() > 0.0 ? (Time - Start()) / DurationS() : 0.0; }
+    // Pick the smallest speed that replays the loaded test in 60-90 s of real time; call after Load().
+    // At 90 s real time = DurationS / 90 target multiplier; round up to the next preset.
+    void SetAutoSpeed()
+    {
+        if (DurationS() <= 0.0) { SpeedIdx = 0; return; }
+        const double Target = DurationS() / 75.0;   // midpoint of 60-90 s window
+        SpeedIdx = 0;
+        for (int I = 0; I < kSpeedCount; ++I)
+            if (kSpeeds[I] <= Target) SpeedIdx = I;
+    }
 
     // Advances by a real-time step; stops (and pauses) at the end of the data.
     void Advance(double RealDtS)

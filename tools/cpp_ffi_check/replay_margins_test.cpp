@@ -134,9 +134,9 @@ static void TestReplay()
     R.SetSpeedIndex(-3);
     Check(R.SpeedIndex() == 0, "speed index clamps low");
     R.SetSpeedIndex(99);
-    Check(R.SpeedIndex() == 6 && Near(R.Speed(), 64.0, 0.0), "speed index clamps high to 64x");
+    Check(R.SpeedIndex() == Replay::kSpeedCount - 1 && Near(R.Speed(), 256.0, 0.0), "speed index clamps high to 256x");
     R.FasterStep();
-    Check(R.SpeedIndex() == 6, "faster at the top stays");
+    Check(R.SpeedIndex() == Replay::kSpeedCount - 1, "faster at the top stays");
     R.SeekFraction(0.25);
     Check(Near(R.TimeS(), 0.5, 1e-12) && Near(R.Fraction(), 0.25, 1e-12), "fraction seek");
     R.SeekFraction(7.0);

@@ -80,6 +80,7 @@ enum class Act
     RunAnalyticFallback, OpenCfdFolder,
     CancelJob, OpenLog, SetProfile, ToggleAutoPlay,
     FlyIt, ExitFly, SetFlyMode, GustNow, ToggleRandomise,
+    ToggleProgressExpanded, DismissProgress,
     Dismiss,
 };
 

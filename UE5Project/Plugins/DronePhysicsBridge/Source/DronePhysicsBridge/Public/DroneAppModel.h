@@ -158,6 +158,9 @@ public:
     FlyTelemetry FlyT;
     ProgressSnapshot Live;
     double SinceProgressS = 0.0;              // real seconds since the helper last said anything
+    double JobElapsedS = 0.0;                 // real wall-clock seconds since the current job chain started (reset on each new chain)
+    double JobDoneSeenS = 0.0;               // real seconds since JobDoneOk became true (for auto-collapse after ~4 s)
+    bool ProgressExpanded = false;           // true = drop-down detail panel open; toggles on click of the compact strip
     std::vector<std::string> Recorded;        // tests whose recording is on disk, in the order they finished
     std::set<std::string> Played;             // recordings the auto-play has already shown
     bool AutoPlay = true;
@@ -168,7 +171,8 @@ public:
     // something, the message changed, a job started) sets this and the HUD takes it with TakeRepaint() every tick.
     bool Repaint = true;
     bool TakeRepaint() { const bool R = Repaint; Repaint = false; return R; }
-    bool JobDoneOk = false;                   // the last job chain ended without error: the HUD says "Done"
+    bool JobDoneOk = false;                   // the last job chain ended without error: the HUD says "Done" chip
+    bool JobDoneDismissed = false;            // the Done chip was explicitly dismissed (X clicked or auto-collapsed)
     bool AutoNavigated = false;
     std::string LastLog;
     // The helper has said nothing for a minute while it was expected to (campaign, study, report).
@@ -179,6 +183,8 @@ public:
     }
     std::string RunningLog() const { return Queue.empty() ? LastLog : Queue.front().Log; }
     std::string BusyLabel() const { return Queue.empty() ? std::string() : Queue.front().Cmd.Description; }
+    // True while the progress strip should be visible in the header.
+    bool ShowProgressStrip() const { return Busy() || (JobDoneOk && !JobDoneDismissed); }
 
     // ---- derived helpers ---------------------------------------------------------------------------------------------------------
     std::string FrameClassFilter() const { return CategoryFilter == "frame" ? VehicleClass : std::string(); }
@@ -232,6 +238,8 @@ public:
             case Act::OpenLog: { const std::string L = RunningLog(); if (!L.empty()) IO.OpenPath(L); break; }
             case Act::SetProfile: if (!Busy() && (Arg == "quick" || Arg == "full")) { QuickProfile = Arg == "quick"; Prog = AfterChange(Screen::Conditions, Prog); } break;
             case Act::ToggleAutoPlay: AutoPlay = !AutoPlay; break;
+            case Act::ToggleProgressExpanded: ProgressExpanded = !ProgressExpanded; break;
+            case Act::DismissProgress: JobDoneDismissed = true; ProgressExpanded = false; break;
             case Act::FlyIt: if (!Prog.VehicleClassChosen) { Say("Choose a vehicle first.", true); break; } FlyMode = true; FlyModeSel = Fly::Mode::Assisted; Focus.clear(); break;
             case Act::ExitFly: FlyMode = false; Focus.clear(); break;
             case Act::SetFlyMode: if (Arg == "assisted") FlyModeSel = Fly::Mode::Assisted; else if (Arg == "acro" && Fly::ModeAvailable(VehicleClass, Fly::Mode::Acro)) FlyModeSel = Fly::Mode::Acro; break;
@@ -293,7 +301,14 @@ public:
         const std::string MessageBefore = Message;
         PollJobs();
         if (Was != Busy() || LinesBefore != Live.Lines || MessageBefore != Message || Busy()) Repaint = true;
-        if (Busy() && Queue.front().Handle >= 0) SinceProgressS += RealDt;
+        if (Busy() && Queue.front().Handle >= 0) { SinceProgressS += RealDt; JobElapsedS += RealDt; }
+        // Auto-collapse the Done chip after ~4 real seconds.
+        if (!Busy() && JobDoneOk && !JobDoneDismissed)
+        {
+            JobDoneSeenS += RealDt;
+            if (JobDoneSeenS >= 4.0) { JobDoneDismissed = true; ProgressExpanded = false; Repaint = true; }
+            else Repaint = true;   // repaint each tick so the "Done" chip stays visible
+        }
         if (Was || Busy()) AutoPlayStep();
         if (Current == Screen::Run && Rep.Playing()) { Rep.Advance(RealDt); RefreshLive(); }
     }
@@ -312,6 +327,7 @@ public:
         if (T == nullptr || T->SeriesFiles.empty()) { Say("That test has no recorded series.", true); return; }
         std::string Err;
         if (!Rep.Load(T->SeriesFiles[0].second, Err)) { Say("Cannot replay " + Name + ": " + Err, true); return; }
+        Rep.SetAutoSpeed();   // pick replay speed so test plays in ~60-90 s of real time
         ReplayTest = Name;
         RpmScale = 1.0;
         for (const char* C : {"rpm_1", "rpm_2", "rpm_3", "rpm_4"})
@@ -438,6 +454,7 @@ private:
         Prog.BuildDone = false;
         Prog = AfterChange(Screen::Build, Prog);
         Prog.PartsComplete = true;
+        JobElapsedS = 0.0; JobDoneSeenS = 0.0; JobDoneOk = false; JobDoneDismissed = false;
         Enqueue(BuildCommand(H, SpecPath, BuildDir), Helper::Build, "build");
         StartNextIfIdle();
     }
@@ -487,6 +504,7 @@ private:
         AutoNavigated = false;
         Cancelled = false;
         Prog.RecordingsAvailable = false;
+        JobElapsedS = 0.0; JobDoneSeenS = 0.0; JobDoneOk = false; JobDoneDismissed = false;
         Enqueue(CampaignCommand(H, BuildDir, ConditionsPath, DefinitionsPath, CampaignDir, TestsArgument(std::vector<std::string>(SelectedTests.begin(), SelectedTests.end())), AnalyticFallback),
                 Helper::Campaign, "campaign");
         StartNextIfIdle();

@@ -67,7 +67,7 @@ inline void NavBar(DrawList& L, const AppModel& M)
         if (Open && !Here) L.AddHit(X - 8.0f, 0.0f, Wd, static_cast<float>(Ui::kTopBarHeightPx), Act::Navigate, ScreenName(S));
         X += Wd + 18.0f;
     }
-    if (M.Busy()) L.Text(W - 560.0f, 18.0f, 512.0f, M.BusyLabel() + " ...", 17.0f, Palette::Accent(), Weight::Regular, Align::Right);
+    // (busy label is rendered by ProgressPanel as a compact strip in the right portion of this bar)
 }
 
 // Status line under the bar (errors in the critical colour).
@@ -421,19 +421,23 @@ inline void Conditions(DrawList& L, const AppModel& M)
         Ty += 36.0f;
     }
     L.HLine(Rx, Ty, Rw, Palette::Line());
-    // actions
-    Button(L, Rx, 960.0f, 280.0f, 52.0f, M.Busy() ? "Working ..." : "Run tests", true, Act::RunTests, "", !M.Busy());
-    Button(L, Rx + 300.0f, 960.0f, 240.0f, 52.0f, "Reset limits", false, Act::ResetLimits);
+    // Sticky bottom action bar
+    constexpr float kActY = 984.0f;
+    L.Fill(0, kActY, W, Hgt - kActY, Palette::Bar());
+    L.HLine(0, kActY, W, Palette::Line());
+    Button(L, Rx, kActY + 16.0f, 280.0f, 52.0f, M.Busy() ? "Working ..." : "Run tests", true, Act::RunTests, "", !M.Busy());
+    Button(L, Rx + 300.0f, kActY + 16.0f, 240.0f, 52.0f, "Reset limits", false, Act::ResetLimits);
     std::string Err;
-    if (!M.ConditionsOk(Err)) L.Text(Rx + 570.0f, 972.0f, 480.0f, Err.empty() ? "Select at least one test." : Err, 14.0f, Palette::Warn());
+    if (!M.ConditionsOk(Err)) L.Text(Rx + 570.0f, kActY + 30.0f, 480.0f, Err.empty() ? "Select at least one test." : Err, 14.0f, Palette::Warn());
     if (!M.CfdLoadError.empty())
     {
         // a CFD model that matched this build could not be used: the reason in amber, and an explicit opt-in to go on without it
-        L.Text(Rx, 1030.0f, Rw, "CFD model not used: " + Shorten(M.CfdLoadError, 150), 15.0f, Palette::Warn(), Weight::Medium);
-        Button(L, Rx + 560.0f, 960.0f, 300.0f, 52.0f, "Run anyway on analytic drag", false, Act::RunAnalyticFallback, "", !M.Busy());
-        StatusLine(L, M, Rx, 1056.0f, Rw);
+        L.Text(Rx, kActY + 72.0f, Rw, "CFD model not used: " + M.CfdLoadError, 14.0f, Palette::Warn(), Weight::Regular);
+        Button(L, Rx + 560.0f, kActY + 16.0f, 300.0f, 52.0f, "Run anyway on analytic drag", false, Act::RunAnalyticFallback, "", !M.Busy());
+        StatusLine(L, M, Rx, kActY + 90.0f, Rw);
     }
-    else StatusLine(L, M, Rx, 1030.0f, Rw);
+    else StatusLine(L, M, Rx, kActY + 72.0f, Rw);
 }
 }  // namespace Screens
 }  // namespace DroneApp
+
