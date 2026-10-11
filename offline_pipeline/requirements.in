@@ -1,5 +1,5 @@
 numpy==1.26.4
-onnx==1.16.2
+onnx==1.22.0
 scikit-learn==1.5.2
 tqdm
 jsonschema==4.23.0

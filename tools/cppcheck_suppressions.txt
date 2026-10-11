@@ -1,0 +1,8 @@
+# cppcheck suppressions for CI (.github/workflows/static-analysis-cpp.yml).
+# Only the two findings below are suppressed, and only for the one Unreal plugin file that has them.
+# Why: DronePhysicsBridge.cpp includes Unreal Engine headers and uses the engine macro IMPLEMENT_MODULE.
+# CI does not have the engine, so cppcheck cannot resolve them. These are tool-environment findings, not defects in our code.
+# The cppcheck_baseline in static_analysis_baseline.json is NOT raised for them.
+# Syntax: <id>:<file>  (cppcheck --suppressions-list)
+missingInclude:UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Private/DronePhysicsBridge.cpp
+unknownMacro:UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Private/DronePhysicsBridge.cpp

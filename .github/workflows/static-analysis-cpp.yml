@@ -47,7 +47,9 @@ jobs:
 
       - name: Run cppcheck
         run: |
+          # Suppressions (tools/cppcheck_suppressions.txt): Unreal headers and IMPLEMENT_MODULE are not visible without the engine.
           cppcheck --enable=all --std=c++20 --error-exitcode=0 \
+            --suppressions-list=tools/cppcheck_suppressions.txt \
             UE5Project/Plugins/DronePhysicsBridge/Source/ 2> cppcheck_output.txt || true
           
           cat cppcheck_output.txt

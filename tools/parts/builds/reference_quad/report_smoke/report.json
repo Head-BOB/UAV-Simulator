@@ -648,7 +648,7 @@
         "max_payload_kg": 2.5,
         "max_speed_mps": 12,
         "max_wind_mps": 12.5,
-        "min_thrust_reserve": 1.869377,
+        "min_thrust_reserve": 1.64080174,
         "peak_battery_c": 20.5898913,
         "peak_esc_c": 22.0746927,
         "peak_winding_c": 23.2158681,
@@ -999,6 +999,12 @@
       "value": 12.0941126
     },
     {
+      "moment": "thrust reserve first below 1.5",
+      "t_s": 1.502,
+      "test": "hover_payload",
+      "value": 1.49898832
+    },
+    {
       "moment": "winding temperature peak",
       "t_s": 6,
       "test": "max_speed",
@@ -1138,6 +1144,18 @@
       "unit": "A"
     },
     {
+      "basis": "lowest recorded ratio / 1.0",
+      "label": "Thrust reserve (max thrust / weight)",
+      "limit": 1.0,
+      "margin": 1.64080174,
+      "no_heating": false,
+      "peak": 1.64080174,
+      "peak_t_s": 10.502,
+      "peak_test": "hover_payload",
+      "slot": "thrust_reserve",
+      "unit": "ratio"
+    },
+    {
       "basis": "limit / peak",
       "label": "ESC current",
       "limit": 40.0,
@@ -1148,18 +1166,6 @@
       "peak_test": "fpv_punchout",
       "slot": "esc_current",
       "unit": "A"
-    },
-    {
-      "basis": "lowest recorded ratio / 1.0",
-      "label": "Thrust reserve (max thrust / weight)",
-      "limit": 1.0,
-      "margin": 1.869377,
-      "no_heating": false,
-      "peak": 1.869377,
-      "peak_t_s": 10.502,
-      "peak_test": "hover_payload",
-      "slot": "thrust_reserve",
-      "unit": "ratio"
     },
     {
       "basis": "(limit - ambient) / (peak - ambient), ambient 20 deg C",
@@ -1260,41 +1266,41 @@
       "build/vehicle_build.json": "a4652534b2044c3c1d3e1cbbb4f3a0c1405f6f4716c5307068b2176b1bd703e5",
       "build/vehicle_config.json": "b3dbfd2126d0f9c9d23ffe752c2843a2c0ed3eec8325e979a714fdcd45ae522b",
       "campaign/smoke/campaign_result.json": "661871d2017466e7d25b8cb151bfafca0d23bb850d9dbb796697dfb747bc6a22",
-      "campaign/smoke/climb/events.json": "bcf04cfb094d873956490d70865ebdc4dd164de1858400eb56d8a048b7681e0a",
+      "campaign/smoke/climb/events.json": "0476fe1675cebe4101015b6bbc5d7f8c6adb0b61b7c8a53ef6a6e9b76c0f6d17",
       "campaign/smoke/climb/manifest.json": "685ec81b49abfffafa790a02d385c871156142686958b705d9ae76a79ee8aecc",
-      "campaign/smoke/climb/result.json": "6e8cd640ff2fd973fbc11bc6fe8e7dcfa4e77907cf57ca310858f9232e12c82a",
-      "campaign/smoke/climb/timeseries_climb.csv": "ee715df75bb5121f9ba8db8c340c008f913753ad80955d2bab8ee053c7800d03",
-      "campaign/smoke/endurance/events.json": "4b21988fffde1a9daeeb7f2f8e78674fa5a162e42aa05f36d06d1eab2a03a2f1",
+      "campaign/smoke/climb/result.json": "80a3db85584184e94e5846261a2d927e8dcc71d6c73a3515d06d787c99dfb97c",
+      "campaign/smoke/climb/timeseries_climb.csv": "bd700ea202be09632e05188ba56efe68d4511f92b5041ab6b4417e33d24e4ac3",
+      "campaign/smoke/endurance/events.json": "14a13664aa44844b8a3a970b4c8d328da8d1711fefb5574813c2ac8b7a75c164",
       "campaign/smoke/endurance/manifest.json": "488fb9165c7ca6ebd285784431f530e170b72879b7753ad85b89903ea70750e1",
       "campaign/smoke/endurance/result.json": "ef8a79d8263ac7835787546e3e8c4d0353bcff64c0ccbe5d30a747a3d67f899d",
-      "campaign/smoke/endurance/timeseries_endurance.csv": "bffb4dd041343f0a390ece772d9ab4b45a4ba4c824188ec4bdcfda8991368c66",
-      "campaign/smoke/fpv_punchout/events.json": "07cf689b9b4cdd2ece92b80a3ff22cfd18d9d4d791dece82e388c8ab8e1ccc3e",
+      "campaign/smoke/endurance/timeseries_endurance.csv": "2cae5acd2e60817831657a9c7151e7bf28fd3cc3bd3ee4b923dce282dcdb9a6d",
+      "campaign/smoke/fpv_punchout/events.json": "bff8e82b8657f83dfc8895b7fb32f4e74724bdf535565e2cfaa43fccf16746ff",
       "campaign/smoke/fpv_punchout/manifest.json": "0c30349930fa44221b610f0c5749e723fe335e134c4012890d319b7307f4e9d7",
       "campaign/smoke/fpv_punchout/result.json": "15b4e49376e40bc2c3fd965f3ac8c9bd4f643d990b3b0d078124f5e7b2ecf001",
-      "campaign/smoke/fpv_punchout/timeseries_punchout.csv": "85d14914acba8efe9ef1c6542b3f490fc21bdb5003fa947ca3d8c2908265fb4b",
-      "campaign/smoke/fpv_sprint/events.json": "4dd47ffc9eb2af96c4fc6622b1aa70bf3dd1f92549dff1a64b9f2800f6ce8bfc",
+      "campaign/smoke/fpv_punchout/timeseries_punchout.csv": "d5963f66df72b12dbadf550ec7d6fdd3eb96f33b0671c2fc43087f5a43e3ad63",
+      "campaign/smoke/fpv_sprint/events.json": "c58079a75cb5f2781f13cb956d1a4a53800662bc2ccd44f7e17b513416e0f78d",
       "campaign/smoke/fpv_sprint/manifest.json": "33410d2991cb048dde425715265b8fb53b712b15770571cd28f69c4fb1d732bc",
       "campaign/smoke/fpv_sprint/result.json": "de74d7e0155667f14e04418b401046a52a1c25c5ff65bdb7d48de31e6199a92c",
-      "campaign/smoke/fpv_sprint/timeseries_sprint.csv": "c5c6a1891465cf80788677f8c116201a25caed408ab96302d1c3696b9703d60e",
-      "campaign/smoke/hover_payload/events.json": "9af5536ef8862b8d7c00665f3750fc2288a3380839dddb2733b6a63ec6ad5e79",
+      "campaign/smoke/fpv_sprint/timeseries_sprint.csv": "67a62fe4dd4afecc573681c6cafe06608d0b20b9f9321645b16b0ded0eec5b63",
+      "campaign/smoke/hover_payload/events.json": "5f8e4c406e6736c2209e7f1ab1206e3ada41acb79966a17435a31562fe6f5b60",
       "campaign/smoke/hover_payload/manifest.json": "4935661f7fa27cd5bd0c6bfebbacfaad96f35cf7658fd81f3164d551f9e393c5",
-      "campaign/smoke/hover_payload/result.json": "2f5c7898fa341a999b7ed2c8100bf88f363652e02d9ff803165aebd43a258476",
-      "campaign/smoke/hover_payload/timeseries_fail_3.000kg.csv": "60dea5919309d56e2c1dbf30e5cd55d8d1c463c07594aaa43eb61a63afa11d9c",
-      "campaign/smoke/hover_payload/timeseries_pass_2.500kg.csv": "f6ff88b03c4f3c2a5036c306f7d795ca2149266e501e2350664c0fffa0da2798",
-      "campaign/smoke/max_speed/events.json": "43fe7ebc9abac636248afddbdff1035d2e2754cc427374b932c75467e351a0aa",
+      "campaign/smoke/hover_payload/result.json": "b3d11ecca4550d1f0885447b7b810bea97831418c3b81a833f121a5e3dac09b8",
+      "campaign/smoke/hover_payload/timeseries_fail_3.000kg.csv": "43a58ceba03225f9601be94b61b467709b6939452b4c03f657680d66b8d17e53",
+      "campaign/smoke/hover_payload/timeseries_pass_2.500kg.csv": "101b7fb1a1040c25f5f500d8f8bd8d902784469c73f2334ecd5dcdb5c5680515",
+      "campaign/smoke/max_speed/events.json": "d329eccff15afd982275cc2c622bf9d9be4ab62e2fe8ddaa4e3eabcb1289824f",
       "campaign/smoke/max_speed/manifest.json": "c95f57109870832ab7db05414fd317a744fec802511cc90975458b91dacb0cb9",
-      "campaign/smoke/max_speed/result.json": "306c6929e2f4fa5edc33ac540154969b27017e1920e42088a21c814566cbcd37",
-      "campaign/smoke/max_speed/timeseries_pass_12.00mps.csv": "e8d05357c3239863b69bdfb3754b9d592376178631ddf2dca4faa34c63fc6516",
-      "campaign/smoke/summary.csv": "ab6c1eec7179e9567dcd4555de93f4fc0a627f6d2550ed7f116a790f4c6dceeb",
-      "campaign/smoke/thermal_soak/events.json": "17b1654d2d68a0ff327541cb95233dc9d73a879e6bc9cf002d2a3fb2d6ffcad2",
+      "campaign/smoke/max_speed/result.json": "970120ffa8eb7599e0f20fb6f36933f1250781691a4f4d9f26f44e8dfeb9a85b",
+      "campaign/smoke/max_speed/timeseries_pass_12.00mps.csv": "923537d6713d8be6f59feccd658eab18eeb8af5b5779d38e849e4f17e7523150",
+      "campaign/smoke/summary.csv": "61d8e2f8523699f7d34ca43650658c6ae8f1d1a91a47d2accfecbe3433f489ac",
+      "campaign/smoke/thermal_soak/events.json": "117f15c057b88946f98f685a71f1fa2875ef1f25cae8a323d92bdb4ccec49d1a",
       "campaign/smoke/thermal_soak/manifest.json": "adaf66d9f10ba6f2231d4b99cab87a3ec1145bee11c55729500081b0f2eda4e8",
       "campaign/smoke/thermal_soak/result.json": "685ece74fee5f740b87237918565703f6c704e0fc4b67cdbe3929de662d9c2dc",
-      "campaign/smoke/thermal_soak/timeseries_thermal_soak.csv": "2e337ad3cad220965078f1cb7304badb01e50e2526387b150cec17e30d79e7b6",
-      "campaign/smoke/wind_gust/events.json": "d8ec83c6f5291d5042df0f21b34db8d8e0ea8decb759f13ffd4949d587114fb4",
+      "campaign/smoke/thermal_soak/timeseries_thermal_soak.csv": "a875710d6a5f96c762f0e771e1714045e06522e35629683b66bb6151490b4070",
+      "campaign/smoke/wind_gust/events.json": "ec190da4b01375f9aca5251107cd88e6b0364e002d69e897ab91eae6b6da680d",
       "campaign/smoke/wind_gust/manifest.json": "6493ff1988b6ba5dac25b48e7df8063999b30d10c7422d3696d1c2fd23ddb537",
       "campaign/smoke/wind_gust/result.json": "780c6228a02b0dba4239874c9304e923bdac3f7e3b7392a1cc6d3f1ba487fc91",
-      "campaign/smoke/wind_gust/timeseries_fail_13.75mps.csv": "6ec2488ce4941eab61d798ba329b84b06290ffc00b5fbbf936104cb0b4884b71",
-      "campaign/smoke/wind_gust/timeseries_pass_12.50mps.csv": "5f31d588b0686845765be2e6af47ba3b41dcf73908068fc849b0be9c5b4273a7",
+      "campaign/smoke/wind_gust/timeseries_fail_13.75mps.csv": "0c84361cd869d6e7e17ec7220e09c33fb62da9e6e71d116436581e4343882f8e",
+      "campaign/smoke/wind_gust/timeseries_pass_12.50mps.csv": "117c697be804e6d43b19acd2c5df79e4ff4dedb2ea7793d36329c752510e5db5",
       "validation_report.json": "de98792c552a8851e04ccc22a749e8b4f0b72db92ccc70d502243396655e270f"
     },
     "parts_db_version": "0.1.0",
@@ -1390,7 +1396,7 @@
         },
         {
           "name": "climb_min_thrust_reserve_ratio",
-          "value": 5.37583238
+          "value": 4.32645838
         }
       ],
       "notes": [
@@ -1547,7 +1553,7 @@
         },
         {
           "name": "window_min_thrust_reserve_ratio",
-          "value": 1.869377
+          "value": 1.64080174
         },
         {
           "name": "window_collective_capped_percent",
@@ -1556,7 +1562,7 @@
       ],
       "notes": [],
       "outcome": "BREAKING_POINT_FOUND",
-      "steps_simulated": 27948,
+      "steps_simulated": 27946,
       "test": "hover_payload"
     },
     {
@@ -1578,7 +1584,7 @@
         },
         {
           "name": "window_min_thrust_reserve_ratio",
-          "value": 5.47840964
+          "value": 4.44500127
         },
         {
           "name": "class_speed_limit_mps",

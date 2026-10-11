@@ -779,6 +779,48 @@ pub struct DragStats {
     pub outside_envelope_steps: u64,
 }
 
+/// Bisection steps of `sagged_full_duty_point` (the bracket `[0, OCV]` shrinks by 2^-60, far below f64 resolution of a voltage).
+const SAG_BISECTION_STEPS: u32 = 60;
+
+/// Thrust of ONE motor at full duty with the pack sagged by the current that full duty itself draws, and the pack voltage there.
+///
+/// With all four motors identical at duty 1 the motor terminal voltage equals the supply voltage `V`. The pack current is
+/// `I(V) = 4 P_el(V) / (eta_esc V)` (`P_el` from `powertrain::solve_motor`) and the supply is `V = OCV - R I(V)`. The residual
+/// `g(V) = V - (OCV - R I(V))` is increasing in `V` (the current grows with `V`, so the second term falls), `g(0+) < 0` and
+/// `g(OCV) = R I >= 0`, so bisection on `[0, OCV]` finds the unique root. Same state of charge, resistance and air as the present step.
+///
+/// Returns `(thrust_n, supply_voltage_v)`.
+///
+/// # Errors
+/// `Model("bench point")` for a non-positive or non-finite OCV or if the motor solve refuses.
+fn sagged_full_duty_point(
+    pcfg: &PowertrainConfig,
+    ocv_pack_v: f64,
+    rho_kgpm3: f64,
+    axial_inflow_mps: f64,
+) -> Result<(f64, f64), CampaignError> {
+    if !(ocv_pack_v.is_finite() && ocv_pack_v > 0.0) {
+        return Err(CampaignError::Model("bench point"));
+    }
+    let r_ohm = pcfg.battery_internal_resistance_ohm;
+    let (mut lo, mut hi) = (0.0_f64, ocv_pack_v);
+    for _ in 0..SAG_BISECTION_STEPS {
+        let mid = 0.5 * (lo + hi);
+        let m = powertrain::solve_motor(pcfg, mid, rho_kgpm3, axial_inflow_mps)
+            .map_err(|_| CampaignError::Model("bench point"))?;
+        let pack_a = 4.0 * m.electrical_w / (pcfg.esc_efficiency * mid);
+        if mid - (ocv_pack_v - r_ohm * pack_a) > 0.0 {
+            hi = mid;
+        } else {
+            lo = mid;
+        }
+    }
+    let v = 0.5 * (lo + hi);
+    let m = powertrain::solve_motor(pcfg, v, rho_kgpm3, axial_inflow_mps)
+        .map_err(|_| CampaignError::Model("bench point"))?;
+    Ok((m.thrust_n, v))
+}
+
 /// A vehicle with its controller, powertrain state and turbulence, ready to be stepped under given conditions.
 pub struct Sim {
     /// Physics state.
@@ -934,20 +976,22 @@ impl Sim {
         self.vehicle.mass_kg * GRAVITY_MPS2
     }
 
-    /// `4 x (thrust at full duty at the present pack voltage) / weight`, the thrust reserve ratio.
+    /// `4 x (thrust at full duty at the SAGGED pack voltage) / weight`, the thrust reserve ratio.
+    ///
+    /// The pack voltage at full duty is not the present (hover / cruise) voltage: four motors at full duty draw about 115 A
+    /// on the reference build and the internal resistance drops the supply further. `sagged_full_duty_point` solves for that
+    /// voltage with the open-circuit voltage and resistance held at their present values (state of charge unchanged).
     ///
     /// # Errors
-    /// `Model` if the bench solve refuses.
+    /// `Model` if the solve refuses.
     pub fn thrust_reserve_ratio(&self, f: &Frame) -> Result<f64, CampaignError> {
-        let b = powertrain::bench_point(
+        let (thrust_n, _) = sagged_full_duty_point(
             &self.pcfg,
-            1.0,
-            f.tel.battery_voltage_v,
+            f.tel.battery_ocv_v,
             f.rho_kgpm3,
             f.axial_inflow_mps,
-        )
-        .map_err(|_| CampaignError::Model("bench point"))?;
-        Ok(4.0 * b.thrust_n / self.weight_n())
+        )?;
+        Ok(4.0 * thrust_n / self.weight_n())
     }
 
     fn limited_wind(&mut self, gust: [f64; 3]) -> ([f64; 3], [f64; 3]) {
@@ -992,6 +1036,11 @@ impl Sim {
             wind_ned_mps: wind_vec,
         };
         let (tel, new_state, speed, inflow, rho) = self.advance(&controls, &wind, height)?;
+        // The core has no ground. The only other loss signal is the atmosphere model failing below `-site_altitude_m`, which at a high
+        // site is far underground, so the ground (height 0 above the NED origin) is checked here for every test.
+        if -new_state.position[2] <= 0.0 {
+            return Err(CampaignError::Model("ground"));
+        }
         self.state = new_state;
         self.t_s += DT_S;
         if let Some(soc) = self.freeze_soc {
@@ -1878,11 +1927,11 @@ fn base_output(
     }
 }
 
-/// A step error that means the vehicle was lost (diverged, or fell out of the atmosphere model by hitting the ground), not a bad input.
+/// A step error that means the vehicle was lost (diverged, or reached the ground / fell out of the atmosphere model), not a bad input.
 fn loss_criterion(e: &CampaignError) -> Option<&'static str> {
     match e {
         CampaignError::Model("diverged") => Some("instability"),
-        CampaignError::Model("atmosphere" | "drag") => Some("crash"),
+        CampaignError::Model("atmosphere" | "drag" | "ground") => Some("crash"),
         _ => None,
     }
 }
@@ -2837,12 +2886,14 @@ pub fn run_max_speed(
 ) -> Result<TestOutput, CampaignError> {
     let class_limit = build.controller.max_speed_h_mps;
     let upper = def.max_speed_mps.min(class_limit).max(def.start_speed_mps);
+    // the last level must land exactly on `upper`, or a LIMIT-BOUND note would name a speed that was never flown
+    let step_mps = ramp_step(def.start_speed_mps, def.step_mps, upper);
     let mut steps_total = 0_u64;
     let mut last_pass: Option<(f64, SpeedRun)> = None;
     let mut last_fail: Option<(f64, SpeedRun)> = None;
     let search = ramp_and_refine(
         def.start_speed_mps,
-        def.step_mps,
+        step_mps,
         upper,
         def.tolerance_mps,
         |v| {
@@ -4138,12 +4189,35 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn test_camp_thrust_reserve_matches_the_bench_point() {
+    fn test_camp_thrust_reserve_is_the_bench_point_at_the_sagged_full_duty_voltage() {
+        // Review finding 3: the reserve used the present (hover) pack voltage; four motors at full duty draw far more current and sag
+        // the pack. The root V* must satisfy V* = OCV - R x I_pack(V*), checked here with `bench_point`'s own battery current
+        // (battery_current_a of one motor, x 4), not with the formula the solver uses.
         let build = ref_build();
         let mut sim = Sim::new(&build, &std_conditions(), 20.0, 0, None).unwrap();
         let f = sim.step(&hold_setpoint(20.0)).unwrap();
         let r = sim.thrust_reserve_ratio(&f).unwrap();
+        let ocv = f.tel.battery_ocv_v;
+        let (thrust_n, v_star) =
+            sagged_full_duty_point(&build.powertrain, ocv, f.rho_kgpm3, f.axial_inflow_mps)
+                .unwrap();
         let b = powertrain::bench_point(
+            &build.powertrain,
+            1.0,
+            v_star,
+            f.rho_kgpm3,
+            f.axial_inflow_mps,
+        )
+        .unwrap();
+        let residual = v_star
+            - (ocv - build.powertrain.battery_internal_resistance_ohm * 4.0 * b.battery_current_a);
+        assert!(residual.abs() < 1e-6, "fixed-point residual {residual} V");
+        assert!(near(thrust_n, b.thrust_n, 1e-12));
+        assert!(near(r, 4.0 * b.thrust_n / (1.536 * 9.806_65), 1e-12));
+        // the full-duty pack really sags: below the hover voltage (hover draws about 7 A, full duty about 100 A), and the reserve is
+        // below the old "present voltage" number but still above 1 for this vehicle
+        assert!(v_star < f.tel.battery_voltage_v - 0.5, "{v_star} V");
+        let old = powertrain::bench_point(
             &build.powertrain,
             1.0,
             f.tel.battery_voltage_v,
@@ -4151,12 +4225,28 @@ pub(crate) mod tests {
             f.axial_inflow_mps,
         )
         .unwrap();
-        assert!(near(r, 4.0 * b.thrust_n / (1.536 * 9.806_65), 1e-12));
+        assert!(r < 4.0 * old.thrust_n / (1.536 * 9.806_65) && r > 1.0);
         // hand estimate: one motor gives 23.75 N at 14.8 V full duty (P3a bench point) and thrust goes with voltage squared, so at the
-        // frame's pack voltage V the ratio is about 4 x 23.75 x (V / 14.8)^2 / 15.063 (the propeller table moves it a few percent)
-        let v = f.tel.battery_voltage_v;
-        let hand = 4.0 * 23.751_814 * (v / 14.8).powi(2) / 15.063_014_4;
-        assert!(near(r / hand, 1.0, 0.06), "{r} vs {hand} at {v} V");
+        // sagged supply V* the ratio is about 4 x 23.75 x (V* / 14.8)^2 / 15.063 (the propeller table moves it a few percent)
+        let hand = 4.0 * 23.751_814 * (v_star / 14.8).powi(2) / 15.063_014_4;
+        assert!(near(r / hand, 1.0, 0.06), "{r} vs {hand} at {v_star} V");
+    }
+
+    #[test]
+    fn test_camp_sagged_reserve_with_zero_resistance_is_the_unsagged_bench_point() {
+        // R = 0: the supply stays at the open-circuit voltage whatever the current, so V* = OCV and the thrust is the bench point there
+        let build = ref_build();
+        let mut cfg = build.powertrain;
+        cfg.battery_internal_resistance_ohm = 0.0;
+        let ocv = 16.0;
+        let (thrust_n, v_star) = sagged_full_duty_point(&cfg, ocv, 1.225, 0.0).unwrap();
+        assert!(near(v_star, ocv, 1e-9), "{v_star}");
+        let b = powertrain::bench_point(&cfg, 1.0, ocv, 1.225, 0.0).unwrap();
+        assert!(near(thrust_n, b.thrust_n, 1e-9));
+        // a non-positive or non-finite OCV is refused, never turned into a number
+        for bad in [0.0, -1.0, f64::NAN, f64::INFINITY] {
+            assert!(sagged_full_duty_point(&cfg, bad, 1.225, 0.0).is_err());
+        }
     }
 
     // ------------------------------------------------------------------ simulation behaviour
@@ -5239,5 +5329,98 @@ pub(crate) mod tests {
         })
         .unwrap();
         assert_eq!(seen, vec![2.0, 4.5, 7.0, 9.5, 12.0]);
+    }
+
+    /// Zero-throttle acro setpoint: the motors stop and the vehicle falls.
+    fn free_fall() -> Setpoint {
+        Setpoint::Acro {
+            roll: 0.0,
+            pitch: 0.0,
+            yaw: 0.0,
+            throttle: 0.0,
+        }
+    }
+
+    /// Number of steps until `Sim::step` refuses with `Model("ground")`; panics (test failure) on any other outcome or after `limit`.
+    fn steps_to_ground(sim: &mut Sim, limit: u64) -> u64 {
+        for k in 1..=limit {
+            match sim.step(&free_fall()) {
+                Ok(_) => {}
+                Err(CampaignError::Model("ground")) => return k,
+                Err(e) => panic!("unexpected error {e:?} at step {k}"),
+            }
+        }
+        panic!("the vehicle never reached the ground in {limit} steps");
+    }
+
+    #[test]
+    fn test_camp_ground_contact_is_a_crash_at_height_zero() {
+        // Review finding 2. Free fall from 0.5 m with the motors off: h = 0.5 g t^2, t = sqrt(2 x 0.5 / 9.80665) = 0.31931 s,
+        // which is 159.65 steps of 2 ms, so the 160th step is the first one at or below the ground. Drag at these speeds (<= 3.1 m/s)
+        // is a few percent of weight at most, so it may delay contact by a few steps: the band is 150 to 175.
+        let mut sim = Sim::new(&ref_build(), &std_conditions(), 0.5, 0, None).unwrap();
+        let k = steps_to_ground(&mut sim, 1000);
+        assert!((150..=175).contains(&k), "ground reached at step {k}");
+        assert_eq!(
+            loss_criterion(&CampaignError::Model("ground")),
+            Some("crash")
+        );
+    }
+
+    #[test]
+    fn test_camp_ground_contact_at_a_high_site_stops_at_the_same_height() {
+        // The old detector (air density failing at site + height < 0) would have let the vehicle fall 1500 m below the ground at a
+        // 1500 m site. The same 0.5 m fall must end in the same band of steps (thrust is zero, density only changes drag slightly).
+        let mut cond = std_conditions();
+        cond.site_altitude_m = 1500.0;
+        let mut sim = Sim::new(&ref_build(), &cond, 0.5, 0, None).unwrap();
+        let k = steps_to_ground(&mut sim, 1000);
+        assert!((150..=175).contains(&k), "ground reached at step {k}");
+    }
+
+    #[test]
+    fn test_camp_a_manoeuvre_with_no_altitude_limit_still_reports_the_vehicle_lost() {
+        // The sprint and punch-out observers have an infinite altitude-error limit, so before the fix a fall to the ground was only
+        // caught by the atmosphere model. Free fall from 5 m: t = sqrt(2 x 5 / 9.80665) = 1.01 s, inside the 5 s manoeuvre.
+        let m = fly_manoeuvre(
+            &ref_build(),
+            &std_conditions(),
+            5.0,
+            0.0,
+            5.0,
+            0.1,
+            &free_fall(),
+            0,
+            &analytic_drag,
+        )
+        .unwrap();
+        assert!(m.lost);
+        let last_t = m.speeds.last().map(|(t, _)| *t).unwrap();
+        assert!((0.9..=1.3).contains(&last_t), "lost after {last_t} s");
+        let (out, _) = manoeuvre_output("fpv_sprint", "1", "sprint", m);
+        assert_eq!(out.outcome, Outcome::Failed);
+        assert!(out.notes.iter().any(|n| n.contains("vehicle was lost")));
+    }
+
+    #[test]
+    fn test_camp_run_max_speed_flies_the_class_cap_with_the_full_definitions() {
+        // Review finding 1: the raw step 3 flew 2, 5, 8, 11 and then called 12 m/s "limit-bound" without flying it.
+        // Full definition: start 2, step 3, cap = class limit 12 m/s -> span 10, n = ceil(10 / 3) = 4, step 2.5, levels 2, 4.5, 7, 9.5, 12.
+        // Each level is settle 8 s + hold 4 s = 12 s = 6000 steps of 2 ms, so 5 levels = 30000 steps (the wrong ramp gave 4 x 6000 = 24000).
+        let build = ref_build();
+        let cond = parse_conditions(&read("campaign/conditions_standard.json")).unwrap();
+        let defs = parse_definitions(&read("campaign/test_definitions.json")).unwrap();
+        assert_eq!(defs.max_speed.step_mps, 3.0);
+        assert_eq!(build.controller.max_speed_h_mps, 12.0);
+        let o = run_max_speed(&build, &cond, &defs.max_speed, 0, &analytic_drag).unwrap();
+        assert_eq!(o.outcome, Outcome::NotReachedWithinBound);
+        assert_eq!(metric(&o, "max_passing_speed_mps"), 12.0);
+        assert_eq!(o.steps_total, 30_000);
+        assert!(o.series.iter().any(|s| s.label == "pass_12.00mps"));
+        assert!(
+            o.notes
+                .iter()
+                .any(|n| n.contains("LIMIT-BOUND") && n.contains("12"))
+        );
     }
 }

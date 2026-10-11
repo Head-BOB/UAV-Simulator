@@ -4,7 +4,7 @@
   "definition_version": "1",
   "outcome": "COMPLETED",
   "breaking_point": null,
-  "metrics": [{"name": "time_to_target_s", "value": 3.842}, {"name": "sustained_climb_rate_mps", "value": 4.52573514109}, {"name": "max_climb_rate_mps", "value": 4.91143751144}, {"name": "climb_saturated_percent", "value": 0}, {"name": "climb_min_thrust_reserve_ratio", "value": 5.37583237924}],
+  "metrics": [{"name": "time_to_target_s", "value": 3.842}, {"name": "sustained_climb_rate_mps", "value": 4.52573514109}, {"name": "max_climb_rate_mps", "value": 4.91143751144}, {"name": "climb_saturated_percent", "value": 0}, {"name": "climb_min_thrust_reserve_ratio", "value": 4.32645838203}],
   "notes": ["class climb / acceleration limits replaced for this test: 8 m/s, 8 m/s^2"],
   "series": [{"file": "timeseries_climb.csv", "rows": 12}],
   "steps_simulated": 2921,

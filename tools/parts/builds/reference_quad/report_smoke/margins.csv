@@ -1,8 +1,8 @@
 rank,slot,component,limit,peak,unit,margin,peak_test,peak_t_s,basis
 1,motor_current,Motor current,23.0,23.9703523,A,0.959518648,fpv_punchout,2.002,limit / peak
 2,pack_current,Battery pack current,125.0,100.927799,A,1.23850912,fpv_punchout,2.002,limit / peak
-3,esc_current,ESC current,40.0,23.9703523,A,1.66872808,fpv_punchout,2.002,limit / peak
-4,thrust_reserve,Thrust reserve (max thrust / weight),1.0,1.869377,ratio,1.869377,hover_payload,10.502,lowest recorded ratio / 1.0
+3,thrust_reserve,Thrust reserve (max thrust / weight),1.0,1.64080174,ratio,1.64080174,hover_payload,10.502,lowest recorded ratio / 1.0
+4,esc_current,ESC current,40.0,23.9703523,A,1.66872808,fpv_punchout,2.002,limit / peak
 5,winding_temp,Motor winding temperature,120.0,23.2158681,deg C,31.0958027,hover_payload,11,"(limit - ambient) / (peak - ambient), ambient 20 deg C"
 6,esc_temp,ESC temperature,100.0,22.0746927,deg C,38.5599283,hover_payload,11,"(limit - ambient) / (peak - ambient), ambient 20 deg C"
 7,battery_temp,Battery temperature,60.0,20.5898913,deg C,67.8091065,hover_payload,11,"(limit - ambient) / (peak - ambient), ambient 20 deg C"

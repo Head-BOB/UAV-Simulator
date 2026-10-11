@@ -4,7 +4,7 @@
   "definition_version": "1",
   "outcome": "NOT_REACHED_WITHIN_BOUND",
   "breaking_point": null,
-  "metrics": [{"name": "max_passing_speed_mps", "value": 12}, {"name": "window_mean_speed_mps", "value": 12.0273148562}, {"name": "window_max_altitude_error_m", "value": 1.94761467116}, {"name": "window_min_thrust_reserve_ratio", "value": 5.47840963839}, {"name": "class_speed_limit_mps", "value": 12}],
+  "metrics": [{"name": "max_passing_speed_mps", "value": 12}, {"name": "window_mean_speed_mps", "value": 12.0273148562}, {"name": "window_max_altitude_error_m", "value": 1.94761467116}, {"name": "window_min_thrust_reserve_ratio", "value": 4.44500126772}, {"name": "class_speed_limit_mps", "value": 12}],
   "notes": ["the largest commanded_speed tried still passes: the limit is beyond the search range", "LIMIT-BOUND: every level up to 12 m/s (the lower of the definition's maximum and the class speed limit 12 m/s) passed; the vehicle was not the limit", "speed results use the legacy analytic drag, which is known to under-predict forward speed and to sink when pitched (the FPV sprint reaches about 20 of 35 m/s): not a vehicle limit"],
   "series": [{"file": "timeseries_pass_12.00mps.csv", "rows": 12}],
   "steps_simulated": 9000,

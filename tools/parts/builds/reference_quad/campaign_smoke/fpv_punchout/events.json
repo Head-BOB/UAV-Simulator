@@ -23,6 +23,6 @@
     {"name": "pack_current_a", "value": 100.927798991, "t_s": 2.002},
     {"name": "min_pack_v", "value": 11.8097402406, "t_s": 2.002},
     {"name": "tilt_rad", "value": 0, "t_s": 0.002},
-    {"name": "min_thrust_reserve_ratio", "value": 2.29718520838, "t_s": 3.502}
+    {"name": "min_thrust_reserve_ratio", "value": 2.29717469922, "t_s": 3.502}
   ]
 }

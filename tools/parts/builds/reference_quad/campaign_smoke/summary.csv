@@ -1,5 +1,5 @@
 test,definition_version,outcome,breaking_quantity,unit,last_pass,first_fail,criterion,resolution,evaluations,steps_simulated
-hover_payload,1,BREAKING_POINT_FOUND,payload_mass,kg,2.5,3,altitude_hold,0.5,6,27948
+hover_payload,1,BREAKING_POINT_FOUND,payload_mass,kg,2.5,3,altitude_hold,0.5,6,27946
 wind_gust,1,BREAKING_POINT_FOUND,mean_wind_speed,m/s,12.5,13.75,position_error,1.25,6,39000
 climb,1,COMPLETED,,,,,,,,2921
 endurance,1,COMPLETED,,,,,,,,36160
