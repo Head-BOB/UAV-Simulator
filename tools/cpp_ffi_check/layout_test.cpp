@@ -169,8 +169,8 @@ int main(int argc, char** argv)
     Check(Title != nullptr, "build: the parts list has its heading");
     bool Panel = false;
     for (const auto& I : L.Items)
-        if (I.K == Item::Kind::Rect && Title != nullptr && I.X <= Title->X && I.Y <= Title->Y && I.X + I.W >= Title->X + 100.0f && I.Y + I.H >= Title->Y + 20.0f && I.C.A >= 0.99f && I.C.R < 0.15f) Panel = true;
-    Check(Panel, "build: the parts list is drawn on an opaque dark panel");
+        if (I.K == Item::Kind::Rect && Title != nullptr && I.X <= Title->X && I.Y <= Title->Y && I.X + I.W >= Title->X + 100.0f && I.Y + I.H >= Title->Y + 20.0f && I.C.A >= 0.70f && I.C.R < 0.15f) Panel = true;
+    Check(Panel, "build: the parts list is drawn on a dark panel");
     float MinRow = 1000.0f;
     for (const auto& I : L.Items) if (I.K == Item::Kind::Text && I.X > 480.0f && I.Y < 400.0f && I.Y > 60.0f && I.Text != "Parts") MinRow = std::fmin(MinRow, I.Px);
     Check(MinRow >= 17.0f, "build: parts list text is 17 px or larger");

@@ -240,10 +240,10 @@ inline void Build(DrawList& L, const AppModel& M)
     const float X = 40.0f, Wd = Pw - 80.0f;
     L.Text(X, 80.0f, Wd, "Build", 34.0f, Palette::Ink(), Weight::Light);
     L.Text(X, 134.0f, 120.0f, "Name", 14.0f, Palette::Ink46());
-    Field(L, X + 70.0f, 126.0f, Wd - 70.0f, M.BuildName, 20.0f, M.Focus == "buildname", "buildname", Weight::Regular);
-    Button(L, X, 176.0f, 200.0f, 48.0f, M.Busy() ? "Working ..." : (M.Prog.BuildDone ? "Rebuild" : "Build vehicle"), true, Act::BuildNow, "", !M.Busy() && M.Prog.PartsComplete);
-    if (M.Prog.BuildDone) Button(L, X + 216.0f, 176.0f, 224.0f, 48.0f, "Conditions >", false, Act::UseBuild);
-    Button(L, X, 232.0f, Wd, 36.0f, "Fly it yourself (live physics, standard model)", false, Act::FlyIt, "", M.Prog.VehicleClassChosen);
+    const float W1 = M.Prog.BuildDone ? 190.0f : Wd;
+    Button(L, X, 176.0f, W1, 46.0f, M.Busy() ? "Working ..." : (M.Prog.BuildDone ? "Rebuild" : "Build vehicle"), true, Act::BuildNow, "", !M.Busy() && M.Prog.PartsComplete);
+    if (M.Prog.BuildDone) Button(L, X + 202.0f, 176.0f, Wd - 202.0f, 46.0f, "Conditions >", false, Act::UseBuild);
+    Button(L, X, 230.0f, Wd, 40.0f, "Fly it yourself (live physics, standard model)", false, Act::FlyIt, "", M.Prog.VehicleClassChosen);
     float Y = 288.0f;
     if (M.Prog.BuildDone)
     {
@@ -289,7 +289,7 @@ inline void Build(DrawList& L, const AppModel& M)
         for (const auto& F : M.BuildFindings)
         {
             if (F.Severity == "info") continue;
-            const std::vector<std::string> Lines = Wrap(F.Message, 44, 3);
+            const std::vector<std::string> Lines = Wrap(F.Message, 44, 5);
             const float Need = static_cast<float>(Lines.size()) * 20.0f + 10.0f;
             if (Shown >= 9 || Y + Need > kFindingsBottom) { ++Hidden; continue; }
             const Rgba C = F.Severity == "error" ? Palette::Crit() : Palette::Warn();
@@ -306,7 +306,11 @@ inline void Build(DrawList& L, const AppModel& M)
     {
         const float Lx = Pw + 24.0f, Ly = static_cast<float>(Ui::kTopBarHeightPx) + 16.0f, Lw = 680.0f, RowH = 36.0f;
         const float Lh = 52.0f + static_cast<float>(M.Sel.Roles().size()) * RowH + 12.0f;
-        L.Fill(Lx, Ly, Lw, Lh, Palette::Solid());
+        L.Fill(Lx, Ly, Lw, Lh, ToRgba(0x0C0E12, 0.72));
+        L.Line(Lx, Ly, Lx + Lw, Ly, Palette::Line());
+        L.Line(Lx, Ly + Lh, Lx + Lw, Ly + Lh, Palette::Line());
+        L.Line(Lx, Ly, Lx, Ly + Lh, Palette::Line());
+        L.Line(Lx + Lw, Ly, Lx + Lw, Ly + Lh, Palette::Line());
         L.Text(Lx + 20.0f, Ly + 14.0f, 400.0f, "Parts", 18.0f, Palette::Ink70(), Weight::Medium);
         float Ry = Ly + 52.0f;
         for (const auto& [Role, Id] : M.Sel.Roles())

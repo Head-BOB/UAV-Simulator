@@ -211,16 +211,20 @@ inline void Run(DrawList& L, const AppModel& M)
             const bool NA = R.Unit == "n/a";
             const Status St = StatusOfMargin(R.Margin);
             L.HLine(Dx + Pad, Y, Iw, Palette::Line());
-            L.Text(Dx + Pad, Y + 3.0f, 280.0f, R.Label, 16.0f, Palette::Ink70());
-            if (NA) L.Text(Dx + Pad, Y + 2.0f, Iw, "n/a", 17.0f, Palette::Ink46(), Weight::Regular, Align::Right);
+            L.Text(Dx + Pad, Y + 3.0f, 260.0f, R.Label, 15.0f, Palette::Ink70());
+            if (NA)
+            {
+                L.Text(Dx + Pad, Y + 2.0f, Iw, "n/a", 16.0f, Palette::Ink46(), Weight::Regular, Align::Right);
+            }
             else
             {
-                L.Text(Dx + Pad, Y + 2.0f, Iw - 70.0f, R.Margin >= kMarginCap ? std::string(R.NoHeating ? "no heating" : "no load") : Fmt("%.2f", R.Margin), 17.0f, Palette::Ink(), Weight::Regular, Align::Right);
-                Chip(L, Dx + Pad + Iw - 62.0f, Y + 2.0f, St == Status::Ok ? "OK" : (St == Status::Caution ? "LOW" : "OVER"), StatusRgba(St));
+                L.Text(Dx + Pad, Y + 2.0f, Iw - 68.0f, R.Margin >= kMarginCap ? std::string(R.NoHeating ? "no heating" : "no load") : Fmt("%.2f", R.Margin), 16.0f, Palette::Ink(), Weight::Regular, Align::Right);
+                Chip(L, Dx + Pad + Iw - 56.0f, Y + 2.0f, St == Status::Ok ? "OK" : (St == Status::Caution ? "LOW" : "OVER"), StatusRgba(St));
+                const float BarW = Iw - 66.0f;
                 const float Frac = static_cast<float>(std::min(1.0, R.Margin / 3.0));
-                L.Fill(Dx + Pad, Y + 27.0f, Iw, 3.0f, Palette::Line());
-                L.Fill(Dx + Pad, Y + 27.0f, Iw * Frac, 3.0f, StatusRgba(St));
-                L.Fill(Dx + Pad + Iw / 3.0f, Y + 23.0f, 1.0f, 11.0f, Palette::Ink());   // the limit: margin 1.0 on a 0..3 scale
+                L.Fill(Dx + Pad, Y + 27.0f, BarW, 3.0f, Palette::Line());
+                L.Fill(Dx + Pad, Y + 27.0f, BarW * Frac, 3.0f, StatusRgba(St));
+                L.Fill(Dx + Pad + BarW / 3.0f, Y + 23.0f, 1.0f, 11.0f, Palette::Ink());   // the limit: margin 1.0 on a 0..3 scale
             }
             Y += 34.0f;
         }

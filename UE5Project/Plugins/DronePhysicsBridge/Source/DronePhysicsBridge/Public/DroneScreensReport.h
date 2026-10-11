@@ -262,16 +262,17 @@ inline void ReportScreen(DrawList& L, const AppModel& M)
     Button(L, X, kActionBarY + 16.0f, 260.0f, 52.0f, "Open report", true, Act::OpenReport, "", !M.ReportDir.empty());
     Button(L, X + 280.0f, kActionBarY + 16.0f, 220.0f, 52.0f, "Open folder", false, Act::OpenFolder);
     Button(L, X + 520.0f, kActionBarY + 16.0f, 220.0f, 52.0f, "Write again", false, Act::WriteReport, "", !M.Busy());
-    // File path: wraps across at most 2 lines with a hint to copy.
-    const std::string PathHint = "report.html, report.json, CSV files in: " + M.ReportDir;
-    float Bx = X + 760.0f;
-    for (const auto& Ln : Wrap(PathHint, 80, 2))
+    // File path and status hint: clearly separated across two lines so text never overlaps
+    const float Bx = X + 760.0f;
+    if (!M.Message.empty() && !M.Busy())
     {
-        L.Text(Bx, kActionBarY + 18.0f + (Ln == PathHint || &Ln == &Wrap(PathHint, 80, 2).front() ? 0.0f : 18.0f), 1100.0f, Ln, 14.0f, Palette::Ink46());
-        Bx = X + 760.0f;
-        (void)Bx;
+        L.Text(Bx, kActionBarY + 18.0f, 1000.0f, M.Message, 14.0f, M.MessageIsError ? Palette::Crit() : Palette::Ok(), Weight::Medium);
     }
-    StatusLine(L, M, X, kActionBarY + 58.0f, 1500.0f);
+    else
+    {
+        L.Text(Bx, kActionBarY + 18.0f, 1000.0f, "report.html, report.json, and CSV files in:", 14.0f, Palette::Ink70(), Weight::Medium);
+    }
+    L.Text(Bx, kActionBarY + 40.0f, 1000.0f, M.ReportDir, 14.0f, Palette::Ink46(), Weight::Regular);
 
     Verdict(L, R, X, 156.0f, 1680.0f);
     float By = 250.0f;
