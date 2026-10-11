@@ -334,7 +334,7 @@ int main(int argc, char** argv)
     {
         DrawList L;
         BuildScreen(L, M);
-        Check(L.FindText("Tests and breaking points") && L.FindText("Limiting components") && L.FindText("Validation against published data") && L.FindText("CFD: no CFD run"), "results sections");
+        Check(L.FindText("Tests and breaking points") && L.FindText("Limiting components") && L.FindText("Validation against published data"), "results sections");
         Check(L.FindText("Not implemented") == nullptr, "nothing is listed as not implemented any more (all eight tests exist)");
     }
 

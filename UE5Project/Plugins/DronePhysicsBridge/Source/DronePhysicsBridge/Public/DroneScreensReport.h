@@ -172,27 +172,6 @@ inline void Results(DrawList& L, const AppModel& M)
         if (Ry < kActionBarY - 24.0f)
             L.Text(Rx, Ry + 8.0f, Rw, std::to_string(R.FlaggedCount()) + " rows differ by more than " + Fmt("%.0f", R.ValidationFlagPercent) + " % (listed in the report)", 14.0f, R.FlaggedCount() ? Palette::Warn() : Palette::Ink46());
     }
-    Ry += 44.0f;
-    {
-        // "no CFD run" is the only status that needs the "CFD:" prefix; every other status already says what it is
-        const bool Prefixed = R.CfdStatus.compare(0, 3, "CFD") == 0;
-        const Rgba C = R.CfdLevel == "danger" ? Palette::Crit() : (R.CfdLevel == "warn" ? Palette::Warn() : Palette::Ink70());
-        L.Text(Rx, Ry, Rw, Shorten(Prefixed ? R.CfdStatus : "CFD: " + R.CfdStatus, 80), 15.0f, C, Weight::Medium);
-        L.Text(Rx, Ry + 24.0f, Rw, Shorten(R.CfdStatement, 120), 14.0f, Palette::Ink46());
-        float Cy = Ry + 48.0f;
-        if (!R.CfdSanityStatus.empty() || !std::isnan(R.CfdHoldoutRmsN))
-        {
-            const std::string Held = std::isnan(R.CfdHoldoutRmsN) ? std::string("none") : Fmt("%.3g", R.CfdHoldoutRmsN) + " N";
-            L.Text(Rx, Cy, Rw, "Held-out RMS error " + Held + "; sanity checks " + (R.CfdSanityStatus.empty() ? std::string("not reported") : R.CfdSanityStatus), 14.0f, Palette::Ink46());
-            Cy += 24.0f;
-        }
-        if (R.CfdStatus != "no CFD run")
-        {
-            std::string Names;
-            for (const auto& N : R.CfdImageNames) Names += (Names.empty() ? "" : ", ") + N;
-            L.Text(Rx, Cy, Rw, "Flow images: " + (R.CfdImageNames.empty() ? std::string("no flow images") : Shorten(Names, 90)), 14.0f, Palette::Ink46());
-        }
-    }
 }
 
 
