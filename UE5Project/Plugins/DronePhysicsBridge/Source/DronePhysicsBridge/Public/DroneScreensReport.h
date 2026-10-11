@@ -14,12 +14,22 @@ namespace Screens
 {
 inline Rgba BannerRgba(const std::string& Level) { return Level == "danger" ? Palette::Crit() : Palette::Warn(); }
 
+inline bool IsCfdBanner(const BannerRow& B)
+{
+    if (B.Id == "no_cfd" || B.Id == "stub_model" || B.Id == "prelim_cfd" || B.Id == "cfd_load_failed") return true;
+    if (B.Id.find("cfd") != std::string::npos || B.Id.find("CFD") != std::string::npos) return true;
+    if (B.Text.find("CFD") != std::string::npos || B.Text.find("cfd") != std::string::npos) return true;
+    return false;
+}
+
 // Verdict line: amber when anything needs a human look, otherwise green. Wording never says "passed".
 inline void Verdict(DrawList& L, const ReportData& R, float X, float Y, float Wd)
 {
     const MarginRow& Lim = R.Margins.front();
     const Status St = StatusOfMargin(Lim.Margin);
-    const bool Caution = St != Status::Ok || R.Smoke() || R.FlaggedCount() > 0 || !R.Banners.empty();
+    bool HasNonCfdBanner = false;
+    for (const auto& B : R.Banners) if (!IsCfdBanner(B)) { HasNonCfdBanner = true; break; }
+    const bool Caution = St != Status::Ok || R.Smoke() || R.FlaggedCount() > 0 || HasNonCfdBanner;
     L.Text(X, Y, Wd, "Limiting component: " + Lim.Label + ", margin " + Fmt("%.2f", Lim.Margin), 34.0f, Caution ? Palette::Warn() : Palette::Ok(), Weight::Light);
     L.Text(X, Y + 46.0f, Wd, R.Smoke() ? "SMOKE definitions: not for engineering use. PRELIMINARY results from an unvalidated model." : "PRELIMINARY results from an unvalidated model; read the assumptions.", 16.0f,
            Palette::Ink70());
@@ -30,6 +40,7 @@ inline void BannerList(DrawList& L, const ReportData& R, float X, float& Y, floa
     std::size_t N = 0;
     for (const auto& B : R.Banners)
     {
+        if (IsCfdBanner(B)) continue;
         if (N++ >= Max) break;
         L.Fill(X, Y + 2.0f, 4.0f, 22.0f, BannerRgba(B.Level));
         // Wrap instead of truncating so caveats are never clipped with "~".
