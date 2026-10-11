@@ -77,6 +77,7 @@ enum class Act
     ToggleTest, ResetLimits, RunTests, SetTurbulence,
     PlayPause, Faster, Slower, Restart, SeekBar, PickTest, ToggleDetails, ToggleControls,
     WriteReport, OpenReport, RunStudy, OpenFolder,
+    RunAnalyticFallback, OpenCfdFolder,
     Dismiss,
 };
 

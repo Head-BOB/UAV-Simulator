@@ -114,6 +114,7 @@ public:
     // Run (replay of the recorded campaign)
     Campaign Camp;
     std::string CampaignDir, ReplayTest;
+    std::string CfdLoadError;            // why the CFD model of this build could not be used (empty = no such failure); shown amber on Conditions
     Replay Rep;
     Json::Value Powertrain;
     std::vector<MarginRow> PeakMargins;
@@ -178,7 +179,9 @@ public:
             case Act::ToggleTest: ToggleTest(Arg); break;
             case Act::ResetLimits: ResetLimits(); break;
             case Act::SetTurbulence: if (Arg == "none" || Arg == "dryden" || Arg == "simple") Cond.Turbulence = Arg; break;
-            case Act::RunTests: StartRun(); break;
+            case Act::RunTests: StartRun(false); break;
+            case Act::RunAnalyticFallback: StartRun(true); break;
+            case Act::OpenCfdFolder: if (!H.CfdDir.empty()) IO.OpenPath(H.CfdDir); break;
             case Act::PlayPause: Rep.Toggle(); break;
             case Act::Faster: Rep.FasterStep(); break;
             case Act::Slower: Rep.SlowerStep(); break;
@@ -388,14 +391,18 @@ private:
         return true;
     }
 
-    void StartRun()
+    // `AnalyticFallback` is true only for a click on "Run anyway on analytic drag" (shown after a CFD model failed to load).
+    void StartRun(bool AnalyticFallback = false)
     {
         if (Busy()) { Say("A job is already running.", true); return; }
         if (!Prog.BuildDone) { Say("Build the vehicle first.", true); return; }
+        if (AnalyticFallback && CfdLoadError.empty()) { Say("There is no failed CFD model to run around.", true); return; }
         if (!PrepareRunFiles()) return;
         CampaignDir = Join(SessionDir(), "campaign");
         Prog.CampaignDone = false; Prog.ReportDone = false; Prog.StudyDone = false;
-        Enqueue(CampaignCommand(H, BuildDir, ConditionsPath, DefinitionsPath, CampaignDir, TestsArgument(std::vector<std::string>(SelectedTests.begin(), SelectedTests.end()))), Helper::Campaign, "campaign");
+        CfdLoadError.clear();
+        Enqueue(CampaignCommand(H, BuildDir, ConditionsPath, DefinitionsPath, CampaignDir, TestsArgument(std::vector<std::string>(SelectedTests.begin(), SelectedTests.end())), AnalyticFallback),
+                Helper::Campaign, "campaign");
         StartNextIfIdle();
     }
 
@@ -467,6 +474,19 @@ private:
                 return true;
             case Helper::Campaign:
             {
+                if (Code == 3)
+                {
+                    // run_campaign refused to continue because the CFD model of this build could not be used; its reason is shown, never hidden.
+                    std::string StatusText;
+                    CfdLoadError = "the helper gave no reason (see the log)";
+                    if (IO.ReadText(Join(CampaignDir, "aero_model_status.json"), StatusText))
+                    {
+                        const Json::ParseResult P = Json::Parse(StatusText);
+                        if (P.ok) { const Json::Value* R = P.value.Get("reason"); if (R && R->IsString() && !R->text.empty()) CfdLoadError = R->text; }
+                    }
+                    Say(ExitMessage(Helper::Campaign, Code), true);
+                    return false;
+                }
                 if (Code != 0) { Say(ExitMessage(Helper::Campaign, Code), true); return false; }
                 if (!LoadCampaignAndModels(Err)) { Say("The tests finished but the results could not be read: " + Err, true); return false; }
                 Prog.CampaignDone = true;

@@ -55,12 +55,29 @@ class SweepError(Exception):
     pass
 
 
-def load_class_config(path: Path = CLASS_FILE) -> dict:
+def apply_profile(cfg: dict, profile: str) -> dict:
+    """A copy of `cfg` with the named profile's per-class sweep and refinement values on top. The profile is recorded as cfg['profile']."""
+    prof = cfg.get("profiles", {}).get(profile)
+    if prof is None:
+        raise SweepError(f"class_sweeps.json has no profile {profile!r} (known: {sorted(cfg.get('profiles', {}))})")
+    out = json.loads(json.dumps(cfg))
+    for name, over in prof.get("classes", {}).items():
+        if name not in out["classes"]:
+            raise SweepError(f"profile {profile!r} names the unknown class {name!r}")
+        out["classes"][name].update(over)
+    out["sanity"]["refinement"].update(prof.get("refinement", {}))
+    out["profile"] = profile
+    return out
+
+
+def load_class_config(path: Path = CLASS_FILE, profile: str | None = None) -> dict:
     cfg = json.loads(path.read_text(encoding="utf-8"))
     if cfg.get("schema_version") != 1:
         raise SweepError("class_sweeps.json: schema_version must be 1")
     if cfg.get("provenance", {}).get("source_type") != "ASSUMED":
         raise SweepError("class_sweeps.json: provenance must say ASSUMED")
+    if profile is not None:
+        cfg = apply_profile(cfg, profile)
     lbm, dom, air = cfg["lbm"], cfg["domain"], cfg["air"]
     ok = (0.0 < lbm["velocity"] < 0.2 and lbm["min_lattice_viscosity"] > 0 and lbm["flow_throughs"] > 0 and 0 < lbm["avg_fraction"] <= 0.5
           and len(dom["spans_xyz"]) == 3 and all(s > 0 for s in dom["spans_xyz"]) and dom["inlet_spans"] > 0 and dom["max_cells"] > 0
@@ -267,8 +284,9 @@ def prepare(build_dir: Path, bytes_per_cell: int, vram_gb: float, cells_across: 
             "class_def": cfg["classes"][cls], "stl_text": stl_text, "geometry_doc": gdoc, "assembly": assembly}
 
 
-def generate(build_dir: Path, out: Path, bytes_per_cell: int, vram_gb: float, cells_across, speeds, angles, max_cases, props: str = "omit") -> list:
-    cfg = load_class_config()
+def generate(build_dir: Path, out: Path, bytes_per_cell: int, vram_gb: float, cells_across, speeds, angles, max_cases, props: str = "omit",
+             profile: str | None = None) -> list:
+    cfg = load_class_config(profile=profile)
     ctx = prepare(build_dir, bytes_per_cell, vram_gb, cells_across, props, cfg)
     cd = ctx["class_def"]
     cases = Q.sweep_cases(speeds or cd["speeds_mps"], angles or cd["angles_deg"], max_cases)
@@ -289,6 +307,8 @@ def generate(build_dir: Path, out: Path, bytes_per_cell: int, vram_gb: float, ce
     (out / "run_sweep.ps1").write_text(RUN_SWEEP_PS1.replace("@@REPO_REL@@", str(rel).replace("/", "\\")), encoding="utf-8", newline="\n")
     doc = {"provenance": PROVENANCE, "build": ctx["assembly"]["build_name"], "vehicle_class": ctx["vehicle_class"], "geometry_sha256": ctx["geometry_sha256"],
            "sweep_config_version": cfg["version"], "propellers": props, "ref_area_m2": ctx["ref_area_m2"], "ref_length_m": ctx["dims"]["span_m"], "cases": manifest}
+    if profile is not None:
+        doc["profile"] = profile   # only a profiled sweep carries the key, so the default manifest keeps its bytes
     (out / "sweep_manifest.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8", newline="\n")
     return manifest
 
@@ -388,6 +408,7 @@ def main(argv) -> int:
     g.add_argument("--angles", type=float, nargs="+")
     g.add_argument("--max-cases", type=int)
     g.add_argument("--props", choices=("omit", "disc"), default="omit")
+    g.add_argument("--profile", help="named profile of class_sweeps.json (for example demo: the fewest cases, lower resolution)")
     c = sub.add_parser("check")
     c.add_argument("--case", type=Path, required=True)
     c.add_argument("--free-vram-mib", type=int)
@@ -399,7 +420,7 @@ def main(argv) -> int:
     a = ap.parse_args(argv)
     try:
         if a.cmd == "generate":
-            m = generate(a.build, a.out, a.bytes_per_cell, a.vram_gb, a.cells_across, a.speeds, a.angles, a.max_cases, a.props)
+            m = generate(a.build, a.out, a.bytes_per_cell, a.vram_gb, a.cells_across, a.speeds, a.angles, a.max_cases, a.props, a.profile)
             print(f"wrote {len(m)} cases to {a.out}; grid {m[0]['grid']}, {m[0]['total_steps']} steps each")
         elif a.cmd == "check":
             print(check_case(a.case, a.free_vram_mib))

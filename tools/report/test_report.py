@@ -8,6 +8,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 import _paths
+import campaign_data as D
 import make_report as MR
 import render_html as RH
 import testkit as K
@@ -381,6 +382,109 @@ class CliTests(unittest.TestCase):
             self.assertEqual(report["cfd"]["status"], "no CFD run")
             self.assertEqual(report["validation"]["status"], "not provided")
             self.assertEqual(report["limiting"]["slot"], "motor_current")
+
+
+class CfdSectionTests(unittest.TestCase):
+    """What the report and its banners say about CFD, driven by the campaign's own note (never by the mere presence of files)."""
+    SHA = "ab" * 32
+    SYNTHETIC = {"status": "CFD surrogate: SYNTHETIC (formula, not CFD)", "level": "danger", "kind": "stub", "model_sha256": SHA,
+                 "provenance": "SYNTHETIC formula, not CFD | NOT VALIDATED against any measurement", "holdout_rms_n": "2.5e-9",
+                 "cfd_sanity_status": "NOT_RUN", "load_error": None}
+    TRAINED = {"status": "CFD surrogate: PRELIMINARY, UNVALIDATED", "level": "warn", "kind": "trained", "model_sha256": SHA,
+               "provenance": "preliminary CFD, unvalidated | NOT VALIDATED against any measurement", "holdout_rms_n": "0.0125",
+               "cfd_sanity_status": "NOT_RUN", "load_error": None}
+    FALLBACK = {"status": "CFD model failed to load: the model is a stub; results use analytic drag", "level": "warn", "kind": None,
+                "model_sha256": None, "provenance": None, "holdout_rms_n": None, "cfd_sanity_status": None, "load_error": "the model is a stub"}
+
+    def report(self, note, drag, cfd_dir=None):
+        with tempfile.TemporaryDirectory() as t:
+            camp = K.write_campaign(Path(t) / "c", {"climb": {}, "endurance": {}}, definitions_set="1.0.0", drag=drag, cfd_note=note)
+            return MR.build_report(REF, {"unit": camp}, cfd_dir=cfd_dir)[0]
+
+    def banner_ids(self, rep):
+        return {b["id"]: b for b in rep["banners"]}
+
+    def test_synthetic_fixture_is_labelled_synthetic_with_the_red_banner(self):
+        rep = self.report(self.SYNTHETIC, f"cfd_surrogate:stub:{self.SHA}")
+        self.assertEqual(rep["cfd"]["status"], "CFD surrogate: SYNTHETIC (formula, not CFD)")
+        self.assertEqual(rep["cfd"]["level"], "danger")
+        self.assertEqual(rep["cfd"]["sanity"]["status"], "NOT_RUN")
+        b = self.banner_ids(rep)["stub_model"]
+        self.assertEqual(b["level"], "danger")
+        self.assertIn("SYNTHETIC (formula, not CFD)", b["text"])
+        self.assertNotIn("no_cfd", self.banner_ids(rep))
+
+    def test_trained_model_shows_preliminary_unvalidated_heldout_error_and_not_run(self):
+        rep = self.report(self.TRAINED, f"cfd_surrogate:trained:{self.SHA}")
+        c = rep["cfd"]
+        self.assertEqual((c["status"], c["level"]), ("CFD surrogate: PRELIMINARY, UNVALIDATED", "warn"))
+        self.assertEqual(c["holdout_rms_n"], 0.0125)
+        self.assertEqual(c["sanity"]["status"], "NOT_RUN")
+        self.assertIn("prelim_cfd", self.banner_ids(rep))
+        self.assertNotIn("stub_model", self.banner_ids(rep))
+
+    def test_failed_load_with_explicit_fallback_is_amber_and_names_the_reason(self):
+        rep = self.report(self.FALLBACK, "analytic_legacy")
+        self.assertEqual(rep["cfd"]["level"], "warn")
+        self.assertIn("results use analytic drag", rep["cfd"]["status"])
+        self.assertIn("the model is a stub", rep["cfd"]["statement"])
+        b = self.banner_ids(rep)
+        self.assertEqual(b["cfd_load_failed"]["level"], "warn")
+        self.assertNotIn("no_cfd", b)
+
+    def test_cfd_files_that_the_campaign_did_not_use_are_never_called_no_cfd_run(self):
+        with tempfile.TemporaryDirectory() as t:
+            cfd = Path(t) / "cfd"
+            cfd.mkdir()
+            (cfd / "geometry.json").write_text(json.dumps({"triangles": 408, "stl_sha256": "ab" * 32}), encoding="utf-8")
+            rep = self.report(None, "analytic_legacy", cfd)
+        self.assertEqual(rep["cfd"]["status"], "CFD results present, NOT used by this campaign (legacy analytic drag)")
+        self.assertNotEqual(rep["cfd"]["status"], "no CFD run")
+        self.assertEqual(rep["cfd"]["images_statement"], "no flow images")
+
+    def test_empty_or_missing_cfd_folder_is_the_only_way_to_no_cfd_run(self):
+        with tempfile.TemporaryDirectory() as t:
+            empty = Path(t) / "cfd"
+            empty.mkdir()
+            self.assertEqual(self.report(None, "analytic_legacy", empty)["cfd"]["status"], "no CFD run")
+        self.assertEqual(self.report(None, "analytic_legacy", None)["cfd"]["status"], "no CFD run")
+
+    def test_a_note_that_names_another_model_than_the_drag_label_is_refused(self):
+        with self.assertRaises(MR.ReportError):
+            self.report(self.SYNTHETIC, "cfd_surrogate:stub:" + "cd" * 32)
+
+    def test_flow_images_are_embedded_with_their_legend(self):
+        png = b"\x89PNG\r\n\x1a\nnot-a-real-image"
+        with tempfile.TemporaryDirectory() as t:
+            cfd = Path(t) / "cfd"
+            cfd.mkdir()
+            (cfd / "slice_b.png").write_bytes(png)
+            (cfd / "slice_a.png").write_bytes(png)
+            (cfd / "slice_a.legend.txt").write_text("0 to 15 m/s, PRELIMINARY CFD, UNVALIDATED\n", encoding="utf-8")
+            rep = self.report(self.TRAINED, f"cfd_surrogate:trained:{self.SHA}", cfd)
+        c = rep["cfd"]
+        self.assertEqual([i["name"] for i in c["images"]], ["slice_a.png", "slice_b.png"])      # sorted: deterministic
+        self.assertEqual(c["images"][0]["legend"], "0 to 15 m/s, PRELIMINARY CFD, UNVALIDATED")
+        self.assertIsNone(c["images"][1]["legend"])
+        self.assertTrue(c["images"][0]["data_uri"].startswith("data:image/png;base64,"))
+        self.assertEqual(c["images_statement"], "2 flow image(s)")
+
+    def test_html_shows_status_holdout_sanity_and_images_sentence(self):
+        rep = self.report(self.TRAINED, f"cfd_surrogate:trained:{self.SHA}")
+        html = RH.s_cfd(rep)
+        for text in ("CFD surrogate: PRELIMINARY, UNVALIDATED", "held-out RMS error 0.0125 N", "NOT_RUN", "no flow images"):
+            self.assertIn(text, html)
+        self.assertIn('class="banner warn"', html)
+
+    def test_tests_of_one_campaign_must_carry_the_same_note(self):
+        with tempfile.TemporaryDirectory() as t:
+            camp = K.write_campaign(Path(t) / "c", {"climb": {}, "endurance": {}}, drag=f"cfd_surrogate:stub:{self.SHA}", cfd_note=self.SYNTHETIC)
+            m = camp / "endurance" / "manifest.json"
+            doc = json.loads(m.read_text())
+            del doc["cfd_surrogate"]
+            m.write_text(json.dumps(doc))
+            with self.assertRaises(D.CampaignDataError):
+                D.load_campaign(camp)
 
 
 if __name__ == "__main__":

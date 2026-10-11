@@ -40,4 +40,6 @@ python tools/report/make_report.py --study <study dir> --out <report dir>
   The limits come from the part data in `powertrain_config.json`; several are ASSUMED (see the Assumptions section).
 * **Smoke** definitions (`campaign/smoke_definitions.json`) are short and start with an almost empty battery: the report says
   "NOT FOR ENGINEERING USE". Use `campaign/test_definitions.json` for real numbers.
-* Not built yet and shown as "not tested": maximum speed and the FPV sprint tests. No CFD run exists unless `--cfd-dir` points at one.
+* "no CFD run" is shown only when there is no CFD folder (or it holds no CFD file). The CFD block follows what the CAMPAIGN used: the `cfd_surrogate` note of its result files gives
+  "CFD surrogate: SYNTHETIC (formula, not CFD)" (stub), "CFD surrogate: PRELIMINARY, UNVALIDATED" (trained, with held-out error and sanity status) or "CFD model failed to load: ...; results use
+  analytic drag"; CFD files the campaign did not use are listed as "present, NOT used". Velocity-slice PNGs in `--cfd-dir` are embedded, otherwise "no flow images".

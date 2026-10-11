@@ -383,7 +383,14 @@ inline void Conditions(DrawList& L, const AppModel& M)
     Button(L, Rx + 300.0f, 960.0f, 240.0f, 52.0f, "Reset limits", false, Act::ResetLimits);
     std::string Err;
     if (!M.ConditionsOk(Err)) L.Text(Rx + 570.0f, 972.0f, 480.0f, Err.empty() ? "Select at least one test." : Err, 14.0f, Palette::Warn());
-    StatusLine(L, M, Rx, 1030.0f, Rw);
+    if (!M.CfdLoadError.empty())
+    {
+        // a CFD model that matched this build could not be used: the reason in amber, and an explicit opt-in to go on without it
+        L.Text(Rx, 1030.0f, Rw, "CFD model not used: " + Shorten(M.CfdLoadError, 150), 15.0f, Palette::Warn(), Weight::Medium);
+        Button(L, Rx + 560.0f, 960.0f, 300.0f, 52.0f, "Run anyway on analytic drag", false, Act::RunAnalyticFallback, "", !M.Busy());
+        StatusLine(L, M, Rx, 1056.0f, Rw);
+    }
+    else StatusLine(L, M, Rx, 1030.0f, Rw);
 }
 }  // namespace Screens
 }  // namespace DroneApp

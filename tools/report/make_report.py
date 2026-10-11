@@ -157,25 +157,89 @@ def validation_section(path: Path | None) -> dict:
             "reference_files": v.get("reference_files"), "core_interface_version": v.get("core_interface_version")}
 
 
-def cfd_section(cfd_dir: Path | None, drag_model: str) -> dict:
-    if cfd_dir is None or not (cfd_dir / "geometry.json").exists():
+CFD_FILE_PATTERNS = ("geometry.json", "sweep_manifest.json", "cfd_sanity_report.json", "*.model.json", "*.onnx", "*.png", "vehicle_cfd.csv")
+NOT_RUN_STATEMENT = "The sphere and grid-refinement checks have NOT been run."
+
+
+def number_or_none(text) -> float | None:
+    """The trainer writes the held-out error as text (`none` when it could not be computed)."""
+    try:
+        v = float(text)
+    except (TypeError, ValueError):
+        return None
+    return v if v == v and abs(v) != float("inf") else None
+
+
+def cfd_files_present(cfd_dir: Path | None) -> bool:
+    return cfd_dir is not None and cfd_dir.is_dir() and any(next(cfd_dir.glob(pat), None) is not None for pat in CFD_FILE_PATTERNS)
+
+
+def note_from_label(drag_model: str) -> dict | None:
+    """A campaign written before the result files carried a CFD note: the drag-model label alone says stub or trained."""
+    parts = drag_model.split(":")
+    if parts[0] != "cfd_surrogate" or len(parts) < 3:
+        return None
+    stub = parts[1] != "trained"
+    return {"status": "CFD surrogate: STUB (not validated)" if stub else "CFD surrogate: PRELIMINARY, UNVALIDATED",
+            "level": "danger" if stub else "warn", "kind": parts[1], "model_sha256": parts[2], "provenance": None,
+            "holdout_rms_n": None, "cfd_sanity_status": None, "load_error": None}
+
+
+def flow_images(cfd_dir: Path | None) -> tuple[list[dict], str]:
+    """Velocity-slice PNGs of the CFD folder (embedded) with their legends, and the sentence for the screen."""
+    images = []
+    if cfd_dir is not None and cfd_dir.is_dir():
+        for png in sorted(cfd_dir.glob("*.png")):
+            legend = png.with_name(png.stem + ".legend.txt")
+            images.append({"name": png.name, "legend": legend.read_text(encoding="utf-8").strip() if legend.is_file() else None,
+                           "data_uri": "data:image/png;base64," + base64.b64encode(png.read_bytes()).decode("ascii")})
+    return images, ("no flow images" if not images else f"{len(images)} flow image(s)")
+
+
+def cfd_section(cfd_dir: Path | None, drag_model: str, note: dict | None = None) -> dict:
+    """What the report says about CFD. Precedence: the campaign's own note (what the run really used), then the drag-model label,
+    then the mere presence of CFD files (which were NOT used), and only then "no CFD run"."""
+    note = note or note_from_label(drag_model)
+    present = cfd_files_present(cfd_dir)
+    if note is None and not present:
         return {"status": "no CFD run", "drag_model": drag_model,
                 "statement": "No CFD result is used. Body drag comes from the legacy analytic model, which does not see the vehicle's shape."}
-    out = {"status": "preliminary CFD, unvalidated", "drag_model": drag_model, "geometry": read_json(cfd_dir / "geometry.json"), "images": []}
-    sm = cfd_dir / "sweep_manifest.json"
-    if sm.exists():
+    if note is not None:
+        sha = drag_model.split(":")[2] if drag_model.startswith("cfd_surrogate:") and drag_model.count(":") >= 2 else None
+        if sha is not None and note.get("model_sha256") != sha:
+            raise ReportError(f"the campaign's CFD note names model {note.get('model_sha256')!r} but its drag model is {sha!r}")
+        out = {"status": note["status"], "level": note["level"], "drag_model": drag_model}
+        if note.get("load_error"):
+            out["statement"] = f"The CFD model could not be used: {note['load_error']}. The results use the legacy analytic drag."
+        elif sha is None:
+            out["statement"] = "No CFD surrogate was used for the drag of this campaign (legacy analytic model)."
+        elif note.get("kind") == "trained":
+            out["statement"] = "Preliminary CFD, unvalidated: force only, propellers omitted unless stated, no moments."
+        else:
+            out["statement"] = "The drag comes from a stub model (a formula, NOT a CFD result). It is not validated against anything."
+        out["model"] = {k: note.get(k) for k in ("kind", "model_sha256", "provenance", "holdout_rms_n", "cfd_sanity_status", "load_error")}
+        out["holdout_rms_n"] = number_or_none(note.get("holdout_rms_n"))
+    else:
+        out = {"status": "CFD results present, NOT used by this campaign (legacy analytic drag)", "level": "warn", "drag_model": drag_model,
+               "statement": "CFD files exist in the CFD folder, but this campaign did not use them: its drag is the legacy analytic model."}
+    if cfd_dir is not None and (cfd_dir / "geometry.json").exists():
+        out["geometry"] = read_json(cfd_dir / "geometry.json")
+    sm = cfd_dir / "sweep_manifest.json" if cfd_dir is not None else None
+    if sm is not None and sm.exists():
         m = read_json(sm)
         cases = m.get("cases", [])
         out["sweep"] = {"cases": len(cases), "build": m.get("build"), "propellers": m.get("propellers"), "ref_area_m2": m.get("ref_area_m2"),
                         "ref_length_m": m.get("ref_length_m"), "sweep_config_version": m.get("sweep_config_version"),
                         "grid": cases[0]["grid"] if cases else None, "dx_m": cases[0]["dx_m"] if cases else None}
-    sr = cfd_dir / "cfd_sanity_report.json"
-    out["sanity"] = read_json(sr) if sr.exists() else {"status": "NOT_RUN", "statement": "The sphere and grid-refinement checks have NOT been run."}
-    models = sorted(cfd_dir.glob("*.model.json"))
-    if models:
+    sr = cfd_dir / "cfd_sanity_report.json" if cfd_dir is not None else None
+    if note is not None and note.get("cfd_sanity_status"):
+        out["sanity"] = {"status": note["cfd_sanity_status"], "statement": NOT_RUN_STATEMENT if note["cfd_sanity_status"] == "NOT_RUN" else None}
+    else:
+        out["sanity"] = read_json(sr) if sr is not None and sr.exists() else {"status": "NOT_RUN", "statement": NOT_RUN_STATEMENT}
+    models = sorted(cfd_dir.glob("*.model.json")) if cfd_dir is not None else []
+    if models and "model" not in out:
         out["model"] = read_json(models[0])
-    for png in sorted(cfd_dir.glob("*.png")):
-        out["images"].append({"name": png.name, "data_uri": "data:image/png;base64," + base64.b64encode(png.read_bytes()).decode("ascii")})
+    out["images"], out["images_statement"] = flow_images(cfd_dir)
     return out
 
 
@@ -218,10 +282,16 @@ def banners(common: dict, tests: list[str], bom: list[dict], flags: list[dict], 
     if common["definitions_set_version"].endswith("-edited"):
         out.append({"id": "edited_limits", "level": "warn", "text": f"Test limits were EDITED by the user ({common['definitions_set_version']}): pass / fail results are not the project's reviewed definitions."})
     kind = A.drag_kind(common["drag_model"])
+    note = common.get("cfd_surrogate")
     if kind == "cfd_stub":
-        out.append({"id": "stub_model", "level": "danger", "text": "Drag comes from a STUB / SYNTHETIC surrogate model, not from CFD."})
+        text = note["status"] if note else "CFD surrogate: STUB (not validated)"
+        out.append({"id": "stub_model", "level": "danger", "text": text + ". Drag comes from a stub / SYNTHETIC model, not from CFD."})
     elif kind == "cfd":
         out.append({"id": "prelim_cfd", "level": "warn", "text": "Drag comes from a preliminary CFD surrogate: unvalidated, force only, propellers omitted."})
+    elif note and note.get("load_error"):
+        out.append({"id": "cfd_load_failed", "level": "warn", "text": note["status"]})
+    elif note:
+        out.append({"id": "no_cfd", "level": "warn", "text": f"{note['status']}. Body drag uses the legacy analytic model."})
     else:
         out.append({"id": "no_cfd", "level": "warn", "text": "No CFD: body drag uses the legacy analytic model."})
     if A.turbulence_influenced(common, tests):
@@ -348,7 +418,7 @@ def build_report(build_dir: Path, campaign_dirs: dict[str, Path], validation_pat
         "endurance": {"duration_s": D.metric(camp, "endurance", "duration_s"), "energy_used_wh": D.metric(camp, "endurance", "energy_used_wh"),
                       "mean_power_w": D.metric(camp, "endurance", "mean_power_w"), "final_soc": D.metric(camp, "endurance", "final_soc"),
                       "notes": (camp["tests"].get("endurance") or {"result": {}})["result"].get("notes", [])},
-        "cfd": cfd_section(cfd_dir, common["drag_model"]), "validation": validation,
+        "cfd": cfd_section(cfd_dir, common["drag_model"], common.get("cfd_surrogate")), "validation": validation,
         "envelope": [condition_envelope(n, campaigns[n], M.compute_margins(campaigns[n], build["powertrain"]), build) for n in sorted(campaigns)],
         "upgrades": upgrade_section(study_dir, build, base_head, margin_rows[0]["slot"], records, smoke,
                                     {"slot": margin_rows[0]["slot"], "label": margin_rows[0]["label"], "margin": margin_rows[0]["margin"]}),

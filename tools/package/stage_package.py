@@ -3,14 +3,16 @@
 
 Run AFTER Unreal packaged the game (see UE5Project/PACKAGING_README.md):
   python tools/package/stage_package.py --package <packaged folder> --python-zip <python-3.12.x-embed-amd64.zip> \
-         --wheels-dir <folder of downloaded wheels> --exe-dir <folder with run_campaign.exe and validate_models.exe> [--cfd-dir <dir>]
+         --wheels-dir <folder of downloaded wheels> --onnxruntime-zip <onnxruntime-win-x64-1.27.1.zip> \
+         --exe-dir <folder with run_campaign.exe and validate_models.exe> [--cfd-dir <dir>]
 Dev mode (what the Linux tests use, NOT for a real package):
   python tools/package/stage_package.py --dest <folder> --dev-python <python> --exe-dir <dir> --exe-suffix ""
 
 Result, under <project>/DroneData/helpers/ (or --dest/helpers/):
   python/ (embeddable zip, python312._pth with the site-packages line)  python/Lib/site-packages/ (the locked wheels, unpacked)
   repo/ (tools/parts, tools/report, parts_db, campaign, offline_pipeline/props, the golden builds incl. the demo session)
-  bin/ (run_campaign, validate_models)   cfd/ (optional)   helpers.json (relative paths)   helpers_manifest.json (sha256 of every file)
+  bin/ (run_campaign, validate_models, onnxruntime.dll + its licence files)   cfd/ (optional: the CFD model(s), geometry.json, flow images)
+  helpers.json (relative paths)   helpers_manifest.json (sha256 of every file)
 Nothing is downloaded and nothing is installed: every input is checked against a pin (embeddable zip: tools/package/pins.json; wheels:
 the hashes of tools/package/helpers_lock.txt). The output is deterministic (sorted, no clock, no machine path).
 """
@@ -39,7 +41,7 @@ TREES = [("tools/parts", "tools/parts"), ("tools/report", "tools/report"), ("par
 SKIP_DIR_NAMES = {"__pycache__", "source_cache", ".venv", "target", ".git", "node_modules"}
 SKIP_FILE_NAMES = {"parts_index.sqlite"}
 SKIP_SUFFIXES = (".pyc", ".pyo")
-CFD_PATTERNS = ("*.onnx", "*.model.json", "geometry.json", "sweep_manifest.json", "cfd_sanity_report.json", "*.png")
+CFD_PATTERNS = ("*.onnx", "*.model.json", "geometry.json", "sweep_manifest.json", "cfd_sanity_report.json", "*.png", "*.legend.txt")
 
 
 class StageError(RuntimeError):
@@ -92,6 +94,39 @@ def check_pin(zip_path: Path, pins: dict) -> None:
         raise StageError(f"{zip_path.name}: sha256 {got} differs from the pin {want}")
 
 
+ORT_PIN_KEY = "onnxruntime_win_x64"
+
+
+def ort_members(zip_path: Path, pins: dict) -> dict[str, bytes]:
+    """Checks the ONNX Runtime zip against its pin and returns {bin/<name>: bytes} for the DLL and its licence files.
+    Refuses a zip or a DLL whose sha256 differs from pins.json, and a pin that is not a sha256."""
+    pin = pins.get(ORT_PIN_KEY)
+    if not pin:
+        raise StageError(f"tools/package/pins.json has no {ORT_PIN_KEY} entry")
+    for key in ("sha256", "dll_sha256"):
+        if not re.fullmatch(r"[0-9a-f]{64}", pin.get(key, "")):
+            raise StageError(f"tools/package/pins.json {ORT_PIN_KEY}.{key} is not a sha256 (TODO(HUMAN-VERIFY))")
+    if zip_path.name != pin["file"]:
+        raise StageError(f"expected the file {pin['file']}, got {zip_path.name}")
+    got = sha256_file(zip_path)
+    if got != pin["sha256"]:
+        raise StageError(f"{zip_path.name}: sha256 {got} differs from the pin {pin['sha256']}")
+    out: dict[str, bytes] = {}
+    with zipfile.ZipFile(zip_path) as z:
+        names = set(z.namelist())
+        if pin["dll_member"] not in names:
+            raise StageError(f"{zip_path.name} has no {pin['dll_member']}")
+        dll = z.read(pin["dll_member"])
+        if sha256_bytes(dll) != pin["dll_sha256"]:
+            raise StageError(f"{pin['dll_member']}: sha256 {sha256_bytes(dll)} differs from the pin {pin['dll_sha256']}")
+        out["bin/onnxruntime.dll"] = dll
+        for m in pin.get("license_members", []):
+            if m not in names:
+                raise StageError(f"{zip_path.name} has no {m}")
+            out[f"bin/onnxruntime_{m.rsplit('/', 1)[-1]}"] = z.read(m)
+    return out
+
+
 def check_wheels(wheels_dir: Path, allowed: set[str]) -> list[Path]:
     wheels = sorted(wheels_dir.glob("*.whl"))
     if not wheels:
@@ -128,7 +163,7 @@ class Plan:
 
 
 def build_plan(repo: Path, *, exe_dir: Path, exe_suffix: str, python_zip: Path | None, wheels_dir: Path | None, dev_python: str | None,
-               cfd_dir: Path | None, pins: dict, lock_text: str) -> Plan:
+               cfd_dir: Path | None, pins: dict, lock_text: str, onnxruntime_zip: Path | None = None, onnxruntime_lib: Path | None = None) -> Plan:
     plan = Plan()
     for src, dst in TREES:
         for p in tree_files(repo, src):
@@ -144,6 +179,17 @@ def build_plan(repo: Path, *, exe_dir: Path, exe_suffix: str, python_zip: Path |
             plan.add(f"cfd/{p.name}", p)
     settings = {"python": dev_python if dev_python else "python/python.exe", "repo_root": "repo", "run_campaign_exe": f"bin/run_campaign{exe_suffix}",
                 "validate_models_exe": f"bin/validate_models{exe_suffix}", "threads": 4, "git_hash": "package"}
+    if cfd_dir is not None:
+        settings["cfd_dir"] = "cfd"
+    # The helpers look for the ONNX Runtime library next to themselves (physics_core surrogate::resolve_ort_path), so it goes into bin/.
+    if onnxruntime_zip is not None:
+        for rel, data in ort_members(onnxruntime_zip, pins).items():
+            plan.add(rel, data)
+        settings["onnxruntime"] = "bin/onnxruntime.dll"
+    if onnxruntime_lib is not None:
+        if not dev_python:
+            raise StageError("--onnxruntime-lib is for a dev-mode test stage only; a real package takes --onnxruntime-zip")
+        plan.add("bin/libonnxruntime.so", onnxruntime_lib)
     mode = "dev" if dev_python else "windows"
     if dev_python:
         if python_zip or wheels_dir:
@@ -208,6 +254,8 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--exe-dir", type=Path, required=True)
     ap.add_argument("--exe-suffix", default=".exe")
     ap.add_argument("--cfd-dir", type=Path)
+    ap.add_argument("--onnxruntime-zip", type=Path, help="onnxruntime-win-x64-<version>.zip (pinned in tools/package/pins.json); required for a real package")
+    ap.add_argument("--onnxruntime-lib", type=Path, help="libonnxruntime.so for a dev-mode test stage")
     ap.add_argument("--repo", type=Path, default=ROOT, help=argparse.SUPPRESS)
     ap.add_argument("--max-bytes", type=int, default=DEFAULT_MAX_BYTES)
     a = ap.parse_args(argv)
@@ -216,8 +264,11 @@ def main(argv: list[str]) -> int:
             raise StageError("give exactly one of --package and --dest")
         dest = find_project_dir(a.package) if a.package else a.dest
         pins = json.loads(PINS.read_text(encoding="utf-8"))
+        if not a.dev_python and a.onnxruntime_zip is None:
+            raise StageError("a real package needs --onnxruntime-zip (the helpers cannot load a CFD model without ONNX Runtime; see UE5Project/PACKAGING_README.md)")
         plan = build_plan(a.repo, exe_dir=a.exe_dir, exe_suffix=a.exe_suffix, python_zip=a.python_zip, wheels_dir=a.wheels_dir, dev_python=a.dev_python,
-                          cfd_dir=a.cfd_dir, pins=pins, lock_text=LOCK.read_text(encoding="utf-8"))
+                          cfd_dir=a.cfd_dir, pins=pins, lock_text=LOCK.read_text(encoding="utf-8"),
+                          onnxruntime_zip=a.onnxruntime_zip, onnxruntime_lib=a.onnxruntime_lib)
         if plan.total_bytes() > a.max_bytes:
             raise StageError(f"the helpers would be {plan.total_bytes()} bytes, above --max-bytes {a.max_bytes}: something unexpected is in an allow-listed folder")
         manifest = write_plan(plan, dest)

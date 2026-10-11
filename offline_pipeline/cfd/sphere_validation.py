@@ -120,15 +120,15 @@ def sphere_cd(case: dict, raw_line: str, rho: float) -> float:
     return vals[0] / (q * case["ref_area_m2"])
 
 
-def generate_refinement(build: Path, out: Path, bytes_per_cell: int, vram_gb: float) -> list:
-    cfg = S.load_class_config()
+def generate_refinement(build: Path, out: Path, bytes_per_cell: int, vram_gb: float, profile: str | None = None) -> list:
+    cfg = S.load_class_config(profile=profile)
     assembly = json.loads((build / "assembly.json").read_text(encoding="utf-8"))
     ref, cd = cfg["sanity"]["refinement"], cfg["classes"][assembly["vehicle_class"]]
     speed = cd["speeds_mps"][ref["speed_index"]]
     cases = []
     for label, cells in (("coarse", ref["coarse_cells_across_span"]), ("fine", ref["fine_cells_across_span"])):
         sub = out / label
-        m = S.generate(build, sub, bytes_per_cell, vram_gb, cells, [speed], [ref["alpha_deg"]], 1)
+        m = S.generate(build, sub, bytes_per_cell, vram_gb, cells, [speed], [ref["alpha_deg"]], 1, "omit", profile)
         cases.append((label, cells, m[0]))
     return cases
 
@@ -189,6 +189,7 @@ def main(argv: list) -> int:
     r.add_argument("--out", type=Path, required=True)
     r.add_argument("--bytes-per-cell", type=int, required=True)
     r.add_argument("--vram-gb", type=float, default=6.0)
+    r.add_argument("--profile", help="the class_sweeps.json profile of the sweep this pair checks (for example demo)")
     p = sub.add_parser("report")
     p.add_argument("--sphere", type=Path)
     p.add_argument("--refinement", type=Path)
@@ -199,7 +200,7 @@ def main(argv: list) -> int:
             c = generate_sphere(a.out, a.bytes_per_cell, a.vram_gb)
             print(f"wrote sphere case {c['case_id']}: grid {c['grid']}, U {c['speed_mps']:.5f} m/s, expected Cd {c['expected_cd']:.4f} ({SPHERE_REFERENCE_LABEL})")
         elif a.cmd == "generate-refinement":
-            for label, cells, case in generate_refinement(a.build, a.out, a.bytes_per_cell, a.vram_gb):
+            for label, cells, case in generate_refinement(a.build, a.out, a.bytes_per_cell, a.vram_gb, a.profile):
                 print(f"wrote {label} case {case['case_id']}: {cells} cells across the span, grid {case['grid']}")
         else:
             doc = build_report(a.sphere, a.refinement)

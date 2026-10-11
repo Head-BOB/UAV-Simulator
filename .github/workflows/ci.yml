@@ -67,12 +67,12 @@ jobs:
       - name: Run tests (debug)
         run: cargo test
         env:
-          ORT_DYLIB_PATH: ${{ github.workspace }}/onnxruntime-linux-x64-1.19.0/lib/libonnxruntime.so
+          ORT_DYLIB_PATH: ${{ github.workspace }}/onnxruntime-linux-x64-1.27.1/lib/libonnxruntime.so.1.27.1
 
       - name: Run tests (release)
         run: cargo test --release
         env:
-          ORT_DYLIB_PATH: ${{ github.workspace }}/onnxruntime-linux-x64-1.19.0/lib/libonnxruntime.so
+          ORT_DYLIB_PATH: ${{ github.workspace }}/onnxruntime-linux-x64-1.27.1/lib/libonnxruntime.so.1.27.1
 
       - name: Validation reports are current (model vs published data, report only)
         shell: bash

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "provenance": {
     "source_type": "ASSUMED",
     "note": "TODO(HUMAN-VERIFY): every number is an engineering starting point for an overnight run on the RTX 4050 6 GB laptop, not a requirement. Time per case is unknown until one case has been run and timed."
@@ -81,6 +81,43 @@
       "speed_index": 1,
       "alpha_deg": 0.0,
       "beta_deg": 0.0
+    }
+  },
+  "profiles": {
+    "demo": {
+      "note": "ASSUMED, TODO(HUMAN-VERIFY): the fewest cases that still identify the surrogate's 5 coefficients per axis, at a lower resolution so one case is minutes, not hours. The surrogate form F = V^2 (c0 + c1 alpha + c2 beta + c3 alpha^2 + c4 beta^2) needs 5 independent attitudes per speed: alpha = -a, 0, +a at beta = 0 and beta = -a, +a at alpha = 0 (vehicle_sweep.sweep_cases builds exactly this plus nothing more). 3 speeds are the minimum for the leave-one-speed-out held-out error. 5 attitudes x 3 speeds = 15 cases per class, 10 more than the 5 unknowns. Time per case is UNKNOWN until one case has been run and timed (sweep_time_plan.py).",
+      "classes": {
+        "quad_standard": {
+          "speeds_mps": [
+            5.0,
+            10.0,
+            15.0
+          ],
+          "angles_deg": [
+            -20.0,
+            0.0,
+            20.0
+          ],
+          "cells_across_span": 60
+        },
+        "quad_fpv_5in": {
+          "speeds_mps": [
+            10.0,
+            20.0,
+            30.0
+          ],
+          "angles_deg": [
+            -40.0,
+            0.0,
+            40.0
+          ],
+          "cells_across_span": 60
+        }
+      },
+      "refinement": {
+        "coarse_cells_across_span": 40,
+        "fine_cells_across_span": 60
+      }
     }
   }
 }

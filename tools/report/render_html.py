@@ -149,20 +149,25 @@ def s_cfd(r: dict) -> str:
     c = r["cfd"]
     if c["status"] == "no CFD run":
         return f"<p><b>{escape(c['status'])}.</b> {escape(c['statement'])}</p>"
-    out = f"<p><b>{escape(c['status'])}</b>. Drag model in the campaign: {escape(c['drag_model'])}.</p>"
-    g = c["geometry"]
-    out += f"<p>Geometry: {escape(fmt(g.get('triangles')))} triangles, STL sha256 <code>{escape(str(g.get('stl_sha256')))}</code>.</p>"
+    level = escape(c.get("level", "warn"))
+    out = f'<div class="banner {level}"><b>{escape(c["status"])}</b></div><p>{escape(c.get("statement", ""))} Drag model in the campaign: {escape(c["drag_model"])}.</p>'
+    g = c.get("geometry")
+    if g:
+        out += f"<p>Geometry: {escape(fmt(g.get('triangles')))} triangles, STL sha256 <code>{escape(str(g.get('stl_sha256')))}</code>.</p>"
     if "sweep" in c and c["sweep"]["grid"]:
         s = c["sweep"]
         out += (f"<p>Sweep: {escape(fmt(s['cases']))} cases; first grid {escape(str(s['grid']))}, cell size {escape(fmt(s['dx_m'], 'm'))}; propellers: {escape(str(s['propellers']))}; "
                 f"reference area {escape(fmt(s['ref_area_m2'], 'm2'))}, reference length {escape(fmt(s['ref_length_m'], 'm'))}.</p>")
-    out += f"<p>Sanity checks: <b>{escape(str(c['sanity'].get('status')))}</b>. {escape(str(c['sanity'].get('statement', '')))}</p>"
+    out += f"<p>Sanity checks: <b>{escape(str(c['sanity'].get('status')))}</b>. {escape(str(c['sanity'].get('statement') or ''))}</p>"
     if "model" in c:
         m = c["model"]
-        out += (f"<p>Surrogate: kind <b>{escape(str(m.get('kind')))}</b>, {escape(str(m.get('provenance')))}; held-out RMS error {escape(str(m.get('holdout_rms_n')))} N; "
-                f"limitations: {escape('; '.join(m.get('limitations', [])))}.</p>")
-    for im in c["images"]:
-        out += f'<figure><img alt="{escape(im["name"])}" src="{im["data_uri"]}"><figcaption>{escape(im["name"])} (preliminary CFD, unvalidated)</figcaption></figure>'
+        held = c.get("holdout_rms_n", m.get("holdout_rms_n"))
+        out += (f"<p>Surrogate: kind <b>{escape(str(m.get('kind')))}</b>, {escape(str(m.get('provenance')))}; held-out RMS error {escape(str(held))} N"
+                f"{'; limitations: ' + escape('; '.join(m['limitations'])) if m.get('limitations') else ''}.</p>")
+    out += f"<p>Flow images: {escape(c.get('images_statement', 'no flow images'))}.</p>"
+    for im in c.get("images", []):
+        legend = f"<br>{escape(im['legend'])}" if im.get("legend") else ""
+        out += f'<figure><img alt="{escape(im["name"])}" src="{im["data_uri"]}"><figcaption>{escape(im["name"])} (preliminary CFD, unvalidated){legend}</figcaption></figure>'
     return out
 
 

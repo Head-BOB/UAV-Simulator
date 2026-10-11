@@ -28,7 +28,7 @@ def default_peaks() -> dict:
 
 
 def write_campaign(root: Path, tests: dict[str, dict], conditions: dict | None = None, drag: str = "analytic_legacy",
-                   definitions_set: str = "1.0.0", build: str = "unit_build") -> Path:
+                   definitions_set: str = "1.0.0", build: str = "unit_build", cfd_note: dict | None = None) -> Path:
     """tests: name -> {"outcome", "metrics": {name: value}, "peaks": {...}, "rows": [...], "notes": [...], "breaking_point": {...}|None}."""
     root.mkdir(parents=True, exist_ok=True)
     cond = dict(CONDITIONS if conditions is None else conditions)
@@ -41,6 +41,8 @@ def write_campaign(root: Path, tests: dict[str, dict], conditions: dict | None =
         manifest = {"schema_version": 1, "test": name, "definition_version": "1", "definitions_set_version": definitions_set,
                     "definition": {}, "build": build, "parts": PARTS, "parts_db_version": "0.1.0", "git_hash": "abc", "core_interface_version": 14,
                     "controller_config_version": 1, "step_s": 0.002, "drag_model": drag, "turbulence": "Dryden, UNVERIFIED", "conditions": cond}
+        if cfd_note is not None:
+            manifest["cfd_surrogate"] = cfd_note   # written by the core only when a surrogate was involved
         result = {"schema_version": 1, "test": name, "definition_version": "1", "outcome": t.get("outcome", "COMPLETED"),
                   "breaking_point": t.get("breaking_point"), "metrics": [{"name": k, "value": v} for k, v in t.get("metrics", {}).items()],
                   "notes": t.get("notes", []), "series": [{"file": f"timeseries_{name}.csv", "rows": len(rows)}], "steps_simulated": 1,
@@ -53,6 +55,8 @@ def write_campaign(root: Path, tests: dict[str, dict], conditions: dict | None =
         entries.append({"test": name, "outcome": result["outcome"], "result": f"{name}/result.json"})
     top = {"schema_version": 1, "build": build, "definitions_set_version": definitions_set, "git_hash": "abc", "drag_model": drag,
            "turbulence": "Dryden, UNVERIFIED", "tests": entries}
+    if cfd_note is not None:
+        top["cfd_surrogate"] = cfd_note
     (root / "campaign_result.json").write_text(json.dumps(top), encoding="utf-8")
     return root
 

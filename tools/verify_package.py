@@ -64,6 +64,23 @@ HELPERS_DEMO_FILES = ["repo/tools/parts/builds/reference_quad/vehicle_build.json
                       "repo/tools/parts/builds/reference_quad/report_smoke/report.html"]
 
 
+PACKAGE_PINS = ROOT / "tools" / "package" / "pins.json"
+
+
+def check_onnxruntime(helpers: Path, rel: str, pins_path: Path = PACKAGE_PINS) -> list[str]:
+    """The staged ONNX Runtime library must be the pinned DLL (tools/package/pins.json onnxruntime_win_x64.dll_sha256)."""
+    f = helpers / rel
+    if not f.is_file():
+        return [f"missing: helpers/{rel} (helpers.json names it)"]
+    try:
+        want = json.loads(pins_path.read_text(encoding="utf-8"))["onnxruntime_win_x64"]["dll_sha256"]
+    except (OSError, ValueError, KeyError) as e:
+        return [f"cannot read the onnxruntime pin from tools/package/pins.json: {e}"]
+    if sha256(f) != want:
+        return [f"helpers/{rel} is not the pinned ONNX Runtime (sha256 differs from tools/package/pins.json)"]
+    return []
+
+
 def check_helpers(project: Path) -> list[str]:
     """Problems with DroneData/helpers (the staged helper programs); empty = OK. `project` is the folder that holds DroneData."""
     helpers = project / "DroneData" / "helpers"
@@ -94,6 +111,11 @@ def check_helpers(project: Path) -> list[str]:
     except (OSError, ValueError) as e:
         return problems + [f"unreadable helpers.json: {e}"]
     windows = manifest.get("mode") == "windows"
+    ort_key = settings.get("onnxruntime")
+    if ort_key:
+        problems += check_onnxruntime(helpers, ort_key)
+    if settings.get("cfd_dir") and not (helpers / settings["cfd_dir"]).is_dir():
+        problems.append(f"helpers.json cfd_dir: {settings['cfd_dir']!r} does not exist")
     for key in ("python", "repo_root", "run_campaign_exe", "validate_models_exe"):
         target = Path(settings.get(key, ""))
         target = target if target.is_absolute() else helpers / target
@@ -120,6 +142,19 @@ def check_helpers(project: Path) -> list[str]:
     return problems
 
 
+def require_onnxruntime(project: Path) -> list[str]:
+    """A WINDOWS helpers package must ship onnxruntime.dll: without it a CFD model cannot be loaded by the helpers."""
+    helpers = project / "DroneData" / "helpers"
+    try:
+        windows = json.loads((helpers / "helpers_manifest.json").read_text(encoding="utf-8")).get("mode") == "windows"
+        declared = json.loads((helpers / "helpers.json").read_text(encoding="utf-8")).get("onnxruntime")
+    except (OSError, ValueError):
+        return []   # check_helpers already reports unreadable files
+    if windows and not declared:
+        return ["missing: helpers/bin/onnxruntime.dll (stage with --onnxruntime-zip; see UE5Project/PACKAGING_README.md)"]
+    return []
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--package", type=Path, required=True)
@@ -130,6 +165,7 @@ def main(argv: list[str]) -> int:
     project = find_project_dir(args.package)
     if project is not None and (args.require_helpers or (project / "DroneData" / "helpers").exists()):
         problems += check_helpers(project)
+        problems += require_onnxruntime(project)
         for rel in spec.get("optional_data_files", []):
             print(f"optional {'present' if (project / 'DroneData' / rel).is_file() else 'absent '}: {rel}")
     for p in problems:

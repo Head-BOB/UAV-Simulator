@@ -61,9 +61,22 @@ python offline_pipeline/cfd/train_vehicle_aero.py verify --build tools/parts/bui
 - The model predicts FORCE only (body frame, N). Moments are in the CSV and report but not in the model.
 - Try everything without a GPU: `offline_pipeline/cfd/sample/synthetic_<class>_cfd.csv` is SYNTHETIC (a formula, not CFD).
 
-## Use it in a campaign (needs an ONNX Runtime that `ort` accepts)
+## Use it in a campaign (needs ONNX Runtime 1.27.x: `ORT_DYLIB_PATH`, or `onnxruntime.dll` next to the helper)
+Put the model, its `.onnx.model.json` and the sweep's `geometry.json` in one folder (for example `offline_pipeline/cfd/generated/cfd_demo`) and:
 ```
-cargo run --release --example run_campaign -- <build> <conditions> <definitions> <out> --aero-model <model.onnx> --aero-sidecar <model.onnx.model.json> --aero-geometry <geometry.json>
+cargo run --release --example run_campaign -- <build> <conditions> <definitions> <out> --aero-dir <that folder>
 ```
-Every manifest then says `cfd_surrogate:<kind>:<model sha256>` and the result lists the steps by source and outside the validated envelope.
-KNOWN PROBLEM: `ort 2.0.0-rc.13` rejects the ONNX Runtime 1.19.0 this repo pins (it asks for 1.27 or newer), so loading a model fails until that is settled (HUMAN-TODO).
+The helper picks the ONE model whose `config_hash` is the hash of this build's `vehicle_config.json`. The result files then carry
+`cfd_surrogate:<kind>:<model sha256>` as the drag model and a `cfd_surrogate` note with the label shown everywhere:
+- `kind=trained`: "CFD surrogate: PRELIMINARY, UNVALIDATED" (with the held-out error and the sanity status; `NOT_RUN` until step 5 above is done);
+- the committed synthetic fixture (`kind=stub`, needs a helper built with `--features allow_stub_models`): "CFD surrogate: SYNTHETIC (formula, not CFD)";
+- any other stub is refused. A model that matches the build but cannot be used stops the run with exit code 3 and `<out>/aero_model_status.json`;
+  `--analytic-fallback` (explicit, never automatic) continues on the analytic drag and says so in every result file.
+The explicit form `--aero-model <model.onnx> --aero-sidecar <model.onnx.model.json> --aero-geometry <geometry.json>` still works. Pass the CFD folder to
+the report with `make_report.py --cfd-dir <folder>`: velocity-slice PNGs in it are embedded, or the report says "no flow images".
+
+## Demo sweep for the 6 GB laptop (fewest cases, lower resolution)
+`--profile demo` on `vehicle_sweep.py generate` and `sphere_validation.py generate-refinement`: 3 speeds x 5 attitudes = 15 cases (default 36) at 60 cells across
+the span (default 100). The model has 5 coefficients per body axis; one speed's 5 attitudes determine them and 3 speeds give the held-out error. Time per case
+is unknown until you measure one: `python offline_pipeline/cfd/sweep_time_plan.py --seconds-per-case <S> --measured-profile demo` prints the total for each
+profile and the commands in order. All values are ASSUMED (`class_sweeps.json`).

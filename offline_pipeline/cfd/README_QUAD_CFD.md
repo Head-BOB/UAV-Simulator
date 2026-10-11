@@ -43,3 +43,4 @@ python offline_pipeline/cfd/train_aero_from_csv.py --csv path\to\quad_cfd.csv --
 - Try the tools without a GPU: `--csv offline_pipeline/cfd/sample/synthetic_quad_cfd.csv` (SYNTHETIC numbers from a formula; gives `kind=stub`).
 - The Rust core only loads a model whose `config_hash` equals the one compiled in from `vehicle_config.json`. This model records the hash of
   `quad_ref_build_config.json`, so the core will refuse it until the build hash is changed (decision for you, see HUMAN-TODO). Until then the demo flies on analytic drag and says so.
+- Newer path for ANY built vehicle (per-build model bound to the build, loaded by the campaign, labelled everywhere): `README_VEHICLE_CFD.md`. This older quad-only tool's model is the global FFI model.

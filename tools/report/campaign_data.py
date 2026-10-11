@@ -88,6 +88,13 @@ def load_campaign(folder: Path) -> dict:
     if top.get("build") != first.get("build"):
         raise CampaignDataError("campaign_result.json build differs from the manifests")
     common = {k: first[k] for k in SAME_IN_ALL}
+    # The CFD note is written only when a surrogate was involved. Every test and the campaign file must carry the same one.
+    common["cfd_surrogate"] = first.get("cfd_surrogate")
+    for name, t in tests.items():
+        if t["manifest"].get("cfd_surrogate") != common["cfd_surrogate"]:
+            raise CampaignDataError(f"{name}: manifest field 'cfd_surrogate' differs from the other tests")
+    if top.get("cfd_surrogate") != common["cfd_surrogate"]:
+        raise CampaignDataError("campaign_result.json cfd_surrogate differs from the manifests")
     return {"dir": folder, "summary": top, "tests": tests, "common": common}
 
 

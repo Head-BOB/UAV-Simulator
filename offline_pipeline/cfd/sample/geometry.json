@@ -1,0 +1,292 @@
+{
+  "schema_version": 1,
+  "generated_by": "offline_pipeline/cfd/vehicle_stl.py",
+  "build_name": "reference_quad",
+  "vehicle_class": "quad_standard",
+  "frame_convention": "NED world; body X forward, Y right, Z down; origin = geometric centre of the frame's central body box; metres",
+  "stl_sha256": "4bda03c5d666093d9ae43849c72f922b1eede80d341b5a5ceda9d061480a952b",
+  "triangles": 408,
+  "volume_m3": 0.004197560573644295,
+  "bbox_min_m": [
+    -0.2199,
+    -0.2199,
+    -0.049
+  ],
+  "bbox_max_m": [
+    0.2199,
+    0.2199,
+    0.083
+  ],
+  "projected_area_m2": {
+    "along_x": 0.024994,
+    "along_y": 0.028034,
+    "along_z": 0.049853
+  },
+  "cg_from_frame_centre_m": [
+    0.0,
+    0.0,
+    0.01002604166666667
+  ],
+  "propellers": "omit",
+  "gap_m": 0.002,
+  "shells": [
+    {
+      "instance": "body",
+      "role": "frame",
+      "part_id": "ref_frame_quad_400",
+      "kind": "box",
+      "triangles": 12,
+      "volume_m3": 0.003841992000000001,
+      "expected_volume_m3": 0.0038419920000000002,
+      "bbox_m": [
+        [
+          -0.099,
+          -0.099,
+          -0.049
+        ],
+        [
+          0.099,
+          0.099,
+          0.049
+        ]
+      ]
+    },
+    {
+      "instance": "arm_0",
+      "role": "frame",
+      "part_id": "ref_frame_quad_400",
+      "kind": "tube",
+      "triangles": 32,
+      "volume_m3": 1.458103606509718e-05,
+      "expected_volume_m3": 1.4581036065097179e-05,
+      "bbox_m": [
+        [
+          0.10446446609406725,
+          0.10446446609406725,
+          -0.007
+        ],
+        [
+          0.1887570021791339,
+          0.1887570021791339,
+          0.007
+        ]
+      ]
+    },
+    {
+      "instance": "arm_1",
+      "role": "frame",
+      "part_id": "ref_frame_quad_400",
+      "kind": "tube",
+      "triangles": 32,
+      "volume_m3": 1.458103606509718e-05,
+      "expected_volume_m3": 1.4581036065097179e-05,
+      "bbox_m": [
+        [
+          0.10446446609406725,
+          -0.1887570021791339,
+          -0.007
+        ],
+        [
+          0.1887570021791339,
+          -0.10446446609406725,
+          0.007
+        ]
+      ]
+    },
+    {
+      "instance": "arm_2",
+      "role": "frame",
+      "part_id": "ref_frame_quad_400",
+      "kind": "tube",
+      "triangles": 32,
+      "volume_m3": 1.458103606509718e-05,
+      "expected_volume_m3": 1.4581036065097179e-05,
+      "bbox_m": [
+        [
+          -0.1887570021791339,
+          0.10446446609406725,
+          -0.007
+        ],
+        [
+          -0.10446446609406725,
+          0.1887570021791339,
+          0.007
+        ]
+      ]
+    },
+    {
+      "instance": "arm_3",
+      "role": "frame",
+      "part_id": "ref_frame_quad_400",
+      "kind": "tube",
+      "triangles": 32,
+      "volume_m3": 1.458103606509718e-05,
+      "expected_volume_m3": 1.4581036065097179e-05,
+      "bbox_m": [
+        [
+          -0.1887570021791339,
+          -0.1887570021791339,
+          -0.007
+        ],
+        [
+          -0.10446446609406725,
+          -0.10446446609406725,
+          0.007
+        ]
+      ]
+    },
+    {
+      "instance": "motor_0",
+      "role": "motor",
+      "part_id": "tmotor_mn3508_kv700",
+      "kind": "cylinder",
+      "triangles": 64,
+      "volume_m3": 2.9703107345976343e-05,
+      "expected_volume_m3": 2.9703107345976238e-05,
+      "bbox_m": [
+        [
+          0.1801,
+          0.1801,
+          -0.0335
+        ],
+        [
+          0.2199,
+          0.2199,
+          -0.009000000000000001
+        ]
+      ]
+    },
+    {
+      "instance": "motor_1",
+      "role": "motor",
+      "part_id": "tmotor_mn3508_kv700",
+      "kind": "cylinder",
+      "triangles": 64,
+      "volume_m3": 2.970310734597643e-05,
+      "expected_volume_m3": 2.9703107345976238e-05,
+      "bbox_m": [
+        [
+          0.1801,
+          -0.2199,
+          -0.0335
+        ],
+        [
+          0.2199,
+          -0.1801,
+          -0.009000000000000001
+        ]
+      ]
+    },
+    {
+      "instance": "motor_2",
+      "role": "motor",
+      "part_id": "tmotor_mn3508_kv700",
+      "kind": "cylinder",
+      "triangles": 64,
+      "volume_m3": 2.97031073459764e-05,
+      "expected_volume_m3": 2.9703107345976238e-05,
+      "bbox_m": [
+        [
+          -0.2199,
+          0.1801,
+          -0.0335
+        ],
+        [
+          -0.1801,
+          0.2199,
+          -0.009000000000000001
+        ]
+      ]
+    },
+    {
+      "instance": "motor_3",
+      "role": "motor",
+      "part_id": "tmotor_mn3508_kv700",
+      "kind": "cylinder",
+      "triangles": 64,
+      "volume_m3": 2.9703107345976468e-05,
+      "expected_volume_m3": 2.9703107345976238e-05,
+      "bbox_m": [
+        [
+          -0.2199,
+          -0.2199,
+          -0.0335
+        ],
+        [
+          -0.1801,
+          -0.1801,
+          -0.009000000000000001
+        ]
+      ]
+    },
+    {
+      "instance": "pack",
+      "role": "battery",
+      "part_id": "ref_battery_generic_4s_5000",
+      "kind": "box",
+      "triangles": 12,
+      "volume_m3": 0.00017843199999999996,
+      "expected_volume_m3": 0.000178432,
+      "bbox_m": [
+        [
+          -0.068,
+          -0.020499999999999997,
+          0.051000000000000004
+        ],
+        [
+          0.068,
+          0.020499999999999997,
+          0.083
+        ]
+      ]
+    }
+  ],
+  "omitted": [
+    {
+      "instance": "prop_0",
+      "role": "propeller",
+      "reason": "propeller omitted: a solid disc would act as a plate; rotor wash and propeller drag are not in this CFD"
+    },
+    {
+      "instance": "esc_0",
+      "role": "esc",
+      "reason": "ESC sits inside the motor can in the stand-in assembly"
+    },
+    {
+      "instance": "prop_1",
+      "role": "propeller",
+      "reason": "propeller omitted: a solid disc would act as a plate; rotor wash and propeller drag are not in this CFD"
+    },
+    {
+      "instance": "esc_1",
+      "role": "esc",
+      "reason": "ESC sits inside the motor can in the stand-in assembly"
+    },
+    {
+      "instance": "prop_2",
+      "role": "propeller",
+      "reason": "propeller omitted: a solid disc would act as a plate; rotor wash and propeller drag are not in this CFD"
+    },
+    {
+      "instance": "esc_2",
+      "role": "esc",
+      "reason": "ESC sits inside the motor can in the stand-in assembly"
+    },
+    {
+      "instance": "prop_3",
+      "role": "propeller",
+      "reason": "propeller omitted: a solid disc would act as a plate; rotor wash and propeller drag are not in this CFD"
+    },
+    {
+      "instance": "esc_3",
+      "role": "esc",
+      "reason": "ESC sits inside the motor can in the stand-in assembly"
+    },
+    {
+      "instance": "lump",
+      "role": "wiring",
+      "reason": "visual kind is none (no geometry)"
+    }
+  ],
+  "provenance": "simplified dimension-true stand-in geometry from the build's assembly.json; propellers omitted unless stated; PRELIMINARY"
+}

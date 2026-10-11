@@ -388,6 +388,115 @@ class WindowsModeTests(unittest.TestCase):
         self.assertIn("helpers_manifest.json", probs[0])
 
 
+class OnnxRuntimeStagingTests(unittest.TestCase):
+    """The ONNX Runtime DLL that the helpers load: pinned, hash-checked, staged into bin/, listed in the manifest, verified."""
+    NAME = "onnxruntime-win-x64-1.27.1"
+
+    def setUp(self):
+        self.t = tempfile.TemporaryDirectory()
+        self.root = Path(self.t.name)
+        self.dll = b"MZ fake onnxruntime"
+        self.zip = self.root / f"{self.NAME}.zip"
+        with zipfile.ZipFile(self.zip, "w") as z:
+            z.writestr(f"{self.NAME}/lib/onnxruntime.dll", self.dll)
+            z.writestr(f"{self.NAME}/LICENSE", "MIT\n")
+            z.writestr(f"{self.NAME}/ThirdPartyNotices.txt", "notices\n")
+        self.pin = {"file": self.zip.name, "sha256": sha(self.zip.read_bytes()), "dll_member": f"{self.NAME}/lib/onnxruntime.dll",
+                    "dll_sha256": sha(self.dll), "license_members": [f"{self.NAME}/LICENSE", f"{self.NAME}/ThirdPartyNotices.txt"]}
+        self.pins = {"onnxruntime_win_x64": self.pin}
+
+    def tearDown(self):
+        self.t.cleanup()
+
+    def test_members_are_the_dll_and_its_licence_files_under_bin(self):
+        got = S.ort_members(self.zip, self.pins)
+        self.assertEqual(sorted(got), ["bin/onnxruntime.dll", "bin/onnxruntime_LICENSE", "bin/onnxruntime_ThirdPartyNotices.txt"])
+        self.assertEqual(got["bin/onnxruntime.dll"], self.dll)
+
+    def test_every_pin_mismatch_is_refused(self):
+        def refused(pin_changes, needle, zip_path=None):
+            pins = {"onnxruntime_win_x64": {**self.pin, **pin_changes}}
+            with self.assertRaises(S.StageError) as e:
+                S.ort_members(zip_path or self.zip, pins)
+            self.assertIn(needle, str(e.exception))
+        refused({"sha256": "0" * 64}, "differs from the pin")
+        refused({"dll_sha256": "0" * 64}, "differs from the pin")
+        refused({"sha256": "TODO(HUMAN-VERIFY)"}, "is not a sha256")
+        refused({"dll_member": f"{self.NAME}/lib/other.dll"}, "has no")
+        refused({"file": "other.zip"}, "expected the file")
+        with self.assertRaises(S.StageError):
+            S.ort_members(self.zip, {})
+        # a zip with the right name but other bytes: the zip hash catches it before anything is read
+        other = self.root / "x"
+        other.mkdir()
+        fake = other / self.zip.name
+        fake.write_bytes(b"not the pinned zip")
+        refused({}, "differs from the pin", fake)
+
+    def test_the_committed_pin_matches_the_fetch_script_and_the_ort_the_crate_wants(self):
+        import fetch_onnx as F
+        pin = json.loads(S.PINS.read_text(encoding="utf-8"))["onnxruntime_win_x64"]
+        win = F.ASSETS["windows"]
+        self.assertEqual((pin["file"], pin["sha256"]), (win["file"], win["sha256"]))
+        self.assertEqual(pin["url"], F.BASE_URL + win["file"])
+        for key in ("sha256", "dll_sha256"):
+            self.assertRegex(pin[key], r"^[0-9a-f]{64}$")
+        # ort 2.0.0-rc.13 (default feature api-27) refuses an ONNX Runtime whose minor version is below 27
+        self.assertTrue(F.VERSION.startswith("1.27."), F.VERSION)
+
+    def test_stage_with_the_zip_writes_dll_licence_helpers_json_and_manifest(self):
+        repo = make_repo(self.root / "repo")
+        exes = make_exes(self.root / "exes", "")
+        cfd = self.root / "cfd"
+        cfd.mkdir()
+        for n in ("m.onnx", "m.onnx.model.json", "geometry.json", "slice.png", "slice.legend.txt"):
+            (cfd / n).write_bytes(b"x")
+        plan = S.build_plan(repo, exe_dir=exes, exe_suffix="", python_zip=None, wheels_dir=None, dev_python="/usr/bin/python3", cfd_dir=cfd,
+                            pins=self.pins, lock_text="", onnxruntime_zip=self.zip)
+        m = S.write_plan(plan, self.root / "out")
+        helpers = self.root / "out" / "helpers"
+        paths = {e["path"] for e in m["files"]}
+        self.assertTrue({"bin/onnxruntime.dll", "bin/onnxruntime_LICENSE", "cfd/slice.legend.txt", "cfd/m.onnx.model.json"} <= paths)
+        s = json.loads((helpers / "helpers.json").read_text())
+        self.assertEqual((s["onnxruntime"], s["cfd_dir"]), ("bin/onnxruntime.dll", "cfd"))
+        # verification: the pinned hash is accepted, anything else is not
+        pins_file = self.root / "pins.json"
+        pins_file.write_text(json.dumps(self.pins))
+        self.assertEqual(V.check_onnxruntime(helpers, "bin/onnxruntime.dll", pins_file), [])
+        (helpers / "bin" / "onnxruntime.dll").write_bytes(b"MZ swapped")
+        self.assertTrue(any("not the pinned ONNX Runtime" in p for p in V.check_onnxruntime(helpers, "bin/onnxruntime.dll", pins_file)))
+        (helpers / "bin" / "onnxruntime.dll").unlink()
+        self.assertTrue(any("missing" in p for p in V.check_onnxruntime(helpers, "bin/onnxruntime.dll", pins_file)))
+
+    def test_without_the_zip_nothing_ort_related_is_written(self):
+        repo = make_repo(self.root / "repo")
+        exes = make_exes(self.root / "exes", "")
+        m = stage(repo, self.root / "out", exes)
+        self.assertFalse(any("onnxruntime" in e["path"] for e in m["files"]))
+        s = json.loads((self.root / "out" / "helpers" / "helpers.json").read_text())
+        self.assertNotIn("onnxruntime", s)
+        self.assertNotIn("cfd_dir", s)
+
+    def test_a_real_package_without_the_zip_is_refused_by_the_command_line(self):
+        repo = make_repo(self.root / "repo")
+        exes = make_exes(self.root / "exes", ".exe")
+        pkg = self.root / "pkg" / "Windows" / "UAV_Simulator" / "DroneData"
+        pkg.mkdir(parents=True)
+        rc = S.main(["--repo", str(repo), "--package", str(self.root / "pkg"), "--exe-dir", str(exes), "--python-zip", str(self.root / "p.zip"),
+                     "--wheels-dir", str(self.root / "w")])
+        self.assertEqual(rc, 1)
+        self.assertFalse((pkg / "helpers").exists())
+
+    def test_verify_requires_the_dll_of_a_windows_package_only(self):
+        project = self.root / "p" / "Windows" / "UAV_Simulator"
+        helpers = project / "DroneData" / "helpers"
+        helpers.mkdir(parents=True)
+        for mode, declared, expect_problem in (("windows", None, True), ("windows", "bin/onnxruntime.dll", False), ("dev", None, False)):
+            (helpers / "helpers_manifest.json").write_text(json.dumps({"mode": mode, "files": []}))
+            (helpers / "helpers.json").write_text(json.dumps({"onnxruntime": declared} if declared else {}))
+            self.assertEqual(bool(V.require_onnxruntime(project)), expect_problem, (mode, declared))
+
+
 class SelfSufficiencyTests(unittest.TestCase):
     """The STAGED tree runs the helpers without reading anything outside itself and reproduces the committed outputs."""
 

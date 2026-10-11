@@ -755,6 +755,55 @@ impl DragSource for SurrogateDrag {
     }
 }
 
+/// What the CFD surrogate did in a campaign, written into `campaign_result.json` and every test `manifest.json` ONLY when present
+/// (so an analytic campaign keeps its exact bytes). The report and the app show `status` verbatim, coloured by `level`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CfdNote {
+    /// Label for screens and reports, for example `CFD surrogate: SYNTHETIC (formula, not CFD)`.
+    pub status: String,
+    /// `danger` (stub or synthetic), `warn` (preliminary CFD, or a failed load that fell back to analytic drag) or `info`.
+    pub level: &'static str,
+    /// Model `kind` metadata (`trained` or `stub`), when a model was loaded.
+    pub kind: Option<String>,
+    /// SHA-256 of the model file, when a model was loaded or offered.
+    pub model_sha256: Option<String>,
+    /// Model `provenance` metadata.
+    pub provenance: Option<String>,
+    /// Held-out RMS force error in N as the trainer wrote it (text; `none` if it could not be computed).
+    pub holdout_rms_n: Option<String>,
+    /// CFD sanity-check status (`NOT_RUN`, `PARTIAL`, `RUN`) as the model carries it.
+    pub cfd_sanity_status: Option<String>,
+    /// Why a model that matched the build could not be used (the run then used analytic drag by explicit request).
+    pub load_error: Option<String>,
+}
+
+impl CfdNote {
+    /// JSON object text (keys in a fixed order; absent values are `null`).
+    #[must_use]
+    pub fn to_json(&self) -> String {
+        use crate::textout::json_str;
+        let opt = |v: &Option<String>| v.as_deref().map_or_else(|| "null".to_string(), json_str);
+        format!(
+            "{{\"status\": {}, \"level\": {}, \"kind\": {}, \"model_sha256\": {}, \"provenance\": {}, \"holdout_rms_n\": {}, \"cfd_sanity_status\": {}, \"load_error\": {}}}",
+            json_str(&self.status),
+            json_str(self.level),
+            opt(&self.kind),
+            opt(&self.model_sha256),
+            opt(&self.provenance),
+            opt(&self.holdout_rms_n),
+            opt(&self.cfd_sanity_status),
+            opt(&self.load_error),
+        )
+    }
+}
+
+/// `,\n  "cfd_surrogate": {...}` or nothing.
+fn cfd_extra(note: Option<&CfdNote>) -> String {
+    note.map_or_else(String::new, |n| {
+        format!(",\n  \"cfd_surrogate\": {}", n.to_json())
+    })
+}
+
 /// Creates a fresh drag source per simulation (a campaign runs many simulations, possibly on several threads).
 pub type DragFactory = dyn Fn() -> Result<Box<dyn DragSource>, CampaignError> + Sync;
 
@@ -3240,6 +3289,8 @@ pub struct CampaignInputs<'a> {
     pub tests: Vec<TestId>,
     /// Where each simulation gets its drag from; `None` = the analytic model.
     pub drag: Option<&'a DragFactory>,
+    /// What the CFD surrogate did (written to the result files only when `Some`); `None` for a plain analytic campaign.
+    pub cfd_surrogate: Option<&'a CfdNote>,
 }
 
 /// Result of one test: its output or the error that stopped it.
@@ -3338,12 +3389,13 @@ fn manifest_json(
         .map(|v| jn(*v))
         .collect::<Vec<_>>()
         .join(", ");
+    let cfd_extra = cfd_extra(inputs.cfd_surrogate);
     // only a NAMED condition set adds the key, so unnamed runs keep their P4 bytes
     let set_name = c.name.as_ref().map_or(String::new(), |n| {
         format!("\"condition_set\": {}, ", json_str(n))
     });
     format!(
-        "{{\n  \"schema_version\": {SCHEMA_VERSION},\n  \"test\": {},\n  \"definition_version\": {},\n  \"definitions_set_version\": {},\n  \"definition\": {definition_json},\n  \"build\": {},\n  \"parts\": [{parts}],\n  \"parts_db_version\": {},\n  \"git_hash\": {},\n  \"core_interface_version\": {},\n  \"controller_config_version\": {},\n  \"step_s\": {},\n  \"drag_model\": {},\n  \"turbulence\": {},\n  \"conditions\": {{{set_name}\"ambient_c\": {}, \"site_altitude_m\": {}, \"temp_offset_c\": {}, \"wind_speed_mps\": {}, \"wind_from_deg\": {}, \"turbulence\": {}, \"gust_level\": {}, \"seed\": {}, \"payload_kg\": {}, \"payload_position_m\": [{payload}], \"battery_soc\": {}, \"battery_temp_c\": {}}}\n}}\n",
+        "{{\n  \"schema_version\": {SCHEMA_VERSION},\n  \"test\": {},\n  \"definition_version\": {},\n  \"definitions_set_version\": {},\n  \"definition\": {definition_json},\n  \"build\": {},\n  \"parts\": [{parts}],\n  \"parts_db_version\": {},\n  \"git_hash\": {},\n  \"core_interface_version\": {},\n  \"controller_config_version\": {},\n  \"step_s\": {},\n  \"drag_model\": {}{cfd_extra},\n  \"turbulence\": {},\n  \"conditions\": {{{set_name}\"ambient_c\": {}, \"site_altitude_m\": {}, \"temp_offset_c\": {}, \"wind_speed_mps\": {}, \"wind_from_deg\": {}, \"turbulence\": {}, \"gust_level\": {}, \"seed\": {}, \"payload_kg\": {}, \"payload_position_m\": [{payload}], \"battery_soc\": {}, \"battery_temp_c\": {}}}\n}}\n",
         json_str(test),
         json_str(version),
         json_str(&inputs.definitions.definitions_version),
@@ -3606,10 +3658,11 @@ pub fn render_outputs(
         index.push(index_entry(*id, r));
     }
     files.push(("summary.csv".to_string(), summary));
+    let cfd_extra = cfd_extra(inputs.cfd_surrogate);
     files.push((
         "campaign_result.json".to_string(),
         format!(
-            "{{\n  \"schema_version\": {SCHEMA_VERSION},\n  \"build\": {},\n  \"definitions_set_version\": {},\n  \"git_hash\": {},\n  \"drag_model\": {},\n  \"turbulence\": {},\n  \"tests\": [\n{}\n  ]\n}}\n",
+            "{{\n  \"schema_version\": {SCHEMA_VERSION},\n  \"build\": {},\n  \"definitions_set_version\": {},\n  \"git_hash\": {},\n  \"drag_model\": {}{cfd_extra},\n  \"turbulence\": {},\n  \"tests\": [\n{}\n  ]\n}}\n",
             json_str(inputs.build_name),
             json_str(&inputs.definitions.definitions_version),
             json_str(inputs.git_hash),
@@ -4383,6 +4436,7 @@ pub(crate) mod tests {
             definitions: defs,
             tests,
             drag: None,
+            cfd_surrogate: None,
         }
     }
 
@@ -4911,6 +4965,97 @@ pub(crate) mod tests {
                 && !plain.contains("drag_note")
                 && plain.contains("\"drag_model\": \"analytic_legacy\"")
         );
+    }
+
+    fn note(status: &str, level: &'static str, load_error: Option<&str>) -> CfdNote {
+        CfdNote {
+            status: status.to_string(),
+            level,
+            kind: Some("stub".to_string()),
+            model_sha256: Some("ab".repeat(32)),
+            provenance: Some("SYNTHETIC formula, not CFD | NOT VALIDATED".to_string()),
+            holdout_rms_n: Some("2.5e-9".to_string()),
+            cfd_sanity_status: Some("NOT_RUN".to_string()),
+            load_error: load_error.map(str::to_string),
+        }
+    }
+
+    #[test]
+    fn test_camp_cfd_note_json_has_fixed_keys_and_null_for_absent_values() {
+        // keys in the written order; None -> null; text is JSON-escaped (the quote and backslash below)
+        let n = CfdNote {
+            status: "S \"q\"".to_string(),
+            level: "warn",
+            kind: None,
+            model_sha256: None,
+            provenance: Some("a\\b".to_string()),
+            holdout_rms_n: None,
+            cfd_sanity_status: None,
+            load_error: None,
+        };
+        assert_eq!(
+            n.to_json(),
+            "{\"status\": \"S \\\"q\\\"\", \"level\": \"warn\", \"kind\": null, \"model_sha256\": null, \"provenance\": \"a\\\\b\", \"holdout_rms_n\": null, \"cfd_sanity_status\": null, \"load_error\": null}"
+        );
+    }
+
+    #[test]
+    fn test_camp_the_cfd_note_reaches_the_result_and_every_manifest_only_when_given() {
+        let build = ref_build();
+        let cond = parse_conditions(&read("campaign/conditions_smoke.json")).unwrap();
+        let defs = parse_definitions(&read("campaign/smoke_definitions.json")).unwrap();
+        let n = note(
+            "CFD surrogate: SYNTHETIC (formula, not CFD)",
+            "danger",
+            None,
+        );
+        let mut inputs = smoke_inputs(&build, &cond, &defs, vec![TestId::Climb]);
+        inputs.cfd_surrogate = Some(&n);
+        let results = run_campaign(&inputs, 1).unwrap();
+        let files = render_outputs(&inputs, &results).unwrap();
+        let json = |p: &str| -> serde_json::Value {
+            let t = &files.iter().find(|(n, _)| n == p).unwrap().1;
+            serde_json::from_str(t).unwrap()
+        };
+        for file in ["campaign_result.json", "climb/manifest.json"] {
+            let v = json(file);
+            assert_eq!(
+                v["cfd_surrogate"]["status"], "CFD surrogate: SYNTHETIC (formula, not CFD)",
+                "{file}"
+            );
+            assert_eq!(v["cfd_surrogate"]["level"], "danger", "{file}");
+            assert_eq!(v["cfd_surrogate"]["cfd_sanity_status"], "NOT_RUN", "{file}");
+            // the drag model of an analytic run is untouched by a note
+            assert_eq!(v["drag_model"], "analytic_legacy", "{file}");
+        }
+        // without a note the key is absent: the analytic goldens keep their exact bytes
+        for (name, text) in &smoke().1 {
+            assert!(!text.contains("cfd_surrogate"), "{name}");
+        }
+    }
+
+    #[test]
+    fn test_camp_a_failed_load_note_carries_its_reason_into_the_files() {
+        let build = ref_build();
+        let cond = parse_conditions(&read("campaign/conditions_smoke.json")).unwrap();
+        let defs = parse_definitions(&read("campaign/smoke_definitions.json")).unwrap();
+        let n = note(
+            "CFD model failed to load: ONNX Runtime missing; results use analytic drag",
+            "warn",
+            Some("ONNX Runtime missing"),
+        );
+        let mut inputs = smoke_inputs(&build, &cond, &defs, vec![TestId::Climb]);
+        inputs.cfd_surrogate = Some(&n);
+        let results = run_campaign(&inputs, 1).unwrap();
+        let files = render_outputs(&inputs, &results).unwrap();
+        let t = &files
+            .iter()
+            .find(|(n, _)| n == "campaign_result.json")
+            .unwrap()
+            .1;
+        let v: serde_json::Value = serde_json::from_str(t).unwrap();
+        assert_eq!(v["cfd_surrogate"]["load_error"], "ONNX Runtime missing");
+        assert_eq!(v["cfd_surrogate"]["level"], "warn");
     }
 
     #[test]

@@ -13,7 +13,10 @@ been checked against hardware. The app replays RECORDED test runs; it is not liv
 ## 1. Get the code and build the physics DLL and the two helper programs
 1. `git pull` on the branch you were told.
 2. Open a terminal in `physics_core\` and run `cargo build --release`.
-3. In the same folder run `cargo build --release --example run_campaign --example validate_models`.
+3. In the same folder run `cargo build --release --features allow_stub_models --example run_campaign --example validate_models`.
+   `allow_stub_models` is for the DEMO build only: it lets the helper load the ONE committed SYNTHETIC model (a formula, not CFD; recognised by its file
+   hash, any other stub is still refused) so the app can show "CFD surrogate: SYNTHETIC (formula, not CFD)". A real, trained CFD model loads with or
+   without the feature. A release for real use must be built WITHOUT it (`cargo build --release --example run_campaign --example validate_models`).
 4. Check that these exist in `physics_core\target\release\`: `physics_core.dll`, `physics_core.dll.lib`, and in `examples\`: `run_campaign.exe`, `validate_models.exe`.
    (Unreal links the `.lib` and ships the `.dll`; the two `.exe` files are the helpers the app starts to run the tests.)
 
@@ -31,6 +34,17 @@ still runs: the 3D view shows simple shapes. Then run `python tools\gen_demo_hea
      -r tools\package\helpers_lock.txt -d C:\path\wheels
    ```
    If `pip` says a hash is missing for a Windows file, stop and send the message: the lock may need regenerating (`tools\package\make_helpers_lock.py`).
+
+## 3b. Download ONNX Runtime (once; the helpers need it to load a CFD model)
+1. Download `onnxruntime-win-x64-1.27.1.zip` from
+   `https://github.com/microsoft/onnxruntime/releases/download/v1.27.1/onnxruntime-win-x64-1.27.1.zip` (about 77 MB). It must be version 1.27.x:
+   the `ort` crate of this project refuses an older one.
+2. Compute its hash: `certutil -hashfile onnxruntime-win-x64-1.27.1.zip SHA256`. It must be
+   `2e00414a63fdef0914cd5a5ede6c707844878e0c08e1b6693842f0451b2df2a1` (the value pinned in `tools\package\pins.json`; the stager refuses any other file).
+   TODO(HUMAN-VERIFY): that value was taken from the GitHub release itself; compare it with a second source before you trust it (see HUMAN-TODO section 12).
+3. Do NOT unzip it and do not put anything in `System32`. Keep the zip anywhere (for example `C:\path\onnxruntime-win-x64-1.27.1.zip`): step 6 takes
+   `lib\onnxruntime.dll` out of it, checks its hash and writes it to `DroneData\helpers\bin\` next to `run_campaign.exe`, which is where the helpers look for it.
+   (If a model cannot be loaded, the app says why in amber on the Conditions screen; it never falls back by itself.)
 
 ## 4. Try it in the editor first
 1. Double-click `UE5Project\UAV_Simulator.uproject`. Let it build the plugin and the game module. If it fails to compile, send the errors
@@ -55,12 +69,16 @@ Replace the paths. `Development` keeps the console and the log lines the author 
 ## 6. Add the helper programs to the package
 ```
 python tools\package\stage_package.py --package C:\path\to\Packaged --python-zip C:\path\python-3.12.10-embed-amd64.zip ^
-  --wheels-dir C:\path\wheels --exe-dir physics_core\target\release\examples
+  --wheels-dir C:\path\wheels --onnxruntime-zip C:\path\onnxruntime-win-x64-1.27.1.zip ^
+  --exe-dir physics_core\target\release\examples --cfd-dir offline_pipeline\cfd\sample
 ```
-It checks the Python zip against the pin and every package against the lock, copies the helper scripts, the parts database, the test definitions, the golden
-builds (a demo session you can open without running anything), and writes `DroneData\helpers\helpers_manifest.json` with the hash of every file. Add
-`--cfd-dir <folder>` to include CFD results or per-build models if you have any (they are copied and listed, never used yet). It refuses to overwrite an
-earlier `helpers` folder: delete it first.
+It checks the Python zip against the pin and every package against the lock, checks the ONNX Runtime zip and its DLL against the pins, copies the helper
+scripts, the parts database, the test definitions, the golden builds (a demo session you can open without running anything), and writes
+`DroneData\helpers\helpers_manifest.json` with the hash of every file. `--cfd-dir` copies a CFD folder to `DroneData\helpers\cfd\` and writes it into
+`helpers.json` (`cfd_dir`): the helper then uses the model in it whose `config_hash` is the hash of the built vehicle's `vehicle_config.json`.
+`offline_pipeline\cfd\sample` is the SYNTHETIC demo folder (formula, not CFD; it matches only the reference quad's standard build); after a real GPU
+sweep use that sweep's `cfd_demo` folder instead (see `offline_pipeline\cfd\README_VEHICLE_CFD.md`). `--onnxruntime-zip` is required for a real package.
+The stager refuses to overwrite an earlier `helpers` folder: delete it first.
 
 ## 7. Check that everything came along (before the first launch)
 1. From the repo root run: `python tools\verify_package.py --package C:\path\to\Packaged --require-helpers`
@@ -99,7 +117,11 @@ earlier `helpers` folder: delete it first.
 19. Run opens: seven instruments in the bottom bar, a top bar with the test name, and nothing covering the middle of the screen.
 20. Space plays and pauses the replay; I opens the details panel (motors, power, temperatures, margins with the limit mark, two charts); Tab opens the controls.
 21. The speed buttons change 1x to 64x; clicking the seek bar jumps; Restart goes back to the start; the text says "Recorded run, not live physics".
-22. Results: the tests, breaking points (for example hover payload) with the criterion and step size, the limiting component, the validation summary and "CFD: no CFD run".
+22. Results: the tests, breaking points (for example hover payload) with the criterion and step size, the limiting component and the validation summary. The CFD
+    block depends on what the run used. With the synthetic sample folder: red "CFD surrogate: SYNTHETIC (formula, not CFD)", the held-out error, "NOT_RUN" and
+    "no flow images". With a real model from a GPU sweep: amber "CFD surrogate: PRELIMINARY, UNVALIDATED", its held-out error, the sanity status and the image names
+    with an "Open flow images" button. Without any CFD folder: "CFD: no CFD run". If a model could not be loaded the Conditions screen shows the reason in amber,
+    nothing ran, and a "Run anyway on analytic drag" button; use it once and check that Results then says "CFD model failed to load: ...; results use analytic drag".
 23. Results: no test is listed as "Not implemented"; an "Edited" banner is shown because a limit was edited. If you also ran Maximum speed, FPV sprint or FPV punch-out, a banner says they use the legacy drag and are not vehicle limits (try them once, they take longer).
 24. Report: "Open report" opens `report.html` in the browser (print it to PDF from there); "Open folder" opens the session folder.
 25. Compare: "Run upgrade study" starts a long job; afterwards a table shows deltas in green (better) and red (worse), rejected parts with the reason, and "not tested" rows.

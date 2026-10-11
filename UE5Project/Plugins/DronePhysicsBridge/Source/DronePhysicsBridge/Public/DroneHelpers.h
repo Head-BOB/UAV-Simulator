@@ -18,6 +18,7 @@ struct HelperSettings
     std::string RepoRoot;                // folder holding tools/, campaign/, physics_core/
     std::string RunCampaignExe;          // staged run_campaign executable; empty = `cargo run --release --example run_campaign`
     std::string ValidateModelsExe;       // staged validate_models executable; empty = `cargo run --release --example validate_models`
+    std::string CfdDir;                  // folder with the CFD model(s), geometry.json and flow images; empty = no CFD folder
     int Threads = 4;
     std::string GitHash = "unknown";     // recorded in every manifest
 };
@@ -29,7 +30,7 @@ inline bool ParseHelperSettings(const std::string& Text, HelperSettings& Out, st
     if (!R.ok) { Err = "helpers.json: " + R.error; return false; }
     HelperSettings S;
     auto Str = [&](const char* K, std::string& Dst) { const Json::Value* V = R.value.Get(K); if (V && V->IsString()) Dst = V->text; };
-    Str("python", S.Python); Str("repo_root", S.RepoRoot); Str("run_campaign_exe", S.RunCampaignExe); Str("validate_models_exe", S.ValidateModelsExe); Str("git_hash", S.GitHash);
+    Str("python", S.Python); Str("repo_root", S.RepoRoot); Str("run_campaign_exe", S.RunCampaignExe); Str("validate_models_exe", S.ValidateModelsExe); Str("cfd_dir", S.CfdDir); Str("git_hash", S.GitHash);
     const Json::Value* T = R.value.Get("threads");
     if (T && T->IsNumber()) { if (T->number < 1 || T->number > 64 || T->number != static_cast<int>(T->number)) { Err = "threads must be a whole number 1..64"; return false; } S.Threads = static_cast<int>(T->number); }
     if (S.RepoRoot.empty()) { Err = "helpers.json needs repo_root"; return false; }
@@ -87,7 +88,7 @@ inline void ResolveHelperPaths(HelperSettings& S, const std::string& BaseDir)
         if (BareIsCommand && V.find('/') == std::string::npos && V.find('\\') == std::string::npos) return;
         V = Join(BaseDir, V);
     };
-    Fix(S.Python, true); Fix(S.RepoRoot, false); Fix(S.RunCampaignExe, false); Fix(S.ValidateModelsExe, false);
+    Fix(S.Python, true); Fix(S.RepoRoot, false); Fix(S.RunCampaignExe, false); Fix(S.ValidateModelsExe, false); Fix(S.CfdDir, false);
 }
 
 
@@ -96,11 +97,15 @@ inline Command BuildCommand(const HelperSettings& H, const std::string& SpecFile
     return Command{H.Python, {Join(H.RepoRoot, "tools/parts/build_vehicle.py"), SpecFile, "--out", OutDir}, "Building the vehicle"};
 }
 
+// `AnalyticFallback` is set ONLY by the "Run anyway on analytic drag" button after a CFD model failed to load (run_campaign exit code 3);
+// it is never set automatically. With a CFD folder the helper itself picks the model that is bound to the build (`--aero-dir`).
 inline Command CampaignCommand(const HelperSettings& H, const std::string& BuildDir, const std::string& ConditionsFile, const std::string& DefinitionsFile,
-                               const std::string& OutDir, const std::string& TestsArg)
+                               const std::string& OutDir, const std::string& TestsArg, bool AnalyticFallback = false)
 {
     std::vector<std::string> Tail = {BuildDir, ConditionsFile, DefinitionsFile, OutDir, "--threads", std::to_string(H.Threads), "--git-hash", H.GitHash};
     if (!TestsArg.empty()) { Tail.push_back("--tests"); Tail.push_back(TestsArg); }
+    if (!H.CfdDir.empty()) { Tail.push_back("--aero-dir"); Tail.push_back(H.CfdDir); }
+    if (AnalyticFallback) Tail.push_back("--analytic-fallback");
     if (!H.RunCampaignExe.empty()) return Command{H.RunCampaignExe, Tail, "Running the tests"};
     std::vector<std::string> Args = {"run", "--release", "--quiet", "--manifest-path", Join(H.RepoRoot, "physics_core/Cargo.toml"), "--example", "run_campaign", "--"};
     Args.insert(Args.end(), Tail.begin(), Tail.end());
@@ -120,6 +125,7 @@ inline Command ReportCommand(const HelperSettings& H, const std::string& BuildDi
     Command C{H.Python, {Join(H.RepoRoot, "tools/report/make_report.py"), "--build", BuildDir}, "Writing the report"};
     for (const auto& D : CampaignDirs) { C.Args.push_back("--campaign"); C.Args.push_back(D); }
     if (!ValidationFile.empty()) { C.Args.push_back("--validation"); C.Args.push_back(ValidationFile); }
+    if (!H.CfdDir.empty()) { C.Args.push_back("--cfd-dir"); C.Args.push_back(H.CfdDir); }
     C.Args.push_back("--out"); C.Args.push_back(OutDir);
     return C;
 }
@@ -132,7 +138,10 @@ inline Command StudyCommand(const HelperSettings& H, const std::string& BuildSpe
 
 inline Command StudyReportCommand(const HelperSettings& H, const std::string& StudyDir, const std::string& OutDir)
 {
-    return Command{H.Python, {Join(H.RepoRoot, "tools/report/make_report.py"), "--study", StudyDir, "--out", OutDir}, "Writing the study report"};
+    Command C{H.Python, {Join(H.RepoRoot, "tools/report/make_report.py"), "--study", StudyDir}, "Writing the study report"};
+    if (!H.CfdDir.empty()) { C.Args.push_back("--cfd-dir"); C.Args.push_back(H.CfdDir); }
+    C.Args.push_back("--out"); C.Args.push_back(OutDir);
+    return C;
 }
 
 enum class Helper { Build, Validation, Campaign, Report, Study };
@@ -145,7 +154,9 @@ inline std::string ExitMessage(Helper H, int Code)
     {
         case Helper::Build: return Code == 1 ? "The builder refused this combination of parts; the reasons are listed." : "The builder failed (exit code " + std::to_string(Code) + ").";
         case Helper::Validation: return "The validation check failed (exit code " + std::to_string(Code) + "); the report will have no validation table.";
-        case Helper::Campaign: return "The test run stopped (exit code " + std::to_string(Code) + "); no results were produced for the failed tests.";
+        case Helper::Campaign:
+            if (Code == 3) return "The tests did not run (exit code 3): the CFD model for this build could not be used (reason below). Nothing fell back silently.";
+            return "The test run stopped (exit code " + std::to_string(Code) + "); no results were produced for the failed tests.";
         case Helper::Report: return Code == 1 ? "The report tool stopped: " : "The report tool failed (exit code " + std::to_string(Code) + ").";
         case Helper::Study: return Code == 1 ? "The study stopped before it could finish." : "The study failed (exit code " + std::to_string(Code) + ").";
     }

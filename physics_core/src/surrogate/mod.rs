@@ -236,19 +236,47 @@ pub fn pack_outputs(
     })
 }
 
-/// ONNX Runtime library path, resolved the way `ort` does: `ORT_DYLIB_PATH` if set and
-/// non-empty, otherwise the platform default file name.
-fn ort_dylib_path() -> PathBuf {
-    match std::env::var("ORT_DYLIB_PATH") {
-        Ok(s) if !s.is_empty() => PathBuf::from(s),
-        _ => PathBuf::from(if cfg!(target_os = "windows") {
-            "onnxruntime.dll"
-        } else if cfg!(target_os = "macos") {
-            "libonnxruntime.dylib"
-        } else {
-            "libonnxruntime.so"
-        }),
+/// Platform default file name of the ONNX Runtime library.
+const DEFAULT_ORT_FILE: &str = if cfg!(target_os = "windows") {
+    "onnxruntime.dll"
+} else if cfg!(target_os = "macos") {
+    "libonnxruntime.dylib"
+} else {
+    "libonnxruntime.so"
+};
+
+/// Where to load ONNX Runtime from, in order: `env` (`ORT_DYLIB_PATH`) if set and non-empty; else the default file name
+/// NEXT TO THE EXECUTABLE (`exe_dir`) if `exists` says it is there; else the bare default name (the system search).
+///
+/// The packaged helpers (`run_campaign.exe`, `validate_models.exe`) ship `onnxruntime.dll` in their own folder, so they need no
+/// environment variable. An absolute path is returned on purpose: Windows would otherwise find an older `onnxruntime.dll` in
+/// `System32` first. Pure (no file or environment access) so each branch is tested.
+fn resolve_ort_path(
+    env: Option<&str>,
+    exe_dir: Option<&Path>,
+    exists: &dyn Fn(&Path) -> bool,
+) -> PathBuf {
+    if let Some(s) = env
+        && !s.is_empty()
+    {
+        return PathBuf::from(s);
     }
+    if let Some(dir) = exe_dir {
+        let beside = dir.join(DEFAULT_ORT_FILE);
+        if exists(&beside) {
+            return beside;
+        }
+    }
+    PathBuf::from(DEFAULT_ORT_FILE)
+}
+
+/// ONNX Runtime library path (see `resolve_ort_path`).
+fn ort_dylib_path() -> PathBuf {
+    let env = std::env::var("ORT_DYLIB_PATH").ok();
+    let exe_dir = std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(Path::to_path_buf));
+    resolve_ort_path(env.as_deref(), exe_dir.as_deref(), &|p| p.is_file())
 }
 
 /// Loads the ONNX Runtime library from `dylib`. Unlike `ort::init()`, a missing or
@@ -361,6 +389,42 @@ pub struct ModelInfo {
     pub cfd_sanity_status: Option<String>,
     /// `propellers` metadata, if present.
     pub propellers: Option<String>,
+    /// `provenance` metadata, if present (for example "SYNTHETIC formula, not CFD | NOT VALIDATED ...").
+    pub provenance: Option<String>,
+    /// `holdout_rms_n` metadata, if present: leave-one-speed-out RMS force error in N, as text (`none` when it could not be computed).
+    pub holdout_rms_n: Option<String>,
+}
+
+/// SHA-256 of the committed SYNTHETIC fixture model `offline_pipeline/cfd/sample/synthetic_quad_standard_aero.onnx` (formula, not CFD).
+/// The only stub the per-build loader accepts. Equals `model_sha256` of its `.model.json` (a test checks this against the file).
+pub const SYNTHETIC_FIXTURE_SHA256: &str =
+    "f41c465cd0e5372da7ee0119327e60ba82b6b52a689adabaa3e8bae185fccb45";
+
+/// Refuses every stub model except the committed SYNTHETIC fixture (see `SYNTHETIC_FIXTURE_SHA256`). A trained model always passes.
+///
+/// # Errors
+/// `BuildLoadError::StubNotFixture` for a stub whose file hash is not the fixture's.
+pub fn stub_gate(is_stub: bool, model_sha256: &str) -> Result<(), BuildLoadError> {
+    if is_stub && model_sha256 != SYNTHETIC_FIXTURE_SHA256 {
+        return Err(BuildLoadError::StubNotFixture {
+            found: model_sha256.to_string(),
+        });
+    }
+    Ok(())
+}
+
+/// How a loaded per-build model must be labelled everywhere (manifest, report, app): `(text, level)` with level `danger` or `warn`.
+/// `trained` is the only kind that is a CFD result, and it is still PRELIMINARY and UNVALIDATED. A stub whose provenance starts with
+/// `SYNTHETIC` is the formula fixture; any other stub is labelled as a stub.
+#[must_use]
+pub fn surrogate_status_text(kind: &str, provenance: Option<&str>) -> (&'static str, &'static str) {
+    if kind == "trained" {
+        ("CFD surrogate: PRELIMINARY, UNVALIDATED", "warn")
+    } else if provenance.is_some_and(|p| p.starts_with("SYNTHETIC")) {
+        ("CFD surrogate: SYNTHETIC (formula, not CFD)", "danger")
+    } else {
+        ("CFD surrogate: STUB (not validated)", "danger")
+    }
 }
 
 /// Why a per-build model was refused.
@@ -377,6 +441,12 @@ pub enum BuildLoadError {
         /// Hash the caller expects.
         expected: String,
         /// Hash the model carries.
+        found: String,
+    },
+    /// A stub model other than the committed SYNTHETIC fixture (`SYNTHETIC_FIXTURE_SHA256`) was offered: refused even when
+    /// `allow_stub_models` is on, so a stub of unknown origin can never be taken for a CFD result.
+    StubNotFixture {
+        /// SHA-256 of the stub model file read.
         found: String,
     },
     /// The model file's SHA-256 differs from the one the caller expects.
@@ -469,6 +539,7 @@ pub fn load_surrogate_for_build(
             expected.geometry_hash,
             expected.config_hash,
         )?;
+        stub_gate(is_stub, &model_sha256)?;
         let (binding, data, version) = (
             get("binding_hash"),
             get("training_data_sha256"),
@@ -492,6 +563,8 @@ pub fn load_surrogate_for_build(
                 binding_hash: binding,
                 cfd_sanity_status: get("cfd_sanity_status"),
                 propellers: get("propellers"),
+                provenance: get("provenance"),
+                holdout_rms_n: get("holdout_rms_n"),
             },
         )
     };
@@ -840,6 +913,104 @@ mod tests {
         assert!(
             matches!(r, Err(SurrogateLoadError::EngineError(_))),
             "{r:?}"
+        );
+    }
+
+    // ------------------------------------------------------------------ runtime path, stub gate, labels (no ONNX Runtime needed)
+
+    #[test]
+    fn test_ort_path_env_wins_even_when_a_library_sits_beside_the_exe() {
+        // Branch 1: a non-empty ORT_DYLIB_PATH is returned verbatim.
+        let always = |_: &Path| true;
+        let r = resolve_ort_path(
+            Some("/opt/ort/lib.so"),
+            Some(Path::new("/app/bin")),
+            &always,
+        );
+        assert_eq!(r, PathBuf::from("/opt/ort/lib.so"));
+    }
+
+    #[test]
+    fn test_ort_path_beside_the_exe_when_env_is_unset_or_empty() {
+        // Branch 2: no usable env value, the default file exists next to the exe -> that absolute path.
+        let always = |_: &Path| true;
+        let want = Path::new("/app/bin").join(DEFAULT_ORT_FILE);
+        assert_eq!(
+            resolve_ort_path(None, Some(Path::new("/app/bin")), &always),
+            want
+        );
+        assert_eq!(
+            resolve_ort_path(Some(""), Some(Path::new("/app/bin")), &always),
+            want
+        );
+    }
+
+    #[test]
+    fn test_ort_path_falls_back_to_the_bare_name() {
+        // Branch 3: nothing beside the exe, or no exe folder known -> the bare default name (system search).
+        let never = |_: &Path| false;
+        let bare = PathBuf::from(DEFAULT_ORT_FILE);
+        assert_eq!(
+            resolve_ort_path(None, Some(Path::new("/app/bin")), &never),
+            bare
+        );
+        assert_eq!(resolve_ort_path(None, None, &|_: &Path| true), bare);
+    }
+
+    #[test]
+    fn test_stub_gate_accepts_only_the_committed_fixture_stub() {
+        let other = "0".repeat(64);
+        // a trained model is never gated, whatever its hash
+        assert_eq!(stub_gate(false, &other), Ok(()));
+        // the committed fixture is the one accepted stub
+        assert_eq!(stub_gate(true, SYNTHETIC_FIXTURE_SHA256), Ok(()));
+        // any other stub is refused and its hash is reported
+        assert_eq!(
+            stub_gate(true, &other),
+            Err(BuildLoadError::StubNotFixture { found: other })
+        );
+    }
+
+    #[test]
+    fn test_fixture_constant_is_the_hash_of_the_committed_fixture_file() {
+        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../offline_pipeline/cfd/sample");
+        let bytes = std::fs::read(dir.join("synthetic_quad_standard_aero.onnx")).unwrap();
+        assert_eq!(sha256_hex(&bytes), SYNTHETIC_FIXTURE_SHA256);
+        let side: serde_json::Value = serde_json::from_str(
+            &std::fs::read_to_string(dir.join("synthetic_quad_standard_aero.onnx.model.json"))
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(side["model_sha256"], SYNTHETIC_FIXTURE_SHA256);
+    }
+
+    #[test]
+    fn test_status_text_names_each_kind_and_never_calls_a_stub_validated() {
+        let syn = Some("SYNTHETIC formula, not CFD | NOT VALIDATED against any measurement");
+        assert_eq!(
+            surrogate_status_text("stub", syn),
+            ("CFD surrogate: SYNTHETIC (formula, not CFD)", "danger")
+        );
+        // a stub that does not say SYNTHETIC, or says nothing, is still a stub
+        assert_eq!(
+            surrogate_status_text("stub", Some("preliminary CFD, unvalidated")),
+            ("CFD surrogate: STUB (not validated)", "danger")
+        );
+        assert_eq!(
+            surrogate_status_text("stub", None),
+            ("CFD surrogate: STUB (not validated)", "danger")
+        );
+        // only the exact kind `trained` is a (preliminary) CFD result; the provenance text cannot upgrade a stub
+        assert_eq!(
+            surrogate_status_text(
+                "trained",
+                Some("preliminary CFD, unvalidated | NOT VALIDATED")
+            ),
+            ("CFD surrogate: PRELIMINARY, UNVALIDATED", "warn")
+        );
+        assert_eq!(
+            surrogate_status_text("Trained", None),
+            ("CFD surrogate: STUB (not validated)", "danger")
         );
     }
 

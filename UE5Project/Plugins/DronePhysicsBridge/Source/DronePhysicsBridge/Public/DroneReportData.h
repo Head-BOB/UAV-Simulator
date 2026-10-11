@@ -69,6 +69,10 @@ struct UpgradeSection
 struct ReportData
 {
     std::string Title, Build, GitHash, SelectedConditionSet, CfdStatus, CfdStatement, DragModel, PowerSource;
+    // CFD block (report.json "cfd"): level is "danger" (stub / synthetic), "warn" (preliminary CFD, failed load, files not used) or "" (no CFD run).
+    std::string CfdLevel, CfdSanityStatus, CfdImagesStatement;
+    double CfdHoldoutRmsN = kNaN;                 // held-out RMS force error of the surrogate, N (NaN = none)
+    std::vector<std::string> CfdImageNames;       // flow images embedded in the report
     std::vector<BannerRow> Banners;
     std::vector<SummaryRow> Summary;
     std::vector<TestRow> Tests;
@@ -144,7 +148,15 @@ inline bool ParseReport(const std::string& Text, ReportData& Out, std::string& E
     });
     if (Out.Margins.empty()) { Err = "report.json has no margins"; return false; }
     if (const Json::Value* P = J.Get("power")) { Out.PackW = Num(P, "pack_w"); Out.ShaftW = Num(P, "shaft_w"); Out.LossW = Num(P, "loss_total_w"); Out.PowerSource = Str(P, "source"); }
-    if (const Json::Value* C = J.Get("cfd")) { Out.CfdStatus = Str(C, "status"); Out.CfdStatement = Str(C, "statement"); Out.DragModel = Str(C, "drag_model"); }
+    if (const Json::Value* C = J.Get("cfd"))
+    {
+        Out.CfdStatus = Str(C, "status"); Out.CfdStatement = Str(C, "statement"); Out.DragModel = Str(C, "drag_model"); Out.CfdLevel = Str(C, "level");
+        Out.CfdHoldoutRmsN = Num(C, "holdout_rms_n");
+        if (const Json::Value* Sn = C->Get("sanity")) Out.CfdSanityStatus = Str(Sn, "status");
+        Out.CfdImagesStatement = Str(C, "images_statement");
+        const Json::Value* Ims = C->Get("images");
+        for (std::size_t I = 0; Ims && I < Ims->Size(); ++I) if (const Json::Value* Im = Ims->At(I)) Out.CfdImageNames.push_back(Str(Im, "name"));
+    }
     if (const Json::Value* V = J.Get("validation"))
     {
         const double Flag = Num(V, "flag_percent");

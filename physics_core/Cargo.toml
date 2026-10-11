@@ -36,6 +36,10 @@ required-features = ["onnx"]
 name = "check_per_build_model"
 required-features = ["onnx"]
 
+[[example]]
+name = "check_ffi_roundtrip"
+required-features = ["onnx"]
+
 [features]
 # `onnx` pulls in ONNX Runtime (surrogate loader and the FFI that uses it). Without it the crate is the
 # pure physics subset that miri can run (static-analysis-rust.yml).

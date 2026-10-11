@@ -6,5 +6,17 @@
     "url": "https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip",
     "sha256": "TODO(HUMAN-VERIFY): sha256 of python-3.12.10-embed-amd64.zip",
     "version_tag": "312"
+  },
+  "_comment_onnxruntime": "onnxruntime_win_x64: the ONNX Runtime the helper programs load (ort 2.0.0-rc.13 needs API 1.27.x). The zip sha256 was computed 2026-10-11 from the file downloaded from github.com/microsoft/onnxruntime and equals the digest the GitHub releases API shows (same origin, NOT independent). TODO(HUMAN-VERIFY): compare it with a second source (see dev-docs/HUMAN-TODO.md section 12). dll_sha256 is the hash of lib/onnxruntime.dll inside that zip. stage_package.py refuses a zip or a dll that differs.",
+  "onnxruntime_win_x64": {
+    "file": "onnxruntime-win-x64-1.27.1.zip",
+    "url": "https://github.com/microsoft/onnxruntime/releases/download/v1.27.1/onnxruntime-win-x64-1.27.1.zip",
+    "sha256": "2e00414a63fdef0914cd5a5ede6c707844878e0c08e1b6693842f0451b2df2a1",
+    "dll_member": "onnxruntime-win-x64-1.27.1/lib/onnxruntime.dll",
+    "dll_sha256": "79df49bcbefb604c019785925daef859c0348280616364e28103d73d4152f6d7",
+    "license_members": [
+      "onnxruntime-win-x64-1.27.1/LICENSE",
+      "onnxruntime-win-x64-1.27.1/ThirdPartyNotices.txt"
+    ]
   }
 }
