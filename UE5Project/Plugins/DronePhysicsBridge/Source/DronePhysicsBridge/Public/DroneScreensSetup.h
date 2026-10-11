@@ -240,6 +240,7 @@ inline void Build(DrawList& L, const AppModel& M)
     const float X = 40.0f, Wd = Pw - 80.0f;
     L.Text(X, 80.0f, Wd, "Build", 34.0f, Palette::Ink(), Weight::Light);
     L.Text(X, 134.0f, 120.0f, "Name", 14.0f, Palette::Ink46());
+    Field(L, X + 70.0f, 126.0f, Wd - 70.0f, M.BuildName, 20.0f, M.Focus == "buildname", "buildname", Weight::Regular);
     const float W1 = M.Prog.BuildDone ? 190.0f : Wd;
     Button(L, X, 176.0f, W1, 46.0f, M.Busy() ? "Working ..." : (M.Prog.BuildDone ? "Rebuild" : "Build vehicle"), true, Act::BuildNow, "", !M.Busy() && M.Prog.PartsComplete);
     if (M.Prog.BuildDone) Button(L, X + 202.0f, 176.0f, Wd - 202.0f, 46.0f, "Conditions >", false, Act::UseBuild);
