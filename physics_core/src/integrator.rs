@@ -31,6 +31,7 @@ fn compute_derivative(
 }
 
 /// Pure f64 internal integration core, immune to f32 FFI truncation.
+#[allow(clippy::too_many_arguments)]
 pub fn step_rk4_f64(
     p0: DVec3,
     v0: DVec3,

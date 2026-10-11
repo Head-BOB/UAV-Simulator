@@ -39,7 +39,7 @@ typedef struct DroneState {
    */
   float velocity[3];
   /**
-   * Rotation as a unit quaternion, stored in order (w, x, y, z).
+   * Rotation as a unit quaternion, stored in order (x, y, z, w).
    *
    * # Units
    * Unitless quaternion. f32 is sufficient: components are always within [-1.0, 1.0].
@@ -53,6 +53,19 @@ typedef struct DroneState {
    */
   float angular_velocity[3];
 } DroneState;
+
+/**
+ * State container for the thermal and electrical simulation.
+ */
+typedef struct ThermalState {
+  /**
+   * Internal winding temperatures for each motor.
+   *
+   * # Units
+   * Degrees Celsius.
+   */
+  double motor_temp_c[4];
+} ThermalState;
 
 /**
  * Represents what the pilot/controller is commanding.
@@ -87,6 +100,75 @@ typedef struct ControlInputs {
    */
   float yaw;
 } ControlInputs;
+
+/**
+ * Physical properties and layout of the specific airframe being simulated.
+ */
+typedef struct VehicleConfig {
+  /**
+   * Total mass of the vehicle.
+   *
+   * # Units
+   * Kilograms.
+   */
+  double mass_kg;
+  /**
+   * Moment of inertia about the center of mass (Ixx, Iyy, Izz).
+   *
+   * # Units
+   * Kilogram-square meters.
+   */
+  double inertia_kgm2[3];
+  /**
+   * Positions of the 4 motors in the body frame.
+   *
+   * # Units
+   * Meters.
+   */
+  double motor_pos_m[4][3];
+  /**
+   * Spin direction of each motor (+1.0 or -1.0).
+   *
+   * # Units
+   * Unitless multiplier.
+   */
+  double motor_spin[4];
+  /**
+   * Diameter of the propellers.
+   *
+   * # Units
+   * Meters.
+   */
+  double prop_diameter_m;
+  /**
+   * Propeller thrust coefficient.
+   *
+   * # Units
+   * Unitless.
+   */
+  double thrust_coeff;
+  /**
+   * Propeller torque coefficient.
+   *
+   * # Units
+   * Unitless.
+   */
+  double torque_coeff;
+  /**
+   * Maximum rotational speed of the motors.
+   *
+   * # Units
+   * Revolutions per minute.
+   */
+  double max_rpm;
+  /**
+   * Throttle level required to maintain steady hover.
+   *
+   * # Units
+   * Normalized range 0.0 to 1.0.
+   */
+  double hover_throttle;
+} VehicleConfig;
 
 /**
  * Telemetry data exposed exclusively for UE5 On-Screen Display (OSD) and debug visualization.
@@ -157,6 +239,33 @@ typedef struct DebugTelemetry {
    * Unitless boolean flag (1 if all queries are valid, 0 if any query extrapolated).
    */
   int32_t is_validated_envelope;
+  /**
+   * Flag indicating if an un-trained stub model is currently driving the physics.
+   *
+   * # Units
+   * Unitless boolean flag (1 if stub loaded, 0 otherwise).
+   */
+  int32_t stub_loaded;
+  /**
+   * Source of aerodynamic data. 0 = none, 1 = analytic fallback, 2 = surrogate.
+   */
+  int32_t aero_source;
+  /**
+   * Source of structural data. 0 = none, 1 = analytic fallback, 2 = surrogate.
+   */
+  int32_t fea_source;
+  /**
+   * Latched fault flag indicating a physics NaN or Inf divergence occurred.
+   */
+  int32_t physics_fault;
+  /**
+   * Count of fixed-timestep execution cycles dropped to prevent a "spiral of death".
+   */
+  int32_t dropped_time_events;
+  /**
+   * Indicates physics constants lacking validated sources are in use.
+   */
+  int32_t uncalibrated_flags;
 } DebugTelemetry;
 
 /**
@@ -185,6 +294,10 @@ typedef struct SurrogateQueryResult {
    */
   int32_t in_validated_envelope;
 } SurrogateQueryResult;
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
 /**
  * Returns the current layout version to UE5 to prevent memory corruption on mismatch.
@@ -229,15 +342,21 @@ int32_t ffi_reset_drone_state(struct DroneState *state);
  *
  * # Safety
  * * `state` must be a valid, aligned, mutable pointer to a DroneState.
+ * * `thermal_state` must be a valid, aligned, mutable pointer to a ThermalState.
  * * `controls` must be a valid, aligned, immutable pointer to ControlInputs.
  * * `aero_handle` and `fea_handle` may be null. If non-null, must be valid SurrogateHandles.
+ * * `config` must be a valid, aligned, immutable pointer to a VehicleConfig.
+ * * `out_telemetry` must be a valid, aligned, mutable pointer to a DebugTelemetry struct.
  * * Pointers must not alias or be subject to concurrent mutation.
  */
 int32_t ffi_step_physics(struct DroneState *state,
+                         struct ThermalState *thermal_state,
                          const struct ControlInputs *controls,
                          struct SurrogateHandle *aero_handle,
                          struct SurrogateHandle *fea_handle,
-                         float dt);
+                         const struct VehicleConfig *config,
+                         struct DebugTelemetry *out_telemetry,
+                         double dt);
 
 /**
  * Retrieves the most recent physics telemetry data for the UE5 OSD.
@@ -256,6 +375,7 @@ int32_t ffi_get_debug_telemetry(struct DebugTelemetry *out_telemetry);
  * * `2` - Missing provenance metadata
  * * `3` - Geometry hash mismatch
  * * `4` - Engine/ONNX initialization failure
+ * * `5` - Stub model rejected (allow_stub_models feature not enabled)
  *
  * # Safety
  * * `path` must be a valid, null-terminated C string.
@@ -289,5 +409,27 @@ int32_t ffi_query_surrogate(struct SurrogateHandle *handle,
  * * `handle` must not be accessed after this function returns.
  */
 void ffi_unload_surrogate_model(struct SurrogateHandle *handle);
+
+/**
+ * Loads a vehicle configuration file.
+ *
+ * # Returns
+ * * `0` - Success
+ * * `1` - Null pointer or Invalid UTF-8 path
+ * * `2` - File IO Error
+ * * `3` - JSON Parse Error
+ * * `4` - Invalid Mass
+ * * `5` - Invalid Inertia
+ * * `6` - Invalid Motor Spin
+ *
+ * # Safety
+ * * `path` must be a valid, null-terminated C string.
+ * * `out_config` must be a valid, aligned, mutable pointer to a VehicleConfig.
+ */
+int32_t ffi_load_vehicle_config(const char *path, struct VehicleConfig *out_config);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  /* DRONE_FFI_H */
