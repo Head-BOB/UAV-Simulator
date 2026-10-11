@@ -115,7 +115,7 @@ inline void Parts(DrawList& L, const AppModel& M)
     const float X = 48.0f;
     // category tabs: the five roles the builder needs first, then the others; wraps onto a second row
     std::vector<std::string> Cats = RequiredRoles();
-    for (const auto& C : M.Cat.Categories()) { bool Has = false; for (const auto& R : Cats) Has = Has || R == C; if (!Has) Cats.push_back(C); }
+    for (const auto& C : M.Cat.Categories()) { bool Has = !IsVehiclePartCategory(C); for (const auto& R : Cats) Has = Has || R == C; if (!Has) Cats.push_back(C); }
     float Cx = X, Cy = 76.0f;
     for (const auto& C : Cats)
     {
@@ -236,7 +236,8 @@ inline void Build(DrawList& L, const AppModel& M)
     Field(L, X + 70.0f, 126.0f, Wd - 70.0f, M.BuildName, 20.0f, M.Focus == "buildname", "buildname", Weight::Regular);
     Button(L, X, 176.0f, 200.0f, 48.0f, M.Busy() ? "Working ..." : (M.Prog.BuildDone ? "Rebuild" : "Build vehicle"), true, Act::BuildNow, "", !M.Busy() && M.Prog.PartsComplete);
     if (M.Prog.BuildDone) Button(L, X + 216.0f, 176.0f, 224.0f, 48.0f, "Conditions >", false, Act::UseBuild);
-    float Y = 252.0f;
+    Button(L, X, 232.0f, Wd, 36.0f, "Fly it yourself (live physics, standard model)", false, Act::FlyIt, "", M.Prog.VehicleClassChosen);
+    float Y = 288.0f;
     if (M.Prog.BuildDone)
     {
         L.Text(X, Y, Wd, "Design estimates", 15.0f, Palette::Ink70(), Weight::Medium);
@@ -268,32 +269,47 @@ inline void Build(DrawList& L, const AppModel& M)
         L.Text(X + 150.0f, Y + 1.0f, Wd - 150.0f, "dimension-true boxes and cylinders", 14.0f, Palette::Ink46());
         Y += 38.0f;
     }
-    // findings
+    // findings: errors first (the builder sorts them); the list stops above the status line instead of running off the bottom of the panel
     if (!M.BuildFindings.empty())
     {
-        L.Text(X, Y, Wd, "Compatibility", 15.0f, Palette::Ink70(), Weight::Medium);
+        int Errors = 0, Cautions = 0;
+        for (const auto& F : M.BuildFindings) { Errors += F.Severity == "error"; Cautions += F.Severity == "warning"; }
+        L.Text(X, Y, Wd, "Compatibility   " + std::to_string(Errors) + (Errors == 1 ? " error, " : " errors, ") + std::to_string(Cautions) + (Cautions == 1 ? " caution" : " cautions"),
+               15.0f, Errors > 0 ? Palette::Crit() : Palette::Ink70(), Weight::Medium);
         Y += 28.0f;
-        int Shown = 0;
+        constexpr float kFindingsBottom = 1000.0f;   // the status line sits at 1030
+        int Shown = 0, Hidden = 0;
         for (const auto& F : M.BuildFindings)
         {
-            if (F.Severity == "info" || Shown >= 9) continue;
+            if (F.Severity == "info") continue;
+            const std::vector<std::string> Lines = Wrap(F.Message, 44, 3);
+            const float Need = static_cast<float>(Lines.size()) * 20.0f + 10.0f;
+            if (Shown >= 9 || Y + Need > kFindingsBottom) { ++Hidden; continue; }
             const Rgba C = F.Severity == "error" ? Palette::Crit() : Palette::Warn();
             L.Text(X, Y, 90.0f, F.Severity == "error" ? "Error" : "Caution", 14.0f, C, Weight::Medium);
-            for (const auto& Ln : Wrap(F.Message, 44, 3)) { L.Text(X + 80.0f, Y, Wd - 80.0f, Ln, 14.0f, Palette::Ink70()); Y += 20.0f; }
+            for (const auto& Ln : Lines) { L.Text(X + 80.0f, Y, Wd - 80.0f, Ln, 14.0f, Palette::Ink70()); Y += 20.0f; }
             Y += 10.0f;
             ++Shown;
         }
+        if (Hidden > 0) L.Text(X, Y, Wd, "+ " + std::to_string(Hidden) + " more (see vehicle_build.json)", 14.0f, Palette::Ink46());
     }
     else if (M.BuildAttempted && !M.Busy() && !M.Prog.BuildDone) L.Text(X, Y, Wd, "The build did not finish; see the message below.", 15.0f, Palette::Crit());
     StatusLine(L, M, X, 1030.0f, Wd);
-    // parts by role (right of the panel)
-    L.Text(Pw + 40.0f, 80.0f, 400.0f, "Parts", 15.0f, Palette::Ink70(), Weight::Medium, Align::Left, true);
-    float Ry = 108.0f;
-    for (const auto& [Role, Id] : M.Sel.Roles())
+    // parts by role (right of the panel): on its own dark panel, so it reads over the bright sky of the 3D view
     {
-        const Part* P = M.Cat.Find(Id);
-        L.Text(Pw + 40.0f, Ry, 560.0f, Role + "   " + (P ? Shorten(P->Title(), 40) : Id), 15.0f, Palette::Ink(), Weight::Regular, Align::Left, true);
-        Ry += 24.0f;
+        const float Lx = Pw + 24.0f, Ly = static_cast<float>(Ui::kTopBarHeightPx) + 16.0f, Lw = 680.0f, RowH = 36.0f;
+        const float Lh = 52.0f + static_cast<float>(M.Sel.Roles().size()) * RowH + 12.0f;
+        L.Fill(Lx, Ly, Lw, Lh, Palette::Solid());
+        L.Text(Lx + 20.0f, Ly + 14.0f, 400.0f, "Parts", 18.0f, Palette::Ink70(), Weight::Medium);
+        float Ry = Ly + 52.0f;
+        for (const auto& [Role, Id] : M.Sel.Roles())
+        {
+            const Part* P = M.Cat.Find(Id);
+            L.HLine(Lx + 20.0f, Ry - 4.0f, Lw - 40.0f, Palette::Line());
+            L.Text(Lx + 20.0f, Ry + 2.0f, 160.0f, Role, 17.0f, Palette::Ink46(), Weight::Regular);
+            L.Text(Lx + 190.0f, Ry, Lw - 210.0f, P ? Shorten(P->Title(), 38) : Id, 20.0f, Palette::Ink(), Weight::Regular);
+            Ry += RowH;
+        }
     }
 }
 
@@ -336,6 +352,26 @@ inline void Conditions(DrawList& L, const AppModel& M)
         Tx += Tw + 8.0f;
     }
     L.HLine(X, Y + 50.0f, 680.0f, Palette::Line());
+    // profile: Full is the default; Quick shortens the long tests with the fixed durations of QuickOverrides()
+    {
+        const float Py = Y + 66.0f;
+        L.Text(X, Py + 4.0f, 230.0f, "Test profile", 16.0f, Palette::Ink70());
+        float Px = X + 240.0f;
+        for (const char* Id : {"full", "quick"})
+        {
+            const bool Sel = (std::string(Id) == "quick") == M.QuickProfile;
+            const std::string Label = std::string(Id) == "quick" ? "Quick" : "Full";
+            const float Tw = EstimateTextWidth(Label, 16.0f) + 14.0f;
+            L.Text(Px, Py + 4.0f, Tw, Label, 16.0f, Sel ? Palette::Ink() : Palette::Ink46(), Sel ? Weight::Medium : Weight::Regular);
+            if (Sel) L.Fill(Px, Py + 26.0f, Tw - 14.0f, 2.0f, Palette::Accent());
+            L.AddHit(Px - 4.0f, Py - 2.0f, Tw, 34.0f, Act::SetProfile, Id);
+            Px += Tw + 12.0f;
+        }
+        if (M.QuickProfile)
+            L.Text(X, Py + 40.0f, 700.0f, "Quick: endurance 5 min, thermal soak 10 min, 15 s holds. Marked on Run and in the report.", 14.0f, Palette::Warn());
+        else
+            L.Text(X, Py + 40.0f, 700.0f, "Full: the project's test durations (endurance up to 1 h, thermal soak up to 2 h of simulated time).", 14.0f, Palette::Ink46());
+    }
 
     // right: tests and limits (solid panel for legibility over the scene)
     L.Fill(760.0f, static_cast<float>(Ui::kTopBarHeightPx), W - 760.0f, Hgt - static_cast<float>(Ui::kTopBarHeightPx), Palette::Solid());

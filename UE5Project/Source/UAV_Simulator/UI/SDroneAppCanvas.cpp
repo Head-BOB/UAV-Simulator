@@ -50,8 +50,9 @@ int32 SDroneAppCanvas::OnPaint(const FPaintArgs&, const FGeometry& G, const FSla
 	if (!List) return Layer;
 	RefreshTextCache();
 	const FVector2f Size = G.GetLocalSize();
-	const float S = ScaleFor(Size), Oy = OffsetYFor(Size);
-	auto P = [&](float X, float Y) { return FVector2f(X * S, Y * S + Oy); };
+	const DroneApp::Ui::Viewport Fit = FitFor(Size);
+	const float S = static_cast<float>(Fit.Scale), Ox = static_cast<float>(Fit.OffsetX), Oy = static_cast<float>(Fit.OffsetY);
+	auto P = [&](float X, float Y) { return FVector2f(X * S + Ox, Y * S + Oy); };
 	const FSlateBrush* White = FCoreStyle::Get().GetBrush("GenericWhiteBox");
 	int32 L = Layer;
 	static TArray<FVector2f> Pts;   // reused scratch (one paint thread)
@@ -80,12 +81,12 @@ int32 SDroneAppCanvas::OnPaint(const FPaintArgs&, const FGeometry& G, const FSla
 			{
 				const FString& Str = TextCache[Index];
 				const FSlateFontInfo Font = FontFor(I.Px, S, I.Wt);
-				float X = I.X * S;
+				float X = I.X * S + Ox;
 				if (I.Al != DroneApp::Align::Left)
 				{
 					const TSharedRef<FSlateFontMeasure> Measure = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
 					const float Tw = static_cast<float>(Measure->Measure(Str, Font).X);
-					X = I.Al == DroneApp::Align::Right ? (I.X + I.W) * S - Tw : (I.X + I.W * 0.5f) * S - Tw * 0.5f;
+					X = I.Al == DroneApp::Align::Right ? (I.X + I.W) * S + Ox - Tw : (I.X + I.W * 0.5f) * S + Ox - Tw * 0.5f;
 				}
 				const FVector2f At(X, I.Y * S + Oy);
 				if (I.Shadow)
@@ -104,8 +105,10 @@ FReply SDroneAppCanvas::OnMouseButtonDown(const FGeometry& G, const FPointerEven
 	if (!Model || !List || E.GetEffectingButton() != EKeys::LeftMouseButton) return FReply::Unhandled();
 	const FVector2f Local = G.AbsoluteToLocal(E.GetScreenSpacePosition());
 	const FVector2f Size = G.GetLocalSize();
-	const float S = ScaleFor(Size);
-	DroneApp::HandleClick(*Model, *List, Local.X / S, (Local.Y - OffsetYFor(Size)) / S);
+	const DroneApp::Ui::Viewport Fit = FitFor(Size);
+	const float S = static_cast<float>(Fit.Scale);
+	if (S <= 0.0f) return FReply::Unhandled();
+	DroneApp::HandleClick(*Model, *List, (Local.X - static_cast<float>(Fit.OffsetX)) / S, (Local.Y - static_cast<float>(Fit.OffsetY)) / S);
 	Changed();
 	return FReply::Handled().SetUserFocus(AsShared(), EFocusCause::Mouse);
 }

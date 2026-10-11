@@ -898,6 +898,8 @@ pub struct Sim {
     pub drag_analytic_steps: u64,
     /// Surrogate steps outside the model's validated envelope (always all of them for a stub).
     pub drag_outside_envelope_steps: u64,
+    /// Progress slot of the test this simulation belongs to (`progress::no_test()` outside a campaign); only counted, never read here.
+    prog: usize,
 }
 
 impl Sim {
@@ -984,6 +986,7 @@ impl Sim {
             drag_surrogate_steps: 0,
             drag_analytic_steps: 0,
             drag_outside_envelope_steps: 0,
+            prog: crate::progress::current(),
         })
     }
 
@@ -1069,6 +1072,7 @@ impl Sim {
     /// # Errors
     /// `Run` if the controller refuses its input, `Model` if the physics refuses (divergence, density range).
     pub fn step(&mut self, sp: &Setpoint) -> Result<Frame, CampaignError> {
+        crate::progress::add_step(self.prog);
         let est = Estimate::from_state(&self.state);
         let out = controller::step(&self.tuning, &mut self.ctl, &est, sp, DT_S)
             .map_err(|_| CampaignError::Run("controller input"))?;
@@ -3324,6 +3328,19 @@ pub fn run_campaign(
     inputs: &CampaignInputs<'_>,
     threads: usize,
 ) -> Result<Vec<TestResult>, CampaignError> {
+    run_campaign_with(inputs, threads, &|_, _| {})
+}
+
+/// As `run_campaign`, and `on_done(position, results_so_far)` is called (serialised, under the result lock) each time a test has
+/// finished; `results_so_far[i]` is `Some` for every finished position `i`. The hook only observes: results do not depend on it.
+///
+/// # Errors
+/// As `run_campaign`.
+pub fn run_campaign_with(
+    inputs: &CampaignInputs<'_>,
+    threads: usize,
+    on_done: &(dyn Fn(usize, &[Option<TestResult>]) + Sync),
+) -> Result<Vec<TestResult>, CampaignError> {
     use std::sync::Mutex;
     use std::sync::atomic::{AtomicUsize, Ordering};
     let n = inputs.tests.len();
@@ -3338,11 +3355,23 @@ pub fn run_campaign(
                     let Some(id) = inputs.tests.get(i).copied() else {
                         break;
                     };
+                    crate::progress::set_state(i, crate::progress::state_running());
+                    crate::progress::set_current(i);
                     let r = run_test(inputs, id);
+                    crate::progress::set_current(crate::progress::no_test());
+                    crate::progress::set_state(
+                        i,
+                        if r.is_ok() {
+                            crate::progress::state_done()
+                        } else {
+                            crate::progress::state_failed()
+                        },
+                    );
                     if let Ok(mut g) = slots.lock()
                         && let Some(slot) = g.get_mut(i)
                     {
                         *slot = Some(r);
+                        on_done(i, &g);
                     }
                 }
             });
@@ -3592,6 +3621,82 @@ fn index_entry(id: TestId, r: &TestResult) -> String {
         json_str(outcome),
         json_str(&format!("{}/result.json", id.name()))
     )
+}
+
+/// Upper bound of the simulated time one test can use, s, from its definition: the length of one run times the most runs its search can
+/// make (a ladder of levels, then a bisection to the tolerance). Used only as the denominator of the progress percentage; a test that
+/// ends early (a cutoff, a first failure) jumps to 100 % when it finishes. Not a prediction and not a result.
+#[must_use]
+pub fn planned_sim_s(d: &Definitions, id: TestId) -> f64 {
+    let bisect = |range: f64, tol: f64| -> f64 {
+        if tol > 0.0 && range > tol {
+            (range / tol).log2().ceil() + 2.0
+        } else {
+            2.0
+        }
+    };
+    let ladder = |from: f64, to: f64, step: f64| -> f64 {
+        if step > 0.0 && to > from {
+            ((to - from) / step).floor() + 1.0
+        } else {
+            1.0
+        }
+    };
+    match id {
+        TestId::HoverPayload => {
+            let x = &d.hover_payload;
+            (x.settle_s + x.hold_s) * bisect(x.payload_max_kg, x.tolerance_kg)
+        }
+        TestId::WindGust => {
+            let x = &d.wind_gust;
+            (x.settle_s + x.hold_s)
+                * (ladder(x.start_wind_mps, x.max_wind_mps, x.step_mps)
+                    + bisect(x.step_mps, x.tolerance_mps))
+        }
+        TestId::Climb => d.climb.preroll_s + d.climb.time_limit_s,
+        TestId::Endurance => d.endurance.settle_s + d.endurance.max_duration_s,
+        TestId::ThermalSoak => d.thermal_soak.max_duration_s,
+        TestId::MaxSpeed => {
+            let x = &d.max_speed;
+            (x.settle_s + x.hold_s)
+                * (ladder(x.start_speed_mps, x.max_speed_mps, x.step_mps)
+                    + bisect(x.step_mps, x.tolerance_mps))
+        }
+        TestId::FpvSprint => d.fpv_sprint.preroll_s + d.fpv_sprint.sprint_s,
+        TestId::FpvPunchout => d.fpv_punchout.preroll_s + d.fpv_punchout.punchout_s,
+    }
+}
+
+/// Files for the tests that have finished so far, as a campaign of just those tests (same bytes per test as the full render; the
+/// summary and the index list only the finished tests). Used to show recordings while the rest still compute.
+///
+/// # Errors
+/// As `render_outputs`.
+pub fn render_partial(
+    inputs: &CampaignInputs<'_>,
+    results_so_far: &[Option<TestResult>],
+) -> Result<Vec<(String, String)>, CampaignError> {
+    let mut tests = Vec::new();
+    let mut done = Vec::new();
+    for (id, r) in inputs.tests.iter().zip(results_so_far) {
+        if let Some(r) = r {
+            tests.push(*id);
+            done.push(r.clone());
+        }
+    }
+    let sub = CampaignInputs {
+        build: inputs.build,
+        build_name: inputs.build_name,
+        parts: inputs.parts.clone(),
+        db_version: inputs.db_version,
+        git_hash: inputs.git_hash,
+        conditions: inputs.conditions,
+        definitions: inputs.definitions,
+        tests,
+        drag: inputs.drag,
+        cfd_surrogate: inputs.cfd_surrogate,
+    };
+    render_outputs(&sub, &done)
 }
 
 /// The files of one test: manifest, result, events and the time series (an error result has only manifest and result).
@@ -4651,6 +4756,78 @@ pub(crate) mod tests {
                 assert_eq!(text, reference, "{name}");
             }
         }
+    }
+
+    #[test]
+    fn test_camp_planned_sim_time_is_the_upper_bound_of_each_tests_runs() {
+        // Hand values from campaign/test_definitions.json (the denominator of the progress percentage; not a result):
+        // hover: (settle 10 + hold 30) s x (ceil(log2(8 / 0.02)) = 9, + 2) = 40 x 11 = 440
+        // wind: 40 x (levels 0, 2 .. 20 = 11, + bisection ceil(log2(2 / 0.25)) = 3, + 2 = 5) = 40 x 16 = 640
+        // climb 5 + 30; endurance 10 + 3600; thermal 7200; max speed (8 + 4) x (levels 2, 5 .. 38 = 13, + ceil(log2(3 / 0.5)) = 3, + 2) = 12 x 18 = 216
+        // sprint 5 + 10; punch-out 5 + 3
+        let defs = parse_definitions(&read("campaign/test_definitions.json")).unwrap();
+        let p = |id| planned_sim_s(&defs, id);
+        assert_eq!(p(TestId::HoverPayload), 440.0);
+        assert_eq!(p(TestId::WindGust), 640.0);
+        assert_eq!(p(TestId::Climb), 35.0);
+        assert_eq!(p(TestId::Endurance), 3610.0);
+        assert_eq!(p(TestId::ThermalSoak), 7200.0);
+        assert_eq!(p(TestId::MaxSpeed), 216.0);
+        assert_eq!(p(TestId::FpvSprint), 15.0);
+        assert_eq!(p(TestId::FpvPunchout), 8.0);
+    }
+
+    #[test]
+    fn test_camp_progress_hook_observes_without_changing_any_result_byte() {
+        // The hook sees each finished test once, in a growing list; the partial render of a finished set has the same bytes per
+        // test as the full render; and the results equal a run without the hook.
+        let build = ref_build();
+        let cond = parse_conditions(&read("campaign/conditions_smoke.json")).unwrap();
+        let defs = parse_definitions(&read("campaign/smoke_definitions.json")).unwrap();
+        let inputs = smoke_inputs(&build, &cond, &defs, vec![TestId::Climb, TestId::FpvSprint]);
+        let seen = std::sync::Mutex::new(Vec::new());
+        let partial = std::sync::Mutex::new(Vec::new());
+        let with = run_campaign_with(&inputs, 2, &|i, so_far| {
+            seen.lock()
+                .unwrap()
+                .push((i, so_far.iter().flatten().count()));
+            if so_far.iter().all(Option::is_some) {
+                partial
+                    .lock()
+                    .unwrap()
+                    .push(render_partial(&inputs, so_far).unwrap());
+            }
+        })
+        .unwrap();
+        let mut counts: Vec<usize> = seen.lock().unwrap().iter().map(|(_, n)| *n).collect();
+        counts.sort_unstable();
+        assert_eq!(
+            counts,
+            vec![1, 2],
+            "one call per finished test, the list grows"
+        );
+        let without = run_campaign(&inputs, 2).unwrap();
+        let full = render_outputs(&inputs, &without).unwrap();
+        assert_eq!(
+            render_outputs(&inputs, &with).unwrap(),
+            full,
+            "the hook changes no result"
+        );
+        let last = partial.lock().unwrap().pop().unwrap();
+        assert_eq!(
+            last, full,
+            "the partial render of a finished campaign is the full render"
+        );
+        // one test alone: its own files are the same bytes as in the full render
+        let one = render_partial(&inputs, &[Some(without[0].clone()), None]).unwrap();
+        for (name, text) in one.iter().filter(|(n, _)| n.starts_with("climb/")) {
+            assert_eq!(
+                &full.iter().find(|(n, _)| n == name).unwrap().1,
+                text,
+                "{name}"
+            );
+        }
+        assert!(one.iter().all(|(n, _)| !n.starts_with("fpv_sprint/")));
     }
 
     #[test]

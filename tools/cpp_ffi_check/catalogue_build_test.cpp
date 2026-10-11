@@ -133,7 +133,7 @@ static void TestBuildFiles()
     S.Set("motor", "evil\"id");
     Check(WriteBuildSpec("my_build", "quad_standard", S).find("evil\\\"id") != std::string::npos, "part ids are escaped");
     const auto& V = VehicleClasses();
-    Check(V.size() == 5 && V[0].Available && V[1].Available && !V[2].Available && std::string(V[0].Id) == "quad_standard" && std::string(V[1].Id) == "quad_fpv_5in", "vehicle classes");
+    Check(V.size() == 2 && V[0].Available && V[1].Available && std::string(V[0].Id) == "quad_standard" && std::string(V[1].Id) == "quad_fpv_5in", "vehicle classes");
 
     // the committed reference build
     BuildSummary B;

@@ -27,6 +27,7 @@ struct Progress
     bool CampaignDone = false;      // a campaign folder was produced and loaded
     bool ReportDone = false;        // report.json exists and was read
     bool StudyDone = false;         // an upgrade study report exists
+    bool RecordingsAvailable = false;   // at least one test of a running or cancelled campaign has a recording (Run screen only)
 };
 
 // Empty string when the screen can be opened; otherwise the reason (for the greyed navigation entry).
@@ -38,7 +39,7 @@ inline std::string BlockedReason(Screen S, const Progress& P)
         case Screen::Parts: return P.VehicleClassChosen ? "" : "Choose a vehicle first.";
         case Screen::Build: return P.PartsComplete ? "" : "Choose all required parts first (frame, motor, ESC, propeller, battery).";
         case Screen::Conditions: return P.BuildDone ? "" : "Build the vehicle first.";
-        case Screen::Run: return P.CampaignDone ? "" : "Run the tests first.";
+        case Screen::Run: return (P.CampaignDone || P.RecordingsAvailable) ? "" : "Run the tests first.";
         case Screen::Results: return P.CampaignDone ? "" : "Run the tests first.";
         case Screen::Compare: return P.StudyDone ? "" : "Run an upgrade study first.";
         case Screen::Report: return P.ReportDone ? "" : "Run the tests first, then write the report.";
@@ -66,8 +67,8 @@ inline Progress AfterChange(Screen Changed, Progress P)
     {
         case Screen::Vehicle: P.PartsComplete = false; [[fallthrough]];
         case Screen::Parts: P.BuildDone = false; [[fallthrough]];
-        case Screen::Build: P.ConditionsValid = false; P.CampaignDone = false; P.ReportDone = false; P.StudyDone = false; break;
-        case Screen::Conditions: P.CampaignDone = false; P.ReportDone = false; P.StudyDone = false; break;   // new conditions: old results do not describe them
+        case Screen::Build: P.ConditionsValid = false; P.CampaignDone = false; P.ReportDone = false; P.StudyDone = false; P.RecordingsAvailable = false; break;
+        case Screen::Conditions: P.CampaignDone = false; P.ReportDone = false; P.StudyDone = false; P.RecordingsAvailable = false; break;   // new conditions: old results do not describe them
         default: break;
     }
     return P;

@@ -226,6 +226,36 @@ class RefusalTests(unittest.TestCase):
         spec["payload"] = {"id": "apc_12x6e"}
         self.assertIn("E-BUILD", rules(B.build(spec), "error"))
 
+    def test_payload_role_in_parts_is_refused_with_a_clear_message(self):
+        # A payload is a test condition (mass, position), not a vehicle part. It used to surface as "unknown role 'payload'".
+        spec = copy.deepcopy(REF_SPEC)
+        spec["parts"]["payload"] = "payload_test_mass_500g"
+        res = B.build(spec)
+        self.assertFalse(res.ok)
+        self.assertEqual(rules(res, "error"), ["E-PAYLOAD"])
+        msg = next(f.message for f in res.findings if f.rule == "E-PAYLOAD")
+        self.assertIn("payload is a test condition, not a vehicle part", msg)
+        self.assertIn("Conditions", msg)
+        self.assertFalse(any("unknown role" in f.message for f in res.findings))
+
+    def test_fifteen_inch_prop_on_a_220_frame_is_an_error_at_the_tip_gap(self):
+        # 5 in frame + MN3110 + 15x5 prop on 6S. Hand value: gap = adjacent motor spacing - D, both from the records
+        # (frame 0.1556 m, prop 15 in = 0.381 m), so the props overlap by 0.2254 m.
+        spec = {"name": "absurd", "vehicle_class": "quad_fpv_5in",
+                "parts": {"frame": "holybro_kopis2_220_frame", "motor": "tmotor_mn3110_kv700", "esc": "holybro_tekko32_f4_4in1_50a",
+                          "propeller": "tmotor_cf_15x5", "battery": "tattu_rline_v6_1300_6s_160c"}}
+        recs, _ = P.load_records(REAL)
+        spacing = recs["holybro_kopis2_220_frame"]["motor_spacing_adjacent_m"]["value"]
+        d_m = recs["tmotor_cf_15x5"]["diameter_m"]["value"]
+        res = B.build(spec)
+        self.assertFalse(res.ok)
+        self.assertIsNone(res.config)
+        self.assertTrue({"E-CLEAR-TIP", "E-CLEAR-BODY", "E-FRAME-PROP", "E-PROP-RANGE", "E-MOUNT"} <= set(rules(res, "error")), res.findings)
+        tip = next(f for f in res.findings if f.rule == "E-CLEAR-TIP")
+        self.assertEqual(tip.severity, "error")
+        self.assertIn(f"{spacing - d_m:.4f} m", tip.message)
+        self.assertLess(spacing - d_m, 0.0)
+
     def test_corrupt_database_blocks_the_build(self):
         db = DbCopy()
         self.addCleanup(db.close)

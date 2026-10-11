@@ -333,8 +333,10 @@ jobs:
           INC="-I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public"
           g++ -std=c++17 -Wall -Wextra -Werror $INC tools/cpp_ffi_check/json_test.cpp -o "$RUNNER_TEMP/json_test" && "$RUNNER_TEMP/json_test"
           g++ -std=c++17 -Wall -Wextra -Werror $INC tools/cpp_ffi_check/ui_tokens_test.cpp -o "$RUNNER_TEMP/ui_tokens_test" && "$RUNNER_TEMP/ui_tokens_test" dev-docs/ui-reference/quad_ui_preview_v4.html
-          for t in replay_margins_test catalogue_build_test conditions_helpers_test report_state_test; do
+          for t in replay_margins_test catalogue_build_test conditions_helpers_test report_state_test layout_test; do
             g++ -std=c++17 -Wall -Wextra -Werror $INC tools/cpp_ffi_check/$t.cpp -o "$RUNNER_TEMP/$t" && "$RUNNER_TEMP/$t" .
           done
+          g++ -std=c++17 -Wall -Wextra -Werror $INC tools/cpp_ffi_check/fly_test.cpp -o "$RUNNER_TEMP/fly_test" && "$RUNNER_TEMP/fly_test" .
+          g++ -std=c++17 -Wall -Wextra -Werror $INC tools/cpp_ffi_check/progress_test.cpp -o "$RUNNER_TEMP/progress_test" && "$RUNNER_TEMP/progress_test" . "$RUNNER_TEMP/progress_scratch"
           g++ -std=c++17 -Wall -Wextra -Werror $INC tools/cpp_ffi_check/ui_preview.cpp -o "$RUNNER_TEMP/ui_preview"
           g++ -std=c++17 -Wall -Wextra -Werror $INC tools/cpp_ffi_check/ui_files_writer.cpp -o "$RUNNER_TEMP/ui_files_writer"

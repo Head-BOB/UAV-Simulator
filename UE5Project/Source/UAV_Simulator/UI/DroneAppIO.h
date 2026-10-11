@@ -7,6 +7,7 @@
 #include "HAL/PlatformProcess.h"
 
 #include "DroneAppModel.h"
+#include "DroneProgress.h"
 
 class FDroneAppIO : public DroneApp::AppIO
 {
@@ -20,6 +21,8 @@ public:
 	virtual int StartProcess(const DroneApp::Command& C, const std::string& InLogPath) override;
 	virtual bool PollProcess(int Handle, int& ExitCode) override;
 	virtual void OpenPath(const std::string& Path) override;
+	virtual bool ReadProgress(int Handle, DroneApp::ProgressSnapshot& Out) override;
+	virtual void CancelProcess(int Handle) override;
 
 private:
 	struct FJob
@@ -31,6 +34,8 @@ private:
 		FString LogPath;
 		bool bDone = false;
 		int32 ExitCode = -1;
+		DroneApp::ProgressParser Parser;   // UAVPROGRESS lines, parsed as the output arrives
+		double LastLogWriteS = 0.0;
 	};
 	TArray<FJob> Jobs;   // handle = index + 1
 	FString WorkingDirectory;

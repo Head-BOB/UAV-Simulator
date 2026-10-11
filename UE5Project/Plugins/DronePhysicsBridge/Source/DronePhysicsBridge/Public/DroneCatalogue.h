@@ -70,6 +70,10 @@ inline std::string Lower(std::string S)
 
 constexpr int kMotorCount = 4;   // both vehicle classes are quads (same rule as tools/report/upgrades.py)
 
+// A payload is a test condition (mass and position, set on the Conditions screen), not a part of the vehicle: the builder refuses it as a
+// part role (E-PAYLOAD), so the app never offers it in the Parts list and never puts it in a selection.
+inline bool IsVehiclePartCategory(const std::string& Category) { return Category != "payload"; }
+
 class Catalogue
 {
 public:
@@ -160,6 +164,7 @@ public:
         std::vector<const Part*> Out;
         for (const auto& P : Parts_)
         {
+            if (!IsVehiclePartCategory(P.Category)) continue;   // a payload is never offered as a part
             if (!Category.empty() && P.Category != Category) continue;
             if (!Manufacturer.empty() && P.Manufacturer != Manufacturer) continue;
             if (!FrameClass.empty() && P.Category == "frame" && P.FrameClass != FrameClass) continue;
@@ -195,7 +200,13 @@ struct Totals
 class Selection
 {
 public:
-    void Set(const std::string& Role, const std::string& PartId) { Roles_[Role] = PartId; }
+    // False (nothing stored) for a role that is not a vehicle part: the payload is a test condition (Conditions screen).
+    bool Set(const std::string& Role, const std::string& PartId)
+    {
+        if (!IsVehiclePartCategory(Role)) return false;
+        Roles_[Role] = PartId;
+        return true;
+    }
     void Clear(const std::string& Role) { Roles_.erase(Role); }
     void ClearAll() { Roles_.clear(); }
     const std::map<std::string, std::string>& Roles() const { return Roles_; }

@@ -240,4 +240,50 @@ inline bool WriteEditedDefinitions(const std::string& OriginalText, const std::v
     OutText = Json::Serialize(R.value);
     return true;
 }
+
+// ---- Quick profile ---------------------------------------------------------------------------------------------------------------
+// Shortens the long tests for a demo. FIXED durations, listed here and nowhere else; every one is ASSUMED
+// (TODO(HUMAN-VERIFY): choose by what a demo audience can wait for, not by engineering need). A value is only ever REDUCED: a limit the
+// user already set lower stays. definitions_version gets the suffix "-quick" (after "-edited" if both apply), so every result file,
+// the report banner ("Quick profile: shortened tests") and the Run screen say that the tests were shortened. Full is the default.
+struct QuickOverride
+{
+    const char* Test;
+    const char* Key;
+    double Value;
+    const char* Why;
+};
+inline const std::vector<QuickOverride>& QuickOverrides()
+{
+    static const std::vector<QuickOverride> V = {
+        {"endurance", "max_duration_s", 300.0, "endurance stops after 5 min of flight instead of at the battery cutoff (up to 1 h)"},
+        {"thermal_soak", "max_duration_s", 600.0, "thermal soak stops after 10 min instead of 2 h; the temperatures may not have settled"},
+        {"hover_payload", "hold_s", 15.0, "each payload step is held 15 s instead of 30 s (the 10 s evaluation window is unchanged)"},
+        {"wind_gust", "hold_s", 15.0, "each wind step is held 15 s instead of 30 s (the 10 s evaluation window is unchanged)"},
+    };
+    return V;
+}
+
+// Applies the Quick overrides to the definitions text (after the user's edits). Out = new text; Changed = any value was reduced.
+inline bool ApplyQuickProfile(const std::string& DefinitionsText, std::string& OutText, std::string& Err)
+{
+    Json::ParseResult R = Json::Parse(DefinitionsText);
+    if (!R.ok) { Err = R.error; return false; }
+    for (const auto& Q : QuickOverrides())
+        for (auto& TM : R.value.members)
+        {
+            if (TM.first != Q.Test || !TM.second.IsObject()) continue;
+            for (auto& M : TM.second.members)
+                if (M.first == Q.Key && M.second.IsNumber() && M.second.number > Q.Value) M.second.number = Q.Value;
+        }
+    for (auto& M : R.value.members)
+        if (M.first == "definitions_version" && M.second.IsString())
+        {
+            const std::string Suffix = "-quick";
+            const bool Has = M.second.text.size() >= Suffix.size() && M.second.text.compare(M.second.text.size() - Suffix.size(), Suffix.size(), Suffix) == 0;
+            if (!Has) M.second.text += Suffix;
+        }
+    OutText = Json::Serialize(R.value);
+    return true;
+}
 }  // namespace DroneApp

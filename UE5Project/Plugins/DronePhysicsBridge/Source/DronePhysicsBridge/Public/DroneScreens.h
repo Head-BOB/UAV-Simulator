@@ -2,6 +2,8 @@
 // Entry point of the engine-free UI: builds the display list of the current screen, and turns a click on it into a model action.
 #pragma once
 
+#include "DroneScreensFly.h"
+#include "DroneScreensProgress.h"
 #include "DroneScreensReport.h"
 #include "DroneScreensRun.h"
 #include "DroneScreensSetup.h"
@@ -12,6 +14,12 @@ namespace DroneApp
 inline void BuildScreen(DrawList& L, const AppModel& M)
 {
     L.Clear();
+    if (M.FlyMode)
+    {
+        Screens::FlyScreen(L, M);
+        Screens::ProgressPanel(L, M);
+        return;
+    }
     switch (M.Current)
     {
         case Screen::Vehicle: Screens::Vehicle(L, M); break;
@@ -23,6 +31,7 @@ inline void BuildScreen(DrawList& L, const AppModel& M)
         case Screen::Compare: Screens::Compare(L, M); break;
         case Screen::Report: Screens::ReportScreen(L, M); break;
     }
+    Screens::ProgressPanel(L, M);   // over every screen, drawn last so it is on top and its hit regions win
 }
 
 // A click at design-space (X, Y). Returns true when it hit something. A click on the seek bar passes its fraction (0..1) to the model.

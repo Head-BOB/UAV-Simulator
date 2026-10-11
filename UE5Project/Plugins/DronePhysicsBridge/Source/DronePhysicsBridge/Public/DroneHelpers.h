@@ -21,6 +21,7 @@ struct HelperSettings
     std::string CfdDir;                  // folder with the CFD model(s), geometry.json and flow images; empty = no CFD folder
     int Threads = 4;
     std::string GitHash = "unknown";     // recorded in every manifest
+    bool Progress = false;               // ask the helpers for UAVPROGRESS lines (--progress); set by the app, not read from helpers.json
 };
 
 // helpers.json: {"python": "...", "repo_root": "...", "run_campaign_exe": "...", "threads": 4}. Unknown keys are ignored; a missing repo_root is an error.
@@ -106,6 +107,7 @@ inline Command CampaignCommand(const HelperSettings& H, const std::string& Build
     if (!TestsArg.empty()) { Tail.push_back("--tests"); Tail.push_back(TestsArg); }
     if (!H.CfdDir.empty()) { Tail.push_back("--aero-dir"); Tail.push_back(H.CfdDir); }
     if (AnalyticFallback) Tail.push_back("--analytic-fallback");
+    if (H.Progress) Tail.push_back("--progress");
     if (!H.RunCampaignExe.empty()) return Command{H.RunCampaignExe, Tail, "Running the tests"};
     std::vector<std::string> Args = {"run", "--release", "--quiet", "--manifest-path", Join(H.RepoRoot, "physics_core/Cargo.toml"), "--example", "run_campaign", "--"};
     Args.insert(Args.end(), Tail.begin(), Tail.end());
@@ -126,20 +128,31 @@ inline Command ReportCommand(const HelperSettings& H, const std::string& BuildDi
     for (const auto& D : CampaignDirs) { C.Args.push_back("--campaign"); C.Args.push_back(D); }
     if (!ValidationFile.empty()) { C.Args.push_back("--validation"); C.Args.push_back(ValidationFile); }
     if (!H.CfdDir.empty()) { C.Args.push_back("--cfd-dir"); C.Args.push_back(H.CfdDir); }
+    if (H.Progress) C.Args.push_back("--progress");   // the report is the last 10 % of a test run (make_report.py --progress-base default 90)
     C.Args.push_back("--out"); C.Args.push_back(OutDir);
     return C;
 }
 
 inline Command StudyCommand(const HelperSettings& H, const std::string& BuildSpec, const std::string& ConditionsFile, const std::string& DefinitionsFile, const std::string& OutDir)
 {
-    return Command{H.Python, {Join(H.RepoRoot, "tools/report/run_study.py"), BuildSpec, "--conditions", ConditionsFile, "--definitions", DefinitionsFile, "--out", OutDir,
-                              "--threads", std::to_string(H.Threads)}, "Running the upgrade study"};
+    Command C{H.Python, {Join(H.RepoRoot, "tools/report/run_study.py"), BuildSpec, "--conditions", ConditionsFile, "--definitions", DefinitionsFile, "--out", OutDir},
+              "Running the upgrade study"};
+    // A packaged app has no cargo: the staged executables run the campaigns. Candidates run two at a time on four or more threads (the
+    // slowest test of a campaign is one thread, so one campaign does not fill the machine). All of these go BEFORE --threads, which stays last.
+    if (!H.RunCampaignExe.empty()) { C.Args.push_back("--run-campaign-exe"); C.Args.push_back(H.RunCampaignExe); }
+    if (!H.ValidateModelsExe.empty()) { C.Args.push_back("--validate-models-exe"); C.Args.push_back(H.ValidateModelsExe); }
+    if (H.Threads >= 4) { C.Args.push_back("--parallel"); C.Args.push_back("2"); }
+    if (H.Progress) C.Args.push_back("--progress");
+    C.Args.push_back("--threads");
+    C.Args.push_back(std::to_string(H.Threads));
+    return C;
 }
 
 inline Command StudyReportCommand(const HelperSettings& H, const std::string& StudyDir, const std::string& OutDir)
 {
     Command C{H.Python, {Join(H.RepoRoot, "tools/report/make_report.py"), "--study", StudyDir}, "Writing the study report"};
     if (!H.CfdDir.empty()) { C.Args.push_back("--cfd-dir"); C.Args.push_back(H.CfdDir); }
+    if (H.Progress) { C.Args.push_back("--progress"); C.Args.push_back("--progress-base"); C.Args.push_back("95"); }   // the study took 0..95
     C.Args.push_back("--out"); C.Args.push_back(OutDir);
     return C;
 }

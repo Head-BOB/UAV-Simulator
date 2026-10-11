@@ -60,6 +60,7 @@ constexpr float kCameraPitchDeg = -18.0f;
 constexpr double kDiscThicknessCm = 0.5;
 constexpr int32 kMaxSubsteps = 20;
 constexpr double kFixedDt = 0.002;  // ADR-001: fixed step 0.002 s
+constexpr double kCrashSinkMps = 2.5;   // touching the ground faster than this is a crash. TODO(HUMAN-VERIFY: demo value)
 
 // Runtime spin selection, read every frame so a change in the console shows at once. They exist to
 // find the right axis/sign in one Play session; once found, copy the values into kSpinAxisBoneLocal
@@ -163,6 +164,8 @@ bool ADroneDemoPawn::LoadPhysics()
 		UE_LOG(LogTemp, Error, TEXT("DroneDemo: failed to load the reference-build VehicleConfig ('%s'). Physics is disabled."), *ConfigPath);
 		return false;
 	}
+	BaseConfig = Config;
+	BaseMassKg = Config.mass_kg;
 	return true;
 }
 
@@ -508,6 +511,7 @@ void ADroneDemoPawn::BeginPlay()
 			EnvironmentNotice = FString::Printf(TEXT("Cannot hover here: needs %.0f%% throttle"), Tune.HoverThrottle * 100.0);
 			Tune.HoverThrottle = 1.0;
 		}
+		LastTune = Tune;
 		DemoController = MakeUnique<DroneDemo::Controller>(Tune);
 	}
 	WindGenerator = DroneWind::Generator(DroneWind::Generator::kDefaultSeed);
@@ -635,6 +639,26 @@ void ADroneDemoPawn::ReadInput(APlayerController* PC, DroneDemo::Command& OutCom
 	OutCommand = DroneDemo::Command();
 	if (!PC || !DemoController || !bPilotInputEnabled) return;  // the control panel pauses pilot input
 
+	if (bFlyMode)
+	{
+		// Fly mode: the engine-free mapping (DroneFly.h): W/S pitch, A/D roll, Q/E yaw, Space/R up, Shift/F down; T / G / X buttons;
+		// gamepad left stick throttle + yaw, right stick pitch + roll, A / B / Y.
+		DroneApp::Fly::KeyState K;
+		K.W = PC->IsInputKeyDown(EKeys::W); K.S = PC->IsInputKeyDown(EKeys::S);
+		K.A = PC->IsInputKeyDown(EKeys::A); K.D = PC->IsInputKeyDown(EKeys::D);
+		K.Q = PC->IsInputKeyDown(EKeys::Q); K.E = PC->IsInputKeyDown(EKeys::E);
+		K.Up = PC->IsInputKeyDown(EKeys::SpaceBar) || PC->IsInputKeyDown(EKeys::R);
+		K.Down = PC->IsInputKeyDown(EKeys::LeftShift) || PC->IsInputKeyDown(EKeys::F);
+		const DroneApp::Fly::Axes Pad = DroneApp::Fly::FromGamepad(PC->GetInputAnalogKeyState(EKeys::Gamepad_LeftX), PC->GetInputAnalogKeyState(EKeys::Gamepad_LeftY),
+			PC->GetInputAnalogKeyState(EKeys::Gamepad_RightX), PC->GetInputAnalogKeyState(EKeys::Gamepad_RightY));
+		OutCommand = DroneApp::Fly::ToCommand(DroneApp::Fly::Sum(DroneApp::Fly::FromKeys(K), Pad));
+		if (PC->WasInputKeyJustPressed(EKeys::X) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Top)) { ResetFlight(); return; }
+		if (bCrashed) { OutCommand = DroneDemo::Command(); return; }
+		if (PC->WasInputKeyJustPressed(EKeys::T) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Bottom)) DemoController->RequestTakeoff(-PhysicsState.position[2]);
+		if (PC->WasInputKeyJustPressed(EKeys::G) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Right)) DemoController->RequestLand();
+		return;
+	}
+
 	if (PC->WasInputKeyJustPressed(EKeys::T) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Bottom))
 	{
 		DemoController->RequestTakeoff(-PhysicsState.position[2]);
@@ -706,6 +730,7 @@ void ADroneDemoPawn::PinToGround()
 	// DEMO ground handling: the Rust core has no ground contact (altitude < 0 is step code 6), so
 	// the vehicle is pinned level and at rest on the ground, keeping its heading.
 	const DroneState Before = PhysicsState;
+	if (bFlyMode && Before.velocity[2] > kCrashSinkMps) bCrashed = true;   // NED z is down: sinking faster than the limit on touchdown
 	const double Q[4] = {Before.orientation[0], Before.orientation[1], Before.orientation[2], Before.orientation[3]};
 	const DroneDemo::Euler Att = DroneDemo::QuatToEuler(Q);
 	const double Half = 0.5 * Att.YawRad;
@@ -729,6 +754,7 @@ void ADroneDemoPawn::PinToGround()
 
 void ADroneDemoPawn::StepFixed(double FixedDt, const DroneDemo::Command& Command)
 {
+	if (bCrashed) return;   // a crashed vehicle stays where it is until reset (X)
 	// Wind first (its own seeded stream), then the controller, then the physics step.
 	DroneWind::Sample Sample;
 	if (WindGenerator.Step(WindParams, FixedDt, &Sample)) WindSample = Sample;
@@ -831,7 +857,7 @@ void ADroneDemoPawn::Tick(float DeltaTime)
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	DroneDemo::Command Command;
 	ReadInput(PC, Command);
-	if (bPilotInputEnabled) ReadWindKeys(PC);
+	if (bPilotInputEnabled && !bFlyMode) ReadWindKeys(PC);   // fly mode: the wind panel owns the wind
 
 	Accumulator += static_cast<double>(DeltaTime);
 	int32 Steps = 0;
@@ -841,6 +867,11 @@ void ADroneDemoPawn::Tick(float DeltaTime)
 		if (bPhysicsFault) break;
 		Accumulator -= kFixedDt;
 		++Steps;
+	}
+	{
+		const double G = FMath::Sqrt(WindSample.Gust[0] * WindSample.Gust[0] + WindSample.Gust[1] * WindSample.Gust[1] + WindSample.Gust[2] * WindSample.Gust[2]);
+		GustPulseValue = DroneApp::Fly::GustPulse(PrevGustMps, G, static_cast<double>(DeltaTime));
+		PrevGustMps = G;
 	}
 	if (Steps == kMaxSubsteps && Accumulator >= kFixedDt)
 	{
@@ -933,25 +964,23 @@ void ADroneDemoPawn::UpdateVisuals(float DeltaTime)
 
 void ADroneDemoPawn::DrawWindArrows() const
 {
+	// Flowing streaks drifting with the wind (DroneApp::Fly::WindStreaks): count and drift speed scale with the wind, a gust makes them
+	// flash. The wind is the one the physics step received (WindSample.Total), not an estimate. No arrow.
 	UWorld* World = GetWorld();
 	if (!World) return;
-	const FVector Base = GetActorLocation() + FVector(0.0, 0.0, 120.0);
-
-	// One arrow from a NED wind vector (m/s); the frame conversion is the bridge's.
-	auto Arrow = [&](const double Ned[3], const FVector& From, const FColor& Color, float Thickness) {
-		const float F[3] = {static_cast<float>(Ned[0]), static_cast<float>(Ned[1]), static_cast<float>(Ned[2])};
-		const FVector Dir = FDronePhysicsBridgeModule::NedToUnrealVector(F) * kWindArrowCmPerMps;
-		if (Dir.SizeSquared() < 1.0) return;
-		const FVector Tip = From + Dir;
-		DrawDebugLine(World, From, Tip, Color, false, -1.0f, 0, Thickness);
-		const FVector Unit = Dir.GetSafeNormal();
-		const FVector Side = FVector::CrossProduct(Unit, FVector::UpVector).GetSafeNormal();
-		const float Head = FMath::Min(25.0f, static_cast<float>(Dir.Size()) * 0.3f);
-		DrawDebugLine(World, Tip, Tip - Unit * Head + Side * Head * 0.5f, Color, false, -1.0f, 0, Thickness);
-		DrawDebugLine(World, Tip, Tip - Unit * Head - Side * Head * 0.5f, Color, false, -1.0f, 0, Thickness);
-	};
-	Arrow(WindSample.Total, Base, FColor::Cyan, 3.0f);                                  // total wind
-	Arrow(WindSample.Gust, Base + FVector(0.0, 0.0, 30.0), FColor::Orange, 2.0f);       // the gust part
+	std::vector<DroneApp::Fly::Streak> Streaks;
+	DroneApp::Fly::WindStreaks(WindSample.Total, static_cast<double>(World->GetTimeSeconds()), GustPulseValue, Streaks);
+	const FVector Centre = GetActorLocation();
+	for (const DroneApp::Fly::Streak& S : Streaks)
+	{
+		const float Pos[3] = {static_cast<float>(S.X), static_cast<float>(S.Y), static_cast<float>(S.Z)};
+		const double Speed = FMath::Sqrt(WindSample.Total[0] * WindSample.Total[0] + WindSample.Total[1] * WindSample.Total[1] + WindSample.Total[2] * WindSample.Total[2]);
+		const float Dir[3] = {static_cast<float>(WindSample.Total[0] / Speed), static_cast<float>(WindSample.Total[1] / Speed), static_cast<float>(WindSample.Total[2] / Speed)};
+		const FVector From = Centre + FDronePhysicsBridgeModule::NedToUnrealVector(Pos) * 100.0;
+		const FVector To = From + FDronePhysicsBridgeModule::NedToUnrealVector(Dir) * (S.LenM * 100.0);
+		const uint8 Grey = static_cast<uint8>(120.0 + 135.0 * S.Alpha);   // white; brighter on a gust pulse
+		DrawDebugLine(World, From, To, FColor(Grey, Grey, Grey), false, -1.0f, 0, 1.5f);
+	}
 }
 
 void ADroneDemoPawn::DrawHud() const
@@ -1099,4 +1128,55 @@ void ADroneDemoPawn::FillUiRaw(FDroneUiRaw& Out) const
 	Out.FlightTimeS = FlightTimeS;
 	Out.bPhysicsFault = bPhysicsFault;
 	Out.bHaveTelemetry = bHaveTelemetry;
+}
+
+void ADroneDemoPawn::SetFlyMode(bool bOn)
+{
+	bFlyMode = bOn;
+	if (bOn) ResetFlight();
+	SetReplayMode(!bOn);   // fly: the physics steps and the pawn is visible; app: recorded runs
+	if (bOn) { bSimulationActive = true; SetActorHiddenInGame(false); }
+}
+
+void ADroneDemoPawn::ResetFlight()
+{
+	PhysicsState = FDronePhysicsBridgeModule::CreateDefaultState();
+	Thermal = FDronePhysicsBridgeModule::CreateDefaultThermalState();
+	PhysicsFaultLatch = {};
+	bHaveTelemetry = false;
+	bPhysicsFault = false;
+	bCrashed = false;
+	bFlewSinceLanding = false;
+	Accumulator = 0.0;
+	BatteryUsedAh = 0.0;
+	FlightTimeS = 0.0;
+	if (bPhysicsReady) DemoController = MakeUnique<DroneDemo::Controller>(LastTune);
+}
+
+void ADroneDemoPawn::ApplyFlyPanel(const DroneApp::Fly::WindPanel& P)
+{
+	const double Key[6] = {P.EffectiveSteadyMps(), P.DirectionDeg, P.GustSigmaMps, P.GustIntervalS, P.AirTempC, P.PayloadKg};
+	bool bSame = true;
+	for (int I = 0; I < 6; ++I) bSame = bSame && Key[I] == LastPanelKey[I];
+	if (bSame) return;
+	for (int I = 0; I < 6; ++I) LastPanelKey[I] = Key[I];
+	FString Msg;
+	// same validation and the same state change as the environment presets (DroneEnv::ValidateWeather inside SetWeather)
+	if (!SetWeather(Key[0], Key[1], Key[2], SiteAltitudeM, Key[4], HumidityPct, Msg)) { EnvironmentNotice = Msg; return; }
+	WindParams.GustCorrelationTimeS = Key[3];
+	// Payload: added to the mass (and the inertia in proportion). The controller's hover feed-forward is NOT rescaled: its integrator
+	// compensates. TODO(HUMAN-VERIFY): payload position / CG shift is not modelled in the live model.
+	if (BaseMassKg > 0.0)
+	{
+		const double Scale = (BaseMassKg + Key[5]) / BaseMassKg;
+		Config = BaseConfig;
+		Config.mass_kg = BaseMassKg * Scale;
+		for (int I = 0; I < 3; ++I) Config.inertia_kgm2[I] = BaseConfig.inertia_kgm2[I] * Scale;
+	}
+}
+
+void ADroneDemoPawn::GetWindForHud(double OutTotalNed[3], double& OutGustMps) const
+{
+	for (int I = 0; I < 3; ++I) OutTotalNed[I] = WindSample.Total[I];
+	OutGustMps = PrevGustMps;
 }

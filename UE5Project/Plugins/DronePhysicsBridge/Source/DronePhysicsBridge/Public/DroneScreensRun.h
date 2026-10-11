@@ -8,6 +8,8 @@
 #include <cmath>
 #include <string>
 
+#include "DroneScreensFly.h"
+#include "DroneScreensProgress.h"
 #include "DroneScreensSetup.h"
 
 namespace DroneApp
@@ -75,7 +77,21 @@ inline void Run(DrawList& L, const AppModel& M)
     L.HLine(0, Top, W, Palette::Line());
     L.Text(static_cast<float>(Ui::kTopBarPaddingPx), 14.0f, 700.0f, M.ReplayTest.empty() ? "Replay" : M.ReplayTest, 20.0f, Palette::Ink(), Weight::Medium);
     L.Text(static_cast<float>(Ui::kTopBarPaddingPx) + 260.0f, 17.0f, 700.0f,
-           std::string("Replay of a recorded run   ") + (M.Rep.Playing() ? "playing " : "paused ") + Num1(M.Rep.Speed()) + "x", 17.0f, Palette::Ink70());
+           std::string("Recorded run, not live physics   ") + (M.Rep.Playing() ? "playing " : "paused ") + Num1(M.Rep.Speed()) + "x", 17.0f, Palette::Ink70());
+    {
+        // what is on screen: test, simulated time, speed and the TRUE (recorded) motor rpm, on a dark strip so it reads over the sky
+        const float Lx = static_cast<float>(Ui::kTopBarPaddingPx), Ly = Top + 10.0f;
+        const std::string Info = (M.ReplayTest.empty() ? std::string("no test") : TestLabelOf(M.ReplayTest)) + "     sim time " + Num1(P.TimeS) + " / " + Num1(M.Rep.End()) +
+                                 " s     speed " + Num1(P.GroundSpeedMps()) + " m/s     rpm " + Fmt("%.0f", P.Rpm[0]) + " / " + Fmt("%.0f", P.Rpm[1]) + " / " +
+                                 Fmt("%.0f", P.Rpm[2]) + " / " + Fmt("%.0f", P.Rpm[3]);
+        L.Fill(Lx - 8.0f, Ly - 4.0f, EstimateTextWidth(Info, 16.0f) + 24.0f, 30.0f, Palette::Solid());
+        L.Text(Lx, Ly, 1000.0f, Info, 16.0f, Palette::Ink(), Weight::Regular);
+        if (M.RunWasQuick)
+        {
+            L.Fill(Lx - 8.0f, Ly + 34.0f, 340.0f, 30.0f, Palette::Solid());
+            Chip(L, Lx, Ly + 36.0f, "Quick profile: shortened tests", Palette::Warn());
+        }
+    }
     {
         const int Lim = LimitingIndex(M.LiveRows);
         if (Lim >= 0)
@@ -99,6 +115,9 @@ inline void Run(DrawList& L, const AppModel& M)
             L.Text((W - Wd) * 0.5f, static_cast<float>(Ui::kTopOfCautionBarPx) + 10.0f, Wd, T, 18.0f, Palette::OnWarn(), Weight::Medium, Align::Centre);
         }
     }
+    // wind of the recorded sample, and the way into fly mode
+    WindRose(L, W - 120.0f, 250.0f, 54.0f, P.WindNed, 0.0);
+    Button(L, W - 220.0f, Top + 8.0f, 180.0f, 36.0f, "Fly it yourself", false, Act::FlyIt);
     // instrument bar
     L.Fill(0, Hgt - BarH, W, BarH, Palette::Bar());
     L.HLine(0, Hgt - BarH, W, Palette::Line());

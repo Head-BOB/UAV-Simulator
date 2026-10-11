@@ -34,6 +34,7 @@ struct StdIO : AppIO
 {
     std::vector<int> Exits;
     std::vector<std::string> Opened;
+    std::vector<std::string> Logs;   // handle - 1 -> log file; the helpers' UAVPROGRESS lines are parsed from it (real helper output)
     bool ReadText(const std::string& Path, std::string& Out) override
     {
         std::ifstream f(Path, std::ios::binary);
@@ -59,10 +60,20 @@ struct StdIO : AppIO
         std::string Line = "'" + C.Program + "' " + C.ArgumentString() + " > '" + LogPath + "' 2>&1";
         const int Raw = std::system(Line.c_str());
         Exits.push_back(WIFEXITED(Raw) ? WEXITSTATUS(Raw) : 255);
+        Logs.push_back(LogPath);
         return static_cast<int>(Exits.size());
     }
     bool PollProcess(int Handle, int& ExitCode) override { ExitCode = Exits[static_cast<std::size_t>(Handle - 1)]; return true; }
     void OpenPath(const std::string& Path) override { Opened.push_back(Path); }
+    bool ReadProgress(int Handle, ProgressSnapshot& Out) override
+    {
+        std::string Text;
+        if (Handle < 1 || static_cast<std::size_t>(Handle) > Logs.size() || !ReadText(Logs[static_cast<std::size_t>(Handle - 1)], Text)) return false;
+        ProgressParser P;
+        P.Feed(Text);
+        Out = P.Snapshot();
+        return Out.Have;
+    }
 };
 
 static void RunToIdle(AppModel& M)
@@ -115,7 +126,7 @@ int main(int argc, char** argv)
 
     StdIO IO;
     HelperSettings H;
-    H.Python = Py; H.RepoRoot = Root; H.RunCampaignExe = RunExe; H.ValidateModelsExe = ValExe; H.Threads = 2; H.GitHash = "apptest";
+    H.Python = Py; H.RepoRoot = Root; H.RunCampaignExe = RunExe; H.ValidateModelsExe = ValExe; H.Threads = 2; H.GitHash = "apptest"; H.Progress = true;
     AppModel M(IO, H, Scratch);
     M.DefinitionsRel = "campaign/smoke_definitions.json";   // short tests for the check; the app ships with the full definitions
     Check(M.Init(), ("model initialises: " + M.Message).c_str());
@@ -243,6 +254,10 @@ int main(int argc, char** argv)
     RunToIdle(M);
     Check(M.Prog.CampaignDone && M.Prog.ReportDone, ("campaign and report finished: " + M.Message).c_str());
     Check(M.Camp.Tests.size() == 1 && M.Camp.Tests[0].Name == "climb" && M.ReplayTest == "climb", "one test recorded, ready to replay");
+    // the REAL helpers' progress lines reached the model through the parser: final report stage at 100 %, the climb recording was queued
+    Check(M.Live.Have && M.Live.Latest.Stage == ProgStage::Done && Near(M.Live.Latest.PercentOverall, 100.0, 1e-9) && M.Live.Lines >= 3, "the report helper's progress lines: stage done, 100 %");
+    Check(M.Recorded == std::vector<std::string>{"climb"} && M.JobDoneOk && Screens::StageLabel(M) == "Done", "the campaign's test_done event queued the recording; the HUD says Done");
+    Check(IO.Exists(M.CampaignDir + "/timing.json"), "timing.json is written next to the results with --progress");
     std::string ManifestText;
     IO.ReadText(M.CampaignDir + "/climb/manifest.json", ManifestText);
     Check(ManifestText.find("\"condition_set\": \"app_check\"") != std::string::npos && ManifestText.find("1.1.0-smoke-edited") != std::string::npos, "the manifest records the condition set and the edited definitions");
@@ -379,6 +394,59 @@ int main(int argc, char** argv)
     CheckLayout(M, "parts (fpv)");
     M.Click(Act::PickCategory, "frame");
     for (const auto* P : M.VisibleParts()) Check(P->FrameClass == "quad_fpv_5in", "only FPV frames are listed");
+
+    // ---- a payload is a test condition, not a part (the builder refuses it as a role: "unknown role 'payload'" on the first Windows run) ----
+    Check(M.Cat.Find("payload_test_mass_500g") != nullptr, "the database has payload records");
+    M.Click(Act::PickCategory, "payload");
+    Check(M.CategoryFilter == "frame" && M.MessageIsError, "the payload category cannot be opened in the parts list");
+    bool AnyPayload = !M.Cat.Filter("payload", "", "", "").empty();
+    for (const auto& Cat : M.Cat.Categories())
+        for (const auto* P : M.Cat.Filter(Cat, "", "", "")) AnyPayload = AnyPayload || P->Category == "payload";
+    for (const auto* P : M.Cat.Filter("", "", "", "")) AnyPayload = AnyPayload || P->Category == "payload";
+    Check(!AnyPayload, "no listing of the catalogue offers a payload part");
+    M.SelectedPartId = "payload_test_mass_500g";
+    M.Click(Act::AddPart, "");
+    Check(M.Sel.Get("payload").empty() && M.MessageIsError, "adding a payload part is refused with a message");
+    Check(!M.Sel.Set("payload", "payload_test_mass_500g") && M.Sel.Get("payload").empty(), "a selection never holds a payload");
+    {
+        DrawList L;
+        BuildScreen(L, M);
+        bool PayloadTab = false;
+        for (const auto& Ht : L.Hits) PayloadTab = PayloadTab || (Ht.A == Act::PickCategory && Ht.Arg == "payload");
+        Check(!PayloadTab, "the parts screen has no payload tab");
+    }
+
+    // ---- the absurd set of the first Windows run: 5 in frame + MN3110 + 15 in propeller on 6S, through the REAL builder ----
+    M.Click(Act::Navigate, "Parts");
+    const char* Absurd[][2] = {{"frame", "holybro_kopis2_220_frame"}, {"motor", "tmotor_mn3110_kv700"}, {"esc", "holybro_tekko32_f4_4in1_50a"},
+                               {"propeller", "tmotor_cf_15x5"}, {"battery", "tattu_rline_v6_1300_6s_160c"}};
+    for (const auto& R : Absurd)
+    {
+        M.Click(Act::PickCategory, R[0]);
+        M.Click(Act::PickPart, R[1]);
+        M.Click(Act::AddPart, "");
+    }
+    Check(M.Sel.Complete() && M.Prog.PartsComplete, "the absurd set is selectable (the app does not judge compatibility itself)");
+    M.Click(Act::Navigate, "Build");
+    Type(M, "buildname", "absurd_set");
+    M.Click(Act::BuildNow, "");
+    RunToIdle(M);
+    Check(!M.Prog.BuildDone && M.MessageIsError, "the builder refuses the absurd set");
+    auto Has = [&](const char* Rule) {
+        for (const auto& F : M.BuildFindings) if (F.Rule == Rule && F.Severity == "error") return true;
+        return false;
+    };
+    Check(Has("E-CLEAR-TIP") && Has("E-CLEAR-BODY") && Has("E-FRAME-PROP") && Has("E-PROP-RANGE") && Has("E-MOUNT"), "tip gap, body clearance, frame/prop size, prop range and mount are all errors");
+    Check(M.Summary.Errors() >= 5 || M.BuildFindings.size() >= 5, "five findings reach the app");
+    {
+        DrawList L;
+        BuildScreen(L, M);
+        Check(L.FindText("Compatibility") != nullptr && L.FindText("5 errors") != nullptr, "the Build screen counts the errors");
+        bool Inside = true;
+        for (const auto& I : L.Items) if (I.K == Item::Kind::Text && I.Y + I.Px > 1080.0f) Inside = false;
+        Check(Inside, "build screen with five errors: no text runs below the bottom edge");
+    }
+    CheckLayout(M, "build (absurd set refused)");
 
     if (g_failures == 0) std::printf("app_flow_test: all checks passed\n");
     return g_failures == 0 ? 0 : 1;

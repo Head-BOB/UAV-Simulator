@@ -84,7 +84,10 @@ def validate_spec(spec: dict, records: dict) -> list:
         if role not in parts:
             out.append(_err("E-BUILD", f"required part {role!r} is missing"))
     for role, pid in sorted(parts.items()):
-        if role not in REQUIRED_ROLES + OPTIONAL_ROLES:
+        if role == "payload":
+            out.append(_err("E-PAYLOAD", "payload is a test condition, not a vehicle part: set the payload mass and position on the "
+                            "Conditions screen (a build file may carry the top-level 'payload' key instead of a 'payload' part role)", (pid,) if isinstance(pid, str) else ()))
+        elif role not in REQUIRED_ROLES + OPTIONAL_ROLES:
             out.append(_err("E-BUILD", f"unknown role {role!r}"))
         elif pid not in records:
             out.append(_err("E-BUILD", f"{role}: unknown part id {pid!r}"))
@@ -173,10 +176,16 @@ def _build_checked(spec: dict, records: dict, db_root: Path) -> Result:
     if _val(esc, "channels") not in (1, 4):
         findings.append(_err("E-BUILD", f"{esc['id']}: ESC channels must be 1 or 4 (got {_val(esc, 'channels')})", (esc["id"],)))
     findings += C.pair_findings(by_role)
+    spacing, d_m = _val(frame, "motor_spacing_adjacent_m"), _val(prop, "diameter_m")
+    # Tip and body clearance depend only on the frame and the propeller, so they are checked BEFORE the early refusal: a propeller that
+    # does not fit the frame is reported together with the part-pair errors, not only after them (they used to hide it).
+    if "central_body_box_m" in frame:   # a missing box is reported by the layout step (E-LAYOUT) below
+        box = _val(frame, "central_body_box_m")
+        body_corner_m = _val(frame, "body_half_width_m") * math.sqrt(2.0) if frame.get("body_half_width_m") else math.hypot(box[0], box[1]) / 2.0
+        findings += C.clearance_findings(frame["id"], prop["id"], spacing, d_m, body_corner_m)
     if any(f.severity == "error" for f in findings):
         return Result(False, _sorted_findings(findings), None, None, None, None)
 
-    spacing, d_m = _val(frame, "motor_spacing_adjacent_m"), _val(prop, "diameter_m")
     section = L.arm_section(frame)
     frame_b, arm_info = L.frame_bodies(frame, section)
     esc_each = _val(esc, "channels") == 1
@@ -236,8 +245,6 @@ def _build_checked(spec: dict, records: dict, db_root: Path) -> Result:
         "torque_coeff": r(E.kappa_m(cp, d_m, ct)),
         "max_rpm": round(full["rpm"], 3),
     }
-    body_corner_m = _val(frame, "body_half_width_m") * math.sqrt(2.0) if frame.get("body_half_width_m") else math.hypot(box[0], box[1]) / 2.0
-    findings += C.clearance_findings(frame["id"], prop["id"], spacing, d_m, body_corner_m)
     findings += C.inertia_finding(config["inertia_kgm2"])
 
     hover_thr = E.hover_throttle(config["mass_kg"], config["thrust_coeff"], d_m, config["max_rpm"])

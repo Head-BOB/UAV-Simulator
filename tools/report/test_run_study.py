@@ -1,5 +1,9 @@
 # Tier: D
+import io
 import json
+import os
+import stat
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -62,6 +66,52 @@ class StudyTests(unittest.TestCase):
             for e in doc["candidates"]:
                 if e["status"] == "tested":
                     self.assertTrue((Path(t) / "s" / e["dir"].removeprefix("<study>/") / "vehicle_config.json").exists())
+
+    def test_parallel_candidates_give_the_same_study_json(self):
+        # --parallel only changes WHEN campaigns run, never what is written or in which order
+        with tempfile.TemporaryDirectory() as t1, tempfile.TemporaryDirectory() as t2:
+            a = go(t1, FakeRunner(), threads=1)
+            b = go(t2, FakeRunner(), threads=1, parallel=4)
+            self.assertEqual(json.dumps(a, sort_keys=True), json.dumps(b, sort_keys=True))
+            self.assertEqual([e["id"] for e in a["candidates"]], [e["id"] for e in b["candidates"]])
+
+    def test_staged_executables_replace_cargo_and_study_json_still_records_the_cargo_command(self):
+        r = R.HelperRunner("/opt/run_campaign", "/opt/validate_models")
+        cmd = R.campaign_command(Path("/b"), Path("/c.json"), Path("/d.json"), Path("/o"), 3, "g")
+        self.assertEqual(r.real_command(cmd), ["/opt/run_campaign", "/b", "/c.json", "/d.json", "/o", "--threads", "3", "--git-hash", "g"])
+        self.assertEqual(r.real_command(R.validation_command(Path("/b"))), ["/opt/validate_models", "/b", "/b"])
+        self.assertEqual(R.HelperRunner().real_command(cmd), cmd)                    # no exe given: unchanged (cargo run)
+        self.assertEqual(cmd[0], "cargo")                                            # the recorded command is the cargo one
+
+    def test_progress_lines_come_from_the_campaigns_simulated_time(self):
+        with tempfile.TemporaryDirectory() as t:
+            fake = Path(t) / "run_campaign"
+            fake.write_text(
+                "#!%s\nimport json, sys, pathlib\nout = pathlib.Path(sys.argv[4]); out.mkdir(parents=True, exist_ok=True)\n"
+                "for d in (50, 100):\n"
+                "    print('UAVPROGRESS ' + json.dumps({'stage': 'test', 'event': 'tick', 'test_id': 'x', 'test_index': 0, 'test_count': 1,"
+                " 'sim_s_done': d, 'sim_s_total': 100, 'percent_overall': 0, 'percent_test': d, 'elapsed_s': 1, 'eta_s': None, 'tests': []}), flush=True)\n"
+                "print('not a progress line')\nprint('UAVPROGRESS {broken')\n"
+                "(out / 'campaign_result.json').write_text('{}')\n" % sys.executable)
+            fake.chmod(fake.stat().st_mode | stat.S_IEXEC)
+            ok = Path(t) / "validate_models"
+            ok.write_text("#!%s\nimport sys\nsys.exit(0)\n" % sys.executable)
+            ok.chmod(ok.stat().st_mode | stat.S_IEXEC)
+            out = io.StringIO()
+            runner = R.HelperRunner(str(fake), str(ok), progress=True, out=out)
+            study = go(t, runner, threads=1)
+            runner.finish(True)
+            lines = [json.loads(l[len("UAVPROGRESS "):]) for l in out.getvalue().splitlines() if l.startswith("UAVPROGRESS ")]
+            self.assertTrue(lines)
+            n_camp = 1 + sum(e["status"] == "tested" for e in study["candidates"])
+            last = lines[-1]
+            self.assertEqual((last["stage"], last["event"]), ("done", "study_done"))
+            # every campaign reports 100 of 100 simulated seconds: all of them done = 100 % of the study's 95 % share
+            self.assertAlmostEqual(last["percent_overall"], 95.0, places=2)
+            self.assertAlmostEqual(last["sim_s_done"], 100.0 * n_camp, places=2)
+            self.assertTrue(all(0.0 <= l["percent_overall"] <= 95.0 for l in lines))
+            self.assertTrue(all(l["percent_overall"] <= m["percent_overall"] + 1e-9 for l, m in zip(lines, lines[1:])))   # never goes back
+            self.assertEqual(len([l for l in lines if l["event"] == "campaign_done"]), n_camp)
 
     def test_condition_set_switch_off_and_on(self):
         with tempfile.TemporaryDirectory() as t:

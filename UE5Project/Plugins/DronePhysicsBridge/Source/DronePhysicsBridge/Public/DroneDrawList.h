@@ -78,6 +78,8 @@ enum class Act
     PlayPause, Faster, Slower, Restart, SeekBar, PickTest, ToggleDetails, ToggleControls,
     WriteReport, OpenReport, RunStudy, OpenFolder,
     RunAnalyticFallback, OpenCfdFolder,
+    CancelJob, OpenLog, SetProfile, ToggleAutoPlay,
+    FlyIt, ExitFly, SetFlyMode, GustNow, ToggleRandomise,
     Dismiss,
 };
 

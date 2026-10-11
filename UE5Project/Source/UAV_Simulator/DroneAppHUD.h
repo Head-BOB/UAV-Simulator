@@ -45,6 +45,7 @@ private:
 	TSharedPtr<SDroneAppCanvas> AppCanvas;   // not `Canvas`: AHUD::Canvas (UCanvas*) is a base member
 	UPROPERTY() TObjectPtr<ADroneBuildPreview> Preview;
 	bool bDirty = true;
+	bool bLastBusy = false;   // a job just ended: redraw once so the progress panel shows Done
 	double DataAccumS = 0.0;
 	DroneApp::Screen LastScreen = DroneApp::Screen::Vehicle;
 	bool bPreviewDressed = false;

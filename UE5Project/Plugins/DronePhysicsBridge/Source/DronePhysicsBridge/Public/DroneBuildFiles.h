@@ -37,8 +37,7 @@ struct VehicleClassInfo
 };
 inline const std::vector<VehicleClassInfo>& VehicleClasses()
 {
-    static const std::vector<VehicleClassInfo> V = {{"quad_standard", "Quadcopter", true}, {"quad_fpv_5in", "FPV quadcopter", true},
-                                                    {"", "Fixed wing", false}, {"", "Hexacopter", false}, {"", "Underwater vehicle (AUV)", false}};
+    static const std::vector<VehicleClassInfo> V = {{"quad_standard", "Quadcopter", true}, {"quad_fpv_5in", "FPV quadcopter", true}};   // only the two implemented classes are listed
     return V;
 }
 

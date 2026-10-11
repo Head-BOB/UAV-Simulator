@@ -21,6 +21,8 @@
 #include "DroneDrawList.h"
 #include "DroneHelpers.h"
 #include "DroneMargins.h"
+#include "DroneFly.h"
+#include "DroneProgress.h"
 #include "DroneReplay.h"
 #include "DroneReportData.h"
 
@@ -38,6 +40,10 @@ struct AppIO
     // True when the process has ended (ExitCode set); false while it runs.
     virtual bool PollProcess(int Handle, int& ExitCode) = 0;
     virtual void OpenPath(const std::string& Path) = 0;   // folder or file in the system viewer
+    // Optional (defaults: no progress, nothing to cancel). The host parses the running process's output with ProgressParser as it
+    // arrives and returns the snapshot; CancelProcess kills the process (and its children). A cancelled process ends with a non-zero code.
+    virtual bool ReadProgress(int Handle, ProgressSnapshot& Out) { (void)Handle; (void)Out; return false; }
+    virtual void CancelProcess(int Handle) { (void)Handle; }
 };
 
 struct Step
@@ -135,6 +141,38 @@ public:
     // Jobs
     std::deque<Step> Queue;
     bool Busy() const { return !Queue.empty(); }
+
+    // Progress of the running job, from the helper's own UAVPROGRESS lines (simulated time done over the planned simulated time).
+    // Fly mode (the live physics pawn flies; the UE layer fills FlyT each frame and reads WindP / FlyModeSel).
+    struct FlyTelemetry
+    {
+        double AltitudeM = 0.0, SpeedMps = 0.0, RpmMean = 0.0, SocFraction = 1.0, GustMps = 0.0;
+        double WindNed[3] = {0.0, 0.0, 0.0};   // the wind the physics step received
+        bool Crashed = false;
+        std::string StateText;                 // ON GROUND / FLYING / ...
+    };
+    bool FlyMode = false;
+    Fly::Mode FlyModeSel = Fly::Mode::Assisted;
+    Fly::WindPanel WindP;
+    FlyTelemetry FlyT;
+    ProgressSnapshot Live;
+    double SinceProgressS = 0.0;              // real seconds since the helper last said anything
+    std::vector<std::string> Recorded;        // tests whose recording is on disk, in the order they finished
+    std::set<std::string> Played;             // recordings the auto-play has already shown
+    bool AutoPlay = true;
+    bool QuickProfile = false;                // chosen on Conditions: shortened long tests (QuickOverrides)
+    bool RunWasQuick = false;                 // the profile of the run on screen (the choice may change afterwards)
+    bool Cancelled = false;
+    bool JobDoneOk = false;                   // the last job chain ended without error: the HUD says "Done"
+    bool AutoNavigated = false;
+    std::string LastLog;
+    // The helper has said nothing for a minute while it was expected to (campaign, study, report).
+    bool NoProgress() const
+    {
+        if (Queue.empty() || Queue.front().Handle < 0 || Queue.front().Kind == Helper::Build || Queue.front().Kind == Helper::Validation) return false;
+        return SinceProgressS >= 60.0;
+    }
+    std::string RunningLog() const { return Queue.empty() ? LastLog : Queue.front().Log; }
     std::string BusyLabel() const { return Queue.empty() ? std::string() : Queue.front().Cmd.Description; }
 
     // ---- derived helpers ---------------------------------------------------------------------------------------------------------
@@ -166,13 +204,14 @@ public:
             case Act::NavNext: Navigate(Next(Current, Prog)); break;
             case Act::NavPrev: Navigate(Previous(Current)); break;
             case Act::PickVehicle: PickVehicle(Arg); break;
-            case Act::PickCategory: CategoryFilter = Arg; ManufacturerFilter.clear(); SelectedPartId.clear(); ListScroll = 0; break;
+            case Act::PickCategory: if (!IsVehiclePartCategory(Arg)) { Say("A payload is a test condition, not a part: set it on the Conditions screen.", true); break; }
+                CategoryFilter = Arg; ManufacturerFilter.clear(); SelectedPartId.clear(); ListScroll = 0; break;
             case Act::PickManufacturer: ManufacturerFilter = (ManufacturerFilter == Arg) ? std::string() : Arg; ListScroll = 0; break;
             case Act::PickPart: SelectedPartId = Arg; break;
             case Act::AddPart: AddSelectedPart(); break;
             case Act::RemovePart: Sel.Clear(Arg); AfterPartsChange(); break;
             case Act::ScrollList: ListScroll = std::max(0, ListScroll + std::atoi(Arg.c_str())); break;
-            case Act::FocusField: Focus = Arg; break;
+            case Act::FocusField: if (Focus != Arg) CommitFocus(); Focus = Arg; break;   // moving to another field commits the one left
             case Act::ClearFocus: Focus.clear(); break;
             case Act::BuildNow: StartBuild(); break;
             case Act::UseBuild: Navigate(Screen::Conditions); break;
@@ -182,12 +221,21 @@ public:
             case Act::RunTests: StartRun(false); break;
             case Act::RunAnalyticFallback: StartRun(true); break;
             case Act::OpenCfdFolder: if (!H.CfdDir.empty()) IO.OpenPath(H.CfdDir); break;
+            case Act::CancelJob: CancelRunning(); break;
+            case Act::OpenLog: { const std::string L = RunningLog(); if (!L.empty()) IO.OpenPath(L); break; }
+            case Act::SetProfile: if (!Busy() && (Arg == "quick" || Arg == "full")) { QuickProfile = Arg == "quick"; Prog = AfterChange(Screen::Conditions, Prog); } break;
+            case Act::ToggleAutoPlay: AutoPlay = !AutoPlay; break;
+            case Act::FlyIt: if (!Prog.VehicleClassChosen) { Say("Choose a vehicle first.", true); break; } FlyMode = true; FlyModeSel = Fly::Mode::Assisted; Focus.clear(); break;
+            case Act::ExitFly: FlyMode = false; Focus.clear(); break;
+            case Act::SetFlyMode: if (Arg == "assisted") FlyModeSel = Fly::Mode::Assisted; else if (Arg == "acro" && Fly::ModeAvailable(VehicleClass, Fly::Mode::Acro)) FlyModeSel = Fly::Mode::Acro; break;
+            case Act::GustNow: WindP.GustNow(); break;
+            case Act::ToggleRandomise: WindP.Randomise = !WindP.Randomise; break;
             case Act::PlayPause: Rep.Toggle(); break;
             case Act::Faster: Rep.FasterStep(); break;
             case Act::Slower: Rep.SlowerStep(); break;
             case Act::Restart: Rep.Seek(Rep.Start()); RefreshLive(); break;
             case Act::SeekBar: Rep.SeekFraction(std::atof(Arg.c_str())); RefreshLive(); break;
-            case Act::PickTest: SelectReplayTest(Arg); break;
+            case Act::PickTest: SelectReplayTest(Arg); Played.insert(Arg); if (Camp.Find(Arg) != nullptr) Rep.Play(); break;
             case Act::ToggleDetails: ShowDetails = !ShowDetails; break;
             case Act::ToggleControls: ShowControls = !ShowControls; break;
             case Act::WriteReport: StartReport(); break;
@@ -232,7 +280,11 @@ public:
     // Real-time tick: polls the running helper job and advances the replay.
     void Tick(double RealDt)
     {
+        if (FlyMode) WindP.Advance(RealDt);
+        const bool Was = Busy();
         PollJobs();
+        if (Busy() && Queue.front().Handle >= 0) SinceProgressS += RealDt;
+        if (Was || Busy()) AutoPlayStep();
         if (Current == Screen::Run && Rep.Playing()) { Rep.Advance(RealDt); RefreshLive(); }
     }
 
@@ -264,6 +316,12 @@ public:
         if (Id == "search") return &Search;
         if (Id == "buildname") return &BuildName;
         if (Id == "cond:name") return &Cond.Name;
+        if (Id == "fly:speed") return &WindP.SpeedText;
+        if (Id == "fly:dir") return &WindP.DirText;
+        if (Id == "fly:gust") return &WindP.GustText;
+        if (Id == "fly:interval") return &WindP.IntervalText;
+        if (Id == "fly:temp") return &WindP.TempText;
+        if (Id == "fly:payload") return &WindP.PayloadText;
         if (Id == "cond:seed") return &Cond.Seed;
         if (Id.rfind("cond:", 0) == 0) { std::string K = Id.substr(5); for (std::size_t I = 0; I < ConditionFields().size(); ++I) if (K == ConditionFields()[I].Id) return &Cond.Value[I]; return nullptr; }
         if (Id.rfind("limit:", 0) == 0) { const int I = std::atoi(Id.c_str() + 6); if (I >= 0 && I < static_cast<int>(LimitText.size())) return &LimitText[static_cast<std::size_t>(I)]; }
@@ -302,6 +360,7 @@ private:
     {
         const Part* P = SelectedPart();
         if (P == nullptr) { Say("Pick a part first.", true); return; }
+        if (!IsVehiclePartCategory(P->Category)) { Say("A payload is a test condition, not a part: set it on the Conditions screen.", true); return; }
         if (P->Category == "frame" && !VehicleClass.empty() && P->FrameClass != VehicleClass) { Say("This frame is not for the chosen vehicle class.", true); return; }
         Sel.Set(P->Category, P->Id);
         AfterPartsChange();
@@ -325,7 +384,7 @@ private:
         for (std::size_t I = 0; I < Limits.size(); ++I) { Limits[I].Value = Limits[I].Original; LimitText[I] = NumText(Limits[I].Original); }
     }
 
-    void CommitFocus() { /* values are parsed when used; nothing to do while typing */ }
+    void CommitFocus() { if (Focus.rfind("fly:", 0) == 0) WindP.Commit(Focus.substr(4)); /* other values are parsed when used */ }
     void AfterFieldEdit() {}
 
     // ---- jobs --------------------------------------------------------------------------------------------------------------------
@@ -342,6 +401,10 @@ private:
     {
         if (Queue.empty() || Queue.front().Handle != -1) return;
         Step& S = Queue.front();
+        Live = ProgressSnapshot();
+        SinceProgressS = 0.0;
+        JobDoneOk = false;
+        LastLog = S.Log;
         S.Handle = IO.StartProcess(S.Cmd, S.Log);
         if (S.Handle < 0)
         {
@@ -384,6 +447,12 @@ private:
         }
         std::string Defs;
         if (!WriteEditedDefinitions(DefinitionsText, Limits, Defs, EditedLimits, Err)) { Say(Err, true); return false; }
+        if (QuickProfile)
+        {
+            std::string Quick;
+            if (!ApplyQuickProfile(Defs, Quick, Err)) { Say(Err, true); return false; }
+            Defs = Quick;
+        }
         ConditionsPath = Join(SessionDir(), "conditions.json");
         DefinitionsPath = Join(SessionDir(), "definitions.json");
         if (!IO.WriteText(ConditionsPath, WriteConditionsJson(V)) || !IO.WriteText(DefinitionsPath, Defs)) { Say("Cannot write the condition files.", true); return false; }
@@ -401,6 +470,13 @@ private:
         CampaignDir = Join(SessionDir(), "campaign");
         Prog.CampaignDone = false; Prog.ReportDone = false; Prog.StudyDone = false;
         CfdLoadError.clear();
+        RunWasQuick = QuickProfile;
+        Recorded.clear();
+        Played.clear();
+        ReplayTest.clear();
+        AutoNavigated = false;
+        Cancelled = false;
+        Prog.RecordingsAvailable = false;
         Enqueue(CampaignCommand(H, BuildDir, ConditionsPath, DefinitionsPath, CampaignDir, TestsArgument(std::vector<std::string>(SelectedTests.begin(), SelectedTests.end())), AnalyticFallback),
                 Helper::Campaign, "campaign");
         StartNextIfIdle();
@@ -434,12 +510,97 @@ private:
         if (Queue.empty()) return;
         if (Queue.front().Handle == -1) { StartNextIfIdle(); return; }
         int Code = 0;
+        SyncProgress(Queue.front());
         if (!IO.PollProcess(Queue.front().Handle, Code)) return;
+        SyncProgress(Queue.front());   // the lines printed just before it ended
         const Step Done = Queue.front();
         Queue.pop_front();
         const std::string Log = ReadLog(Done);
-        if (OnJobDone(Done, Code, Log)) StartNextIfIdle();
+        if (Cancelled)
+        {
+            Cancelled = false;
+            Queue.clear();
+            LoadRecordings();
+            Say(Done.Kind == Helper::Campaign && !Recorded.empty()
+                    ? "Cancelled. " + std::to_string(Recorded.size()) + " finished test(s) are kept: open Run to replay them. No report was written."
+                    : "Cancelled.");
+            return;
+        }
+        if (OnJobDone(Done, Code, Log)) { StartNextIfIdle(); JobDoneOk = Queue.empty() && !MessageIsError; }
         else Queue.clear();
+    }
+
+    // Kills the running helper. Tests that already finished stay on disk and stay replayable; the queue behind it is dropped.
+    void CancelRunning()
+    {
+        if (Queue.empty()) return;
+        Cancelled = true;
+        if (Queue.front().Handle >= 0) { IO.CancelProcess(Queue.front().Handle); Say("Cancelling ..."); }
+        else { Queue.clear(); Cancelled = false; Say("Cancelled."); }
+    }
+
+    // Takes the helper's progress lines; each newly finished test of a campaign is loaded and queued for the replay.
+    void SyncProgress(const Step& S)
+    {
+        ProgressSnapshot Snap;
+        if (!IO.ReadProgress(S.Handle, Snap) || !Snap.Have) return;
+        if (Snap.Lines != Live.Lines) SinceProgressS = 0.0;
+        Live = Snap;
+        if (S.Kind != Helper::Campaign) return;
+        bool New = false;
+        for (const auto& Id : Snap.FinishedTests)
+            if (std::find(Recorded.begin(), Recorded.end(), Id) == Recorded.end()) { Recorded.push_back(Id); New = true; }
+        if (New) LoadRecordings();
+    }
+
+    // Reads the (partial) campaign folder: every finished test has its files, and the index lists the finished tests only.
+    void LoadRecordings()
+    {
+        if (CampaignDir.empty()) return;
+        ReadFile Read = [this](const std::string& Rel, std::string& Out) { return IO.ReadText(Join(CampaignDir, Rel), Out); };
+        Campaign Fresh;
+        std::string Err;
+        if (!LoadCampaign(Read, Fresh, Err)) return;   // not written yet (or half-renamed): the next line asks again
+        Camp = Fresh;
+        std::string Text;
+        if (Powertrain.IsNull() && IO.ReadText(Join(BuildDir, "powertrain_config.json"), Text))
+        {
+            const Json::ParseResult P = Json::Parse(Text);
+            if (P.ok) Powertrain = P.value;
+        }
+        std::string MErr;
+        if (!Powertrain.IsNull()) ComputeMargins(Camp, Powertrain, PeakMargins, MErr);
+        for (const auto& T : Camp.Tests) if (!T.SeriesFiles.empty()) Prog.RecordingsAvailable = true;
+    }
+
+    // Auto-play: the first finished test starts at once (and opens Run from Conditions, once); when the shown one has ended, the next
+    // finished test that has not been shown yet follows. Clicking a test, or turning auto-play off, takes over.
+    void AutoPlayStep()
+    {
+        if (!AutoPlay || Recorded.empty()) return;
+        auto Ready = [&](const std::string& Id) { const TestData* T = Camp.Find(Id); return T != nullptr && !T->SeriesFiles.empty(); };
+        if (ReplayTest.empty() || Camp.Find(ReplayTest) == nullptr)
+        {
+            for (const auto& Id : Recorded)
+                if (Ready(Id))
+                {
+                    SelectReplayTest(Id);
+                    Played.insert(Id);
+                    Rep.Play();
+                    if (Current == Screen::Conditions && !AutoNavigated) { AutoNavigated = true; Navigate(Screen::Run); }
+                    return;
+                }
+            return;
+        }
+        if (Rep.AtEnd() && !Rep.Playing())
+            for (const auto& Id : Recorded)
+                if (Played.count(Id) == 0 && Ready(Id))
+                {
+                    SelectReplayTest(Id);
+                    Played.insert(Id);
+                    Rep.Play();
+                    return;
+                }
     }
 
     // Returns false when the rest of the queue must be dropped.
@@ -528,7 +689,7 @@ private:
         std::string First;
         for (const auto& T : Camp.Tests) if (!T.SeriesFiles.empty()) { First = T.Name; break; }
         if (First.empty()) { Err = "no test recorded a time series"; return false; }
-        SelectReplayTest(First);
+        if (ReplayTest.empty() || Camp.Find(ReplayTest) == nullptr) SelectReplayTest(First);   // keep what the auto-play is showing
         return !ReplayTest.empty();
     }
 };

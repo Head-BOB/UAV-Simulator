@@ -1,5 +1,7 @@
 # Tier: D
+import contextlib
 import copy
+import io
 import json
 import shutil
 import tempfile
@@ -198,6 +200,13 @@ class BannerTests(unittest.TestCase):
         c.update(common or {})
         return {b["id"] for b in MR.banners(c, list(tests), list(bom), list(flags), pt or {"parameters_verified": 1})}
 
+    def test_quick_profile_banner_and_both_suffixes(self):
+        # the app appends "-quick" after "-edited": "1.0.0-edited-quick" must raise BOTH banners
+        self.assertIn("quick_profile", self.ids({"definitions_set_version": "1.0.0-quick"}))
+        both = self.ids({"definitions_set_version": "1.0.0-edited-quick"})
+        self.assertTrue({"quick_profile", "edited_limits"} <= both)
+        self.assertNotIn("quick_profile", self.ids())
+
     def test_each_banner_appears_exactly_when_it_applies(self):
         self.assertEqual(self.ids(), {"no_cfd"})                                                      # a clean non-smoke analytic run
         self.assertIn("smoke", self.ids({"definitions_set_version": "1.0.0-smoke"}))
@@ -351,6 +360,37 @@ class UpgradeSectionTests(unittest.TestCase):
         u, _ = self.section()
         self.assertEqual(u["entries"][0]["status"], "not_tested")
         self.assertIn("unusable", u["entries"][0]["rank_note"])
+
+
+class ProgressFlagTests(unittest.TestCase):
+    """--progress prints UAVPROGRESS lines and changes no output byte (the report's recorded command does not name the flag either)."""
+
+    def run_main(self, out, *extra):
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = MR.main(["--build", str(REF), "--campaign", str(SMOKE), "--out", str(out), *extra])
+        self.assertEqual(rc, 0)
+        return buf.getvalue()
+
+    def test_outputs_are_identical_with_and_without_the_flag(self):
+        with tempfile.TemporaryDirectory() as t:
+            plain = self.run_main(Path(t) / "a")
+            shown = self.run_main(Path(t) / "b", "--progress")
+            self.assertNotIn("UAVPROGRESS", plain)
+            lines = [json.loads(l[len("UAVPROGRESS "):]) for l in shown.splitlines() if l.startswith("UAVPROGRESS ")]
+            self.assertEqual([l["stage"] for l in lines], ["report", "report", "done"])
+            self.assertEqual([l["percent_overall"] for l in lines], [90.0, 96.667, 100.0])     # 90 + 10 x steps / 3
+            names_a = sorted(p.relative_to(Path(t) / "a").as_posix() for p in (Path(t) / "a").rglob("*") if p.is_file())
+            names_b = sorted(p.relative_to(Path(t) / "b").as_posix() for p in (Path(t) / "b").rglob("*") if p.is_file())
+            self.assertEqual(names_a, names_b)
+            for n in names_a:
+                self.assertEqual((Path(t) / "a" / n).read_bytes(), (Path(t) / "b" / n).read_bytes(), n)
+
+    def test_progress_base_for_the_study_report(self):
+        with tempfile.TemporaryDirectory() as t:
+            shown = self.run_main(Path(t) / "c", "--progress", "--progress-base", "95")
+            pct = [json.loads(l[len("UAVPROGRESS "):])["percent_overall"] for l in shown.splitlines() if l.startswith("UAVPROGRESS ")]
+            self.assertEqual(pct, [95.0, 98.333, 100.0])
 
 
 class CliTests(unittest.TestCase):

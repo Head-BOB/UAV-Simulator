@@ -3,10 +3,14 @@
 
 Usage: python tools/report/run_study.py <build.json> --conditions <file> --definitions <file> --out <study dir>
          [--threads N] [--reuse] [--all-condition-sets] [--candidates-on selected|all] [--max-campaigns N]
+         [--run-campaign-exe F] [--validate-models-exe F] [--parallel N] [--progress]
 Then: python tools/report/make_report.py --study <study dir> --out <report dir>
 
-The campaigns are run by `cargo run --release --example run_campaign` (physics_core). Nothing is estimated here: a candidate whose
-campaign fails is recorded as not tested. No clock and no machine path is written to study.json, so it is reproducible.
+The campaigns are run by `cargo run --release --example run_campaign` (physics_core), or by the staged executable given with
+--run-campaign-exe (a packaged app has no cargo; study.json records the same command either way). --parallel N runs N candidates at once
+(results and study.json do not depend on it). --progress prints `UAVPROGRESS {json}` lines from the simulated time the campaigns
+report, never from a timer. Nothing is estimated here: a candidate whose campaign fails is recorded as not tested. No clock and no
+machine path is written to study.json, so it is reproducible.
 """
 from __future__ import annotations
 
@@ -14,6 +18,9 @@ import argparse
 import json
 import subprocess
 import sys
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import _paths
@@ -33,6 +40,119 @@ class StudyError(RuntimeError):
 
 def default_runner(cmd: list[str]) -> int:
     return subprocess.run(cmd, cwd=REPO, stdout=subprocess.DEVNULL).returncode
+
+
+class HelperRunner:
+    """Runs the study's commands. Swaps `cargo run ... --example X --` for a staged executable when one is given, and with `progress`
+    follows each campaign's UAVPROGRESS lines to print one study-wide line. The recorded command (study.json) is not changed."""
+
+    SHARE = 0.95   # the study's share of the overall percentage; the study report that follows takes the rest
+
+    def __init__(self, run_campaign_exe: str = "", validate_models_exe: str = "", progress: bool = False, out=None):
+        self.exes = {"run_campaign": run_campaign_exe, "validate_models": validate_models_exe}
+        self.progress = progress
+        self.out = out or sys.stdout
+        self.lock = threading.Lock()
+        self.total = 0
+        self.t0 = time.monotonic()
+        self.camps: dict[str, dict] = {}     # out dir -> {"done": sim s, "total": sim budget s, "state": ...}
+        self.finished = 0
+        self.ref_total = 0.0
+        self.last_emit = 0.0
+        self.stop = threading.Event()
+        self.ticker = None
+
+    def set_total(self, n: int) -> None:
+        self.total = n
+
+    def real_command(self, cmd: list[str]) -> list[str]:
+        for name, exe in self.exes.items():
+            if exe and "--example" in cmd and cmd[cmd.index("--example") + 1] == name and "--" in cmd:
+                return [exe] + cmd[cmd.index("--") + 1:]
+        return cmd
+
+    def __call__(self, cmd: list[str]) -> int:
+        real = self.real_command(cmd)
+        is_campaign = self.progress and ("run_campaign" in cmd or Path(real[0]).stem == "run_campaign")
+        if not is_campaign:
+            return subprocess.run(real, cwd=REPO, stdout=subprocess.DEVNULL).returncode
+        key = real[real.index("--") + 4] if "--" in real else real[4]
+        with self.lock:
+            self.camps[key] = {"done": 0.0, "total": 0.0, "state": "running"}
+        proc = subprocess.Popen(real + ["--progress"], cwd=REPO, stdout=subprocess.PIPE, text=True)
+        for line in proc.stdout:
+            if line.startswith("UAVPROGRESS "):
+                try:
+                    d = json.loads(line[len("UAVPROGRESS "):])
+                    with self.lock:
+                        c = self.camps[key]
+                        c["done"], c["total"] = float(d["sim_s_done"]), float(d["sim_s_total"])
+                        self.ref_total = max(self.ref_total, c["total"])
+                except (ValueError, KeyError, TypeError):
+                    pass   # a malformed line is skipped; the run goes on
+        proc.stdout.close()
+        rc = proc.wait()
+        with self.lock:
+            c = self.camps[key]
+            c["state"] = "done" if rc == 0 else "failed"
+            self.finished += 1
+            if rc == 0:
+                c["done"] = c["total"]
+        self.emit("campaign_done")
+        return rc
+
+    def line(self, stage: str, event: str) -> str:
+        with self.lock:
+            n = max(self.total, len(self.camps), 1)
+            ref = self.ref_total
+            done = sum(c["done"] for c in self.camps.values())
+            frac = min(1.0, done / (n * ref)) if ref > 0 else 0.0
+            if stage == "done":
+                frac = 1.0
+            elapsed = time.monotonic() - self.t0
+            eta = round(elapsed * (1.0 - frac) / frac, 3) if self.finished > 0 and 0.0 < frac < 1.0 else None
+            ids = list(self.camps)
+            running = [k for k in ids if self.camps[k]["state"] == "running"]
+            cur = running[0] if running else (ids[-1] if ids else "")
+            cur_c = self.camps.get(cur, {"done": 0.0, "total": 0.0})
+            pct_test = 100.0 if self.camps.get(cur, {}).get("state") == "done" else (min(99.0, 100.0 * cur_c["done"] / cur_c["total"]) if cur_c["total"] > 0 else 0.0)
+            tests = []
+            for k in ids:
+                c = self.camps[k]
+                pct = 100.0 if c["state"] == "done" else (100.0 * c["done"] / c["total"] if c["total"] > 0 else 0.0)
+                tests.append({"id": Path(k).parent.parent.name if Path(k).parent.name == "campaign" else Path(k).name,
+                              "state": c["state"], "percent": round(min(pct, 100.0), 3), "sim_s": round(c["done"], 3)})
+            d = {"stage": stage, "event": event, "test_id": tests[ids.index(cur)]["id"] if ids else "", "test_index": ids.index(cur) if ids else 0,
+                 "test_count": n, "sim_s_done": round(done, 3), "sim_s_total": round(n * ref, 3),
+                 "percent_overall": round(self.SHARE * 100.0 * frac, 3), "percent_test": round(pct_test, 3),
+                 "elapsed_s": round(elapsed, 3), "eta_s": eta, "tests": tests}
+        return "UAVPROGRESS " + json.dumps(d)
+
+    def emit(self, event: str, stage: str = "study") -> None:
+        if not self.progress:
+            return
+        text = self.line(stage, event)
+        with self.lock:
+            print(text, file=self.out, flush=True)
+            self.last_emit = time.monotonic()
+
+    def start(self) -> None:
+        if not self.progress:
+            return
+        self.emit("start", "preparing")
+
+        def tick():
+            while not self.stop.wait(0.25):
+                if time.monotonic() - self.last_emit >= 1.0:
+                    self.emit("tick")
+        self.ticker = threading.Thread(target=tick, daemon=True)
+        self.ticker.start()
+
+    def finish(self, ok: bool) -> None:
+        self.stop.set()
+        if self.ticker is not None:
+            self.ticker.join(timeout=2.0)
+        self.emit("study_done" if ok else "study_failed", "done" if ok else "failed")
 
 
 def git_hash() -> str:
@@ -91,7 +211,7 @@ def plan_campaign_count(n_candidates: int, base_sets: int, cand_sets: int) -> in
 def run_study(spec_path: Path, conditions_path: Path, definitions_path: Path, out: Path, *, runner=default_runner, threads: int = 1,
               reuse: bool = False, all_condition_sets: bool = False, candidates_on: str = "selected",
               condition_sets_path: Path | None = None, max_campaigns: int = DEFAULT_MAX_CAMPAIGNS, git: str | None = None,
-              db_root: Path = P.DEFAULT_DB, log=print) -> dict:
+              db_root: Path = P.DEFAULT_DB, log=print, parallel: int = 1) -> dict:
     if candidates_on not in ("selected", "all"):
         raise StudyError("--candidates-on must be 'selected' or 'all'")
     spec = json.loads(spec_path.read_text(encoding="utf-8"))
@@ -112,6 +232,8 @@ def run_study(spec_path: Path, conditions_path: Path, definitions_path: Path, ou
     log(f"{len(buildable)} compatible candidates, {len(checked) - len(buildable)} rejected: {total} campaigns")
     if total > max_campaigns:
         raise StudyError(f"{total} campaigns exceed --max-campaigns {max_campaigns}; raise it or narrow the study")
+    if hasattr(runner, "set_total"):
+        runner.set_total(total)
     git = git or git_hash()
     out.mkdir(parents=True, exist_ok=True)
     cond_dir = out / "conditions"
@@ -148,8 +270,7 @@ def run_study(spec_path: Path, conditions_path: Path, definitions_path: Path, ou
     bad = [r for r in base["runs"] if r["status"].startswith("failed")]
     if bad:
         raise StudyError(f"baseline run failed: {bad[0]['condition']} {bad[0]['status']}")
-    entries = []
-    for c in checked:
+    def make_entry(c: dict) -> dict:
         e = {"id": c["id"], "role": c["role"], "part_id": c["part_id"], "status": c["status"], "errors": c["errors"], "warnings": c["warnings"]}
         if c["status"] == "buildable":
             e.update(build_and_run(c["id"], c["build"], cand_names, False))
@@ -159,7 +280,13 @@ def run_study(spec_path: Path, conditions_path: Path, definitions_path: Path, ou
                 e["reason"] = "campaign failed: " + next(r["status"] for r in e["runs"] if r["status"].startswith("failed"))
         else:
             e["status"] = "rejected"
-        entries.append(e)
+        return e
+
+    if parallel > 1:
+        with ThreadPoolExecutor(max_workers=parallel) as pool:
+            entries = list(pool.map(make_entry, checked))   # map keeps the order of `checked`
+    else:
+        entries = [make_entry(c) for c in checked]
     study = {"schema_version": SCHEMA_VERSION, "build_spec": spec, "git_hash": git, "definitions": shown(definitions_path, out),
              "selected_condition_set": sel_name, "condition_sets": {n: sets[n] for n in base_names}, "baseline_condition_sets": base_names,
              "candidate_condition_sets": cand_names, "all_condition_sets": all_condition_sets, "threads": threads,
@@ -180,13 +307,22 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--condition-sets", type=Path, default=REPO / "campaign" / "condition_sets.json")
     ap.add_argument("--candidates-on", choices=("selected", "all"), default="selected")
     ap.add_argument("--max-campaigns", type=int, default=DEFAULT_MAX_CAMPAIGNS)
+    ap.add_argument("--run-campaign-exe", default="", help="staged run_campaign executable (default: cargo run)")
+    ap.add_argument("--validate-models-exe", default="", help="staged validate_models executable (default: cargo run)")
+    ap.add_argument("--parallel", type=int, default=1, help="candidates run at the same time (results do not depend on it)")
+    ap.add_argument("--progress", action="store_true", help="print UAVPROGRESS lines")
     a = ap.parse_args(argv)
+    runner = HelperRunner(a.run_campaign_exe, a.validate_models_exe, a.progress)
+    runner.start()
     try:
         run_study(a.build_file, a.conditions, a.definitions, a.out, threads=a.threads, reuse=a.reuse, all_condition_sets=a.all_condition_sets,
-                  candidates_on=a.candidates_on, condition_sets_path=a.condition_sets, max_campaigns=a.max_campaigns)
+                  candidates_on=a.candidates_on, condition_sets_path=a.condition_sets, max_campaigns=a.max_campaigns, runner=runner,
+                  parallel=max(1, a.parallel))
     except (StudyError, OSError, ValueError) as e:
+        runner.finish(False)
         print(f"STUDY STOPPED: {e}", file=sys.stderr)
         return 1
+    runner.finish(True)
     print(f"study written to {a.out}/study.json")
     return 0
 

@@ -12,6 +12,7 @@ pub mod integrator;
 pub mod mixer;
 pub mod payload;
 pub mod powertrain;
+pub mod progress;
 pub mod registry;
 #[cfg(feature = "onnx")]
 pub mod structural;

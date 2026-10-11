@@ -86,6 +86,24 @@ constexpr double ScaleForWidth(double ViewportWidthPx)
     return ViewportWidthPx > 0.0 ? ViewportWidthPx / kDesignWidthPx : 1.0;
 }
 
+// Placement of the 1920 x 1080 design space inside a viewport of any size: ONE uniform scale that makes the whole design fit (the smaller of
+// width/1920 and height/1080), centred, so nothing is cut off at the top, bottom or sides (the bars left over show the 3D scene). Fitting
+// the width alone cut the step bar and the bottom of the panels off in a 1917 x 1018 window. A viewport point is  x * Scale + OffsetX.
+// A non-positive size gives the identity placement. Usable down to 1280 x 720 (scale 0.667; 14 px design text is then about 9 px).
+struct Viewport
+{
+    double Scale;
+    double OffsetX;
+    double OffsetY;
+};
+constexpr Viewport FitViewport(double WidthPx, double HeightPx)
+{
+    if (!(WidthPx > 0.0) || !(HeightPx > 0.0)) return Viewport{1.0, 0.0, 0.0};
+    const double Sx = WidthPx / kDesignWidthPx, Sy = HeightPx / kDesignHeightPx;
+    const double S = Sx < Sy ? Sx : Sy;
+    return Viewport{S, (WidthPx - kDesignWidthPx * S) * 0.5, (HeightPx - kDesignHeightPx * S) * 0.5};
+}
+
 // Pixel size of a design-space font after scaling, rounded to a whole pixel; not below one pixel.
 constexpr int ScaledPx(double DesignPx, double Scale)
 {

@@ -10,6 +10,7 @@
 #include "GameFramework/Pawn.h"
 #include "DronePhysicsBridge.h"
 #include "DroneDemoControl.h"
+#include "DroneFly.h"
 #include "DroneWind.h"
 #include "DroneEnvironment.h"
 #include "DroneEnvironmentCatalog.h"
@@ -78,6 +79,20 @@ public:
 	// Camera target and wind arrow from a recorded sample: NED metres, NED orientation (x, y, z, w), NED m/s. Position and rotation go through
 	// the bridge's audited NED-to-Unreal conversion.
 	void SetReplayView(const double PosNed[3], const float OrientNed[4], const double WindNed[3]);
+
+	// ---- Fly mode (live physics, standard model of the class; NOT the user's build) ----
+	// Keys / gamepad go through DroneApp::Fly (engine-free, tested). The pawn flies with the demo controller in assisted mode; ACRO is not
+	// implemented in the demo controller: TODO(HUMAN-VERIFY) it flies assisted and the HUD says so.
+	void SetFlyMode(bool bOn);
+	bool IsFlyMode() const { return bFlyMode; }
+	bool IsCrashed() const { return bCrashed; }
+	// Applies the live wind panel: wind, gusts, air temperature and payload mass reach the physics through the same WindInput /
+	// EnvironmentInput as the demo wind. Cheap when nothing changed.
+	void ApplyFlyPanel(const DroneApp::Fly::WindPanel& Panel);
+	// X / gamepad Y: back to the ground, level, battery full, crash cleared.
+	void ResetFlight();
+	// The wind the physics step received (NED m/s) and the gust part, for the HUD wind rose.
+	void GetWindForHud(double OutTotalNed[3], double& OutGustMps) const;
 
 private:
 	// One motor's bones, in the order of DroneModelMap.json (FR, FL, RR, RL = config index order).
@@ -164,4 +179,12 @@ private:
 	bool bUseFallbackShapes = false;
 	bool bDiscMaterialMissingLogged = false;
 	bool bReplayMode = false;
+	bool bFlyMode = false;
+	bool bCrashed = false;
+	double PrevGustMps = 0.0;
+	double GustPulseValue = 0.0;
+	double BaseMassKg = 0.0;
+	VehicleConfig BaseConfig = {};
+	DroneDemo::Tuning LastTune;
+	double LastPanelKey[6] = {-1e9, -1e9, -1e9, -1e9, -1e9, -1e9};
 };

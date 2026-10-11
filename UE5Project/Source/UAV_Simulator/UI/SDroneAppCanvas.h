@@ -38,8 +38,8 @@ private:
 	mutable uint64 CachedVersion = ~0ull;
 	void RefreshTextCache() const;
 
-	// Design space <-> local widget space (fit to width, centred vertically).
-	float ScaleFor(const FVector2f& Size) const { return Size.X / static_cast<float>(DroneApp::Ui::kDesignWidthPx); }
-	float OffsetYFor(const FVector2f& Size) const { return (Size.Y - static_cast<float>(DroneApp::Ui::kDesignHeightPx) * ScaleFor(Size)) * 0.5f; }
+	// Design space <-> local widget space: one uniform scale that fits the whole 1920 x 1080 design into the widget, centred
+	// (DroneApp::Ui::FitViewport, tested without Unreal). Fitting the width alone cut the step bar off in a 1917 x 1018 window.
+	static DroneApp::Ui::Viewport FitFor(const FVector2f& Size) { return DroneApp::Ui::FitViewport(static_cast<double>(Size.X), static_cast<double>(Size.Y)); }
 	void Changed() const { OnChanged.ExecuteIfBound(); }
 };

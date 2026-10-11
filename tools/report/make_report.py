@@ -14,6 +14,7 @@ import base64
 import hashlib
 import json
 import sys
+import time
 from pathlib import Path
 
 import _paths
@@ -279,7 +280,10 @@ def banners(common: dict, tests: list[str], bom: list[dict], flags: list[dict], 
     out = []
     if "smoke" in common["definitions_set_version"]:
         out.append({"id": "smoke", "level": "danger", "text": f"SMOKE test definitions ({common['definitions_set_version']}): short durations and a nearly empty battery. NOT FOR ENGINEERING USE."})
-    if common["definitions_set_version"].endswith("-edited"):
+    if "-quick" in common["definitions_set_version"]:
+        out.append({"id": "quick_profile", "level": "warn", "text": "Quick profile: shortened tests (endurance 300 s, thermal soak 600 s, payload and wind steps held 15 s). "
+                    "Endurance and thermal results describe the shortened run, not the full-length test."})
+    if "-edited" in common["definitions_set_version"]:
         out.append({"id": "edited_limits", "level": "warn", "text": f"Test limits were EDITED by the user ({common['definitions_set_version']}): pass / fail results are not the project's reviewed definitions."})
     kind = A.drag_kind(common["drag_model"])
     note = common.get("cfd_surrogate")
@@ -441,7 +445,22 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--cfd-dir", type=Path)
     ap.add_argument("--study", type=Path)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--progress", action="store_true", help="print UAVPROGRESS lines (changes no output file)")
+    ap.add_argument("--progress-base", type=float, default=90.0, help="overall percent at which this job starts (it takes the rest up to 100)")
     a = ap.parse_args(argv)
+    t0 = time.monotonic()
+
+    def progress(stage: str, step: int, label: str) -> None:
+        """One line per work step of the report (load, compute, write): percent is steps done / steps, not a timer."""
+        if not a.progress:
+            return
+        pct = 100.0 * step / 3.0
+        d = {"stage": stage, "event": label, "test_id": "report", "test_index": step, "test_count": 3, "sim_s_done": 0.0, "sim_s_total": 0.0,
+             "percent_overall": round(a.progress_base + (100.0 - a.progress_base) * step / 3.0, 3), "percent_test": round(pct, 3),
+             "elapsed_s": round(time.monotonic() - t0, 3), "eta_s": None,
+             "tests": [{"id": "report", "state": "done" if stage == "done" else "running", "percent": round(pct, 3), "sim_s": 0.0}]}
+        print("UAVPROGRESS " + json.dumps(d), flush=True)
+    progress("report", 0, "start")
     try:
         if a.study:
             study = read_json(a.study / "study.json")
@@ -460,9 +479,12 @@ def main(argv: list[str]) -> int:
             report, plots = build_report(a.build, camps, a.validation, a.cfd_dir, None, [" ".join(["python", "tools/report/make_report.py", *argv_shown(argv)])],
                                          selected=next(iter(camps)))
     except (ReportError, D.CampaignDataError, M.MarginError, OSError) as e:
+        progress("failed", 0, "failed")
         print(f"REPORT STOPPED: {e}", file=sys.stderr)
         return 1
+    progress("report", 2, "computed")
     R.write_all(report, plots, a.out)
+    progress("done", 3, "written")
     print(f"report written to {a.out}")
     return 0
 
@@ -470,8 +492,9 @@ def main(argv: list[str]) -> int:
 def argv_shown(argv: list[str]) -> list[str]:
     """Command line without machine prefixes and without --out (where the report goes is not an input of it)."""
     out = []
-    drop = {i for i, x in enumerate(argv) if x == "--out"}
+    drop = {i for i, x in enumerate(argv) if x in ("--out", "--progress-base")}
     drop |= {i + 1 for i in drop}
+    drop |= {i for i, x in enumerate(argv) if x == "--progress"}   # a display option, not an input of the report
     for i, x in enumerate(argv):
         if i in drop:
             continue

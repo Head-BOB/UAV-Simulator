@@ -2,7 +2,10 @@
 //! Runs the test campaign on a golden build and writes the result files.
 //! Usage: run_campaign <build dir> <conditions.json> <definitions.json> <out dir> [--tests a,b,c] [--threads n] [--git-hash H]
 //!        [--aero-dir <cfd dir> | --aero-model <model.onnx> --aero-sidecar <model.onnx.model.json> --aero-geometry <geometry.json>]
-//!        [--analytic-fallback]
+//!        [--analytic-fallback] [--progress]
+//! `--progress` prints `UAVPROGRESS {json}` lines (flushed; at least one per second and on every state change; percent from the
+//! simulated time done over an upper bound of the planned simulated time, never from a timer), writes each finished test's files at
+//! once (the final files are rewritten identically), and writes `timing.json`. Without it the outputs are byte-identical to before.
 //! With an aero model the drag comes from the per-build CFD surrogate (preliminary CFD, unvalidated; needs ONNX Runtime 1.27.x for
 //! `ort 2.0.0-rc.13`: `ORT_DYLIB_PATH`, or `onnxruntime.dll` / `libonnxruntime.so` next to this program).
 //! `--aero-dir` picks, from the `*.onnx.model.json` files of a CFD folder, the ONE model whose `config_hash` is the hash of this build's
@@ -14,9 +17,11 @@
 //! analytic drag, and then every result file says "CFD model failed to load: <reason>; results use analytic drag".
 use physics_core::campaign::{
     CampaignError, CampaignInputs, CfdNote, DragFactory, DragSource, SurrogateDrag, TestId,
-    parse_conditions, parse_definitions, render_outputs, run_campaign,
+    parse_conditions, parse_definitions, planned_sim_s, render_outputs, render_partial,
+    run_campaign, run_campaign_with,
 };
 use physics_core::controller_sim::load_build;
+use physics_core::progress;
 use physics_core::surrogate::{
     BuildBinding, BuildLoadError, ModelInfo, SurrogateLoadError, binding_hash_of,
     load_surrogate_for_build, sha256_hex, surrogate_status_text,
@@ -302,6 +307,143 @@ fn aero_setup(args: &[String], build_dir: &Path, out: &Path) -> AeroSetup {
     use_files(&files, build_dir, out, fallback)
 }
 
+/// Writes a file through a temporary name so a reader never sees half of it.
+fn write_atomic(path: &Path, text: &str) -> std::io::Result<()> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let tmp = path.with_extension("tmp");
+    fs::write(&tmp, text)?;
+    fs::rename(&tmp, path)
+}
+
+fn json_f(v: f64) -> String {
+    if v.is_finite() {
+        format!("{v:.3}")
+    } else {
+        "null".to_string()
+    }
+}
+
+/// One `UAVPROGRESS` line: the lowest running test is the current one (else the last finished, else the first).
+fn progress_line(
+    stage: &str,
+    event: &str,
+    names: &[&str],
+    totals: &[f64],
+    step_s: f64,
+    elapsed_s: f64,
+    overall_span: f64,
+) -> String {
+    let n = names.len();
+    let mut cur = None;
+    let mut last_done = None;
+    let (mut done_sum, mut total_sum, mut sim_done, mut finished) = (0.0, 0.0, 0.0, 0usize);
+    let mut tests = Vec::new();
+    for i in 0..n {
+        let total = totals.get(i).copied().unwrap_or(0.0);
+        let st = progress::state(i);
+        let sim = progress::steps(i) as f64 * step_s;
+        let (done, pct, label) = match st {
+            d if d == progress::state_done() || d == progress::state_failed() => {
+                finished += 1;
+                last_done = Some(i);
+                (
+                    total,
+                    100.0,
+                    if st == progress::state_done() {
+                        "done"
+                    } else {
+                        "failed"
+                    },
+                )
+            }
+            r if r == progress::state_running() => {
+                if cur.is_none() {
+                    cur = Some(i);
+                }
+                let d = sim.min(total * 0.99);
+                (
+                    d,
+                    if total > 0.0 { 100.0 * d / total } else { 0.0 },
+                    "running",
+                )
+            }
+            _ => (0.0, 0.0, "waiting"),
+        };
+        done_sum += done;
+        total_sum += total;
+        sim_done += sim;
+        tests.push(format!(
+            "{{\"id\": \"{}\", \"state\": \"{label}\", \"percent\": {}, \"sim_s\": {}}}",
+            names.get(i).copied().unwrap_or(""),
+            json_f(pct),
+            json_f(sim)
+        ));
+    }
+    let idx = cur.or(last_done).unwrap_or(0);
+    let total_i = totals.get(idx).copied().unwrap_or(0.0);
+    let pct_test = match progress::state(idx) {
+        d if d == progress::state_done() || d == progress::state_failed() => 100.0,
+        r if r == progress::state_running() && total_i > 0.0 => {
+            (100.0 * progress::steps(idx) as f64 * step_s / total_i).min(99.0)
+        }
+        _ => 0.0,
+    };
+    let frac = if total_sum > 0.0 {
+        done_sum / total_sum
+    } else {
+        0.0
+    };
+    let overall = overall_span * 100.0 * frac;
+    // an estimate, and only once a test has finished (before that the budget of the longest test says nothing)
+    let eta = if finished > 0 && frac > 0.0 && frac < 1.0 {
+        json_f(elapsed_s * (1.0 - frac) / frac)
+    } else {
+        "null".to_string()
+    };
+    format!(
+        "UAVPROGRESS {{\"stage\": \"{stage}\", \"event\": \"{event}\", \"test_id\": \"{}\", \"test_index\": {idx}, \"test_count\": {n}, \"sim_s_done\": {}, \"sim_s_total\": {}, \"percent_overall\": {}, \"percent_test\": {}, \"elapsed_s\": {}, \"eta_s\": {eta}, \"tests\": [{}]}}",
+        names.get(idx).copied().unwrap_or(""),
+        json_f(sim_done),
+        json_f(total_sum),
+        json_f(overall),
+        json_f(pct_test),
+        json_f(elapsed_s),
+        tests.join(", ")
+    )
+}
+
+fn emit(line: &str) {
+    use std::io::Write;
+    let mut out = std::io::stdout().lock();
+    let _ = writeln!(out, "{line}");
+    let _ = out.flush();
+}
+
+fn timing_json(names: &[&str], totals: &[f64], step_s: f64, threads: usize, wall_s: f64) -> String {
+    let rows: Vec<String> = names
+        .iter()
+        .enumerate()
+        .map(|(i, n)| {
+            let (a, b) = progress::wall_us(i);
+            format!(
+                "    {{\"test\": \"{n}\", \"state\": {}, \"wall_start_s\": {}, \"wall_s\": {}, \"sim_s\": {}, \"sim_s_budget\": {}}}",
+                progress::state(i),
+                json_f(a as f64 / 1e6),
+                json_f(b.saturating_sub(a) as f64 / 1e6),
+                json_f(progress::steps(i) as f64 * step_s),
+                json_f(totals.get(i).copied().unwrap_or(0.0))
+            )
+        })
+        .collect();
+    format!(
+        "{{\n  \"threads\": {threads},\n  \"wall_s\": {},\n  \"note\": \"wall clock of this machine; not part of any result\",\n  \"tests\": [\n{}\n  ]\n}}\n",
+        json_f(wall_s),
+        rows.join(",\n")
+    )
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let [dir, cond_path, def_path, out] =
@@ -368,7 +510,12 @@ fn main() {
         drag: aero.factory.as_deref(),
         cfd_surrogate: aero.note.as_ref(),
     };
-    let results = run_campaign(&inputs, threads).expect("campaign");
+    let show_progress = args.iter().any(|a| a == "--progress");
+    let results = if show_progress {
+        run_with_progress(&inputs, threads, &out)
+    } else {
+        run_campaign(&inputs, threads).expect("campaign")
+    };
     let files = render_outputs(&inputs, &results).expect("render");
     for (rel, text) in &files {
         let path = Path::new(&out).join(rel);
@@ -384,4 +531,100 @@ fn main() {
             .find(|(p, _)| p == "summary.csv")
             .map_or("", |(_, t)| t.as_str())
     );
+}
+
+/// The `--progress` run: a reporter thread prints a line at least once a second; each finished test's files are written at once.
+/// Campaign share of the overall percentage is 90 %: the report that follows takes the last 10 %.
+fn run_with_progress(
+    inputs: &CampaignInputs<'_>,
+    threads: usize,
+    out: &str,
+) -> Vec<physics_core::campaign::TestResult> {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    const SHARE: f64 = 0.9;
+    const STEP_S: f64 = 0.002; // ADR-001 fixed step
+    let names: Vec<&str> = inputs.tests.iter().map(|t| t.name()).collect();
+    let totals: Vec<f64> = inputs
+        .tests
+        .iter()
+        .map(|t| planned_sim_s(inputs.definitions, *t))
+        .collect();
+    progress::reset();
+    let t0 = std::time::Instant::now();
+    emit(&progress_line(
+        "preparing",
+        "start",
+        &names,
+        &totals,
+        STEP_S,
+        0.0,
+        SHARE,
+    ));
+    let stop = AtomicBool::new(false);
+    let results = std::thread::scope(|scope| {
+        scope.spawn(|| {
+            let mut last_states: Vec<u8> = vec![255; names.len()];
+            let mut last_emit = std::time::Instant::now();
+            while !stop.load(Ordering::Relaxed) {
+                std::thread::sleep(std::time::Duration::from_millis(100));
+                let states: Vec<u8> = (0..names.len()).map(progress::state).collect();
+                if states != last_states || last_emit.elapsed().as_millis() >= 1000 {
+                    emit(&progress_line(
+                        "test",
+                        "tick",
+                        &names,
+                        &totals,
+                        STEP_S,
+                        t0.elapsed().as_secs_f64(),
+                        SHARE,
+                    ));
+                    last_states = states;
+                    last_emit = std::time::Instant::now();
+                }
+            }
+        });
+        let r = run_campaign_with(inputs, threads, &|i, so_far| {
+            // the recording of test `i` is on disk before the line that announces it
+            if let Ok(files) = render_partial(inputs, so_far) {
+                for (rel, text) in &files {
+                    if let Err(e) = write_atomic(&Path::new(out).join(rel), text) {
+                        eprintln!("cannot write {rel}: {e}");
+                    }
+                }
+            }
+            let ev = format!("test_done:{}", names.get(i).copied().unwrap_or(""));
+            emit(&progress_line(
+                "test",
+                &ev,
+                &names,
+                &totals,
+                STEP_S,
+                t0.elapsed().as_secs_f64(),
+                SHARE,
+            ));
+        });
+        stop.store(true, Ordering::Relaxed);
+        r
+    });
+    let ok = results.is_ok();
+    emit(&progress_line(
+        if ok { "done" } else { "failed" },
+        if ok {
+            "campaign_done"
+        } else {
+            "campaign_failed"
+        },
+        &names,
+        &totals,
+        STEP_S,
+        t0.elapsed().as_secs_f64(),
+        SHARE,
+    ));
+    if let Err(e) = write_atomic(
+        &Path::new(out).join("timing.json"),
+        &timing_json(&names, &totals, STEP_S, threads, t0.elapsed().as_secs_f64()),
+    ) {
+        eprintln!("cannot write timing.json: {e}");
+    }
+    results.expect("campaign")
 }

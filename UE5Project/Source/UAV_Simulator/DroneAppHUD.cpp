@@ -49,6 +49,7 @@ bool ADroneAppHUD::LoadHelperSettings(DroneApp::HelperSettings& Out, FString& Ou
 		{
 			// a packaged build ships relative paths: resolve them against the folder that holds helpers.json (DroneData/helpers)
 			DroneApp::ResolveHelperPaths(Out, std::string(TCHAR_TO_UTF8(*FPaths::GetPath(File))));
+			Out.Progress = true;   // the helpers print UAVPROGRESS lines
 			OutWorkDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir() / TEXT("DroneApp"));
 			return true;
 		}
@@ -56,6 +57,7 @@ bool ADroneAppHUD::LoadHelperSettings(DroneApp::HelperSettings& Out, FString& Ou
 	}
 	Out = DroneApp::HelperSettings();
 	Out.RepoRoot = std::string(TCHAR_TO_UTF8(*Root));
+	Out.Progress = true;
 	OutWorkDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir() / TEXT("DroneApp"));
 	return true;
 }
@@ -110,6 +112,26 @@ void ADroneAppHUD::UpdateScene(float DeltaSeconds)
 	(void)DeltaSeconds;
 	ADroneDemoPawn* Pawn = GetDronePawn();
 	if (!Pawn || !Preview || !Model) return;
+	// Fly mode: the live physics pawn flies and its numbers feed the fly HUD; the recorded-run preview is hidden.
+	if (Model->FlyMode != Pawn->IsFlyMode()) Pawn->SetFlyMode(Model->FlyMode);
+	if (Model->FlyMode)
+	{
+		Preview->SetActorHiddenInGame(true);
+		Pawn->ApplyFlyPanel(Model->WindP);
+		Pawn->SetPilotInputEnabled(Model->Focus.empty());   // typing in a wind field must not fly the vehicle
+		FDroneUiRaw Raw;
+		Pawn->FillUiRaw(Raw);
+		auto& T = Model->FlyT;
+		T.AltitudeM = Raw.AltitudeM;
+		T.SpeedMps = Raw.SpeedMps;
+		T.RpmMean = (Raw.Rpm[0] + Raw.Rpm[1] + Raw.Rpm[2] + Raw.Rpm[3]) * 0.25;
+		T.SocFraction = FMath::Clamp(1.0 - Raw.BatteryUsedFraction, 0.0, 1.0);
+		Pawn->GetWindForHud(T.WindNed, T.GustMps);
+		T.Crashed = Pawn->IsCrashed();
+		T.StateText = std::string(TCHAR_TO_UTF8(*Pawn->GetModeString())) + (Model->FlyModeSel == DroneApp::Fly::Mode::Acro ? "   (acro is not implemented in the live model: flying assisted)" : "");
+		bDirty = true;   // numbers change every frame
+		return;
+	}
 	// Build screen and Run screen show the user's vehicle; the others show the empty scene behind their panels.
 	const bool bShowVehicle = Model->Current == DroneApp::Screen::Build || Model->Current == DroneApp::Screen::Run;
 	if (Model->Prog.BuildDone && !Model->Prims.empty() && LastPreviewBuildDir != Model->BuildDir)
@@ -158,6 +180,7 @@ void ADroneAppHUD::Tick(float DeltaSeconds)
 	DataAccumS += static_cast<double>(DeltaSeconds);
 	const bool bMoving = (Model->Current == DroneApp::Screen::Run && Model->Rep.Playing()) || Model->Busy();
 	if (Model->Current != LastScreen || Before != Model->Current) { bDirty = true; LastScreen = Model->Current; }
+	if (Model->Busy() != bLastBusy) { bDirty = true; bLastBusy = Model->Busy(); }
 	if (bDirty || (bMoving && DataAccumS >= kDataPeriodS))
 	{
 		Rebuild();

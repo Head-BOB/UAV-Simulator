@@ -3,6 +3,7 @@
 #include "DroneAppIO.h"
 
 #include "HAL/FileManager.h"
+#include "HAL/PlatformTime.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -70,9 +71,19 @@ bool FDroneAppIO::PollProcess(int Handle, int& ExitCode)
 	if (Handle < 1 || Handle > Jobs.Num()) { ExitCode = -1; return true; }
 	FJob& J = Jobs[Handle - 1];
 	if (J.bDone) { ExitCode = J.ExitCode; return true; }
-	J.Log += FPlatformProcess::ReadPipe(J.ReadPipe);
+	const FString Chunk = FPlatformProcess::ReadPipe(J.ReadPipe);
+	if (!Chunk.IsEmpty())
+	{
+		J.Log += Chunk;
+		J.Parser.Feed(ToStd(Chunk));
+		// the log file grows while the job runs, so "Open log" has something to show; at most once a second
+		const double Now = FPlatformTime::Seconds();
+		if (Now - J.LastLogWriteS >= 1.0) { J.LastLogWriteS = Now; WriteText(ToStd(J.LogPath), ToStd(J.Log)); }
+	}
 	if (FPlatformProcess::IsProcRunning(J.Proc)) return false;
-	J.Log += FPlatformProcess::ReadPipe(J.ReadPipe);   // whatever was written just before exit
+	const FString Tail = FPlatformProcess::ReadPipe(J.ReadPipe);   // whatever was written just before exit
+	J.Log += Tail;
+	J.Parser.Feed(ToStd(Tail));
 	int32 Code = -1;
 	FPlatformProcess::GetProcReturnCode(J.Proc, &Code);
 	J.ExitCode = Code;
@@ -81,6 +92,21 @@ bool FDroneAppIO::PollProcess(int Handle, int& ExitCode)
 	WriteText(ToStd(J.LogPath), ToStd(J.Log));
 	ExitCode = Code;
 	return true;
+}
+
+bool FDroneAppIO::ReadProgress(int Handle, DroneApp::ProgressSnapshot& Out)
+{
+	if (Handle < 1 || Handle > Jobs.Num()) return false;
+	Out = Jobs[Handle - 1].Parser.Snapshot();
+	return Out.Have;
+}
+
+void FDroneAppIO::CancelProcess(int Handle)
+{
+	if (Handle < 1 || Handle > Jobs.Num()) return;
+	FJob& J = Jobs[Handle - 1];
+	// kill the helper and the processes it started (cargo -> run_campaign; python -> cargo); the next PollProcess sees it ended
+	if (!J.bDone && J.Proc.IsValid() && FPlatformProcess::IsProcRunning(J.Proc)) FPlatformProcess::TerminateProc(J.Proc, true);
 }
 
 void FDroneAppIO::OpenPath(const std::string& Path)
