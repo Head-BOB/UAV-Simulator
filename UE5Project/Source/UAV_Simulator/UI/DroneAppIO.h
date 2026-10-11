@@ -17,7 +17,7 @@ public:
 	virtual bool ReadText(const std::string& Path, std::string& Out) override;
 	virtual bool WriteText(const std::string& Path, const std::string& Text) override;
 	virtual bool Exists(const std::string& Path) override;
-	virtual int StartProcess(const DroneApp::Command& C, const std::string& LogPath) override;
+	virtual int StartProcess(const DroneApp::Command& C, const std::string& InLogPath) override;
 	virtual bool PollProcess(int Handle, int& ExitCode) override;
 	virtual void OpenPath(const std::string& Path) override;
 

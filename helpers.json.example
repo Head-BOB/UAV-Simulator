@@ -1,0 +1,9 @@
+{
+  "python": "C:/path/to/python.exe",
+  "repo_root": "C:/path/to/UAV-Simulator",
+  "run_campaign_exe": "C:/path/to/UAV-Simulator/physics_core/target/release/examples/run_campaign.exe",
+  "validate_models_exe": "C:/path/to/UAV-Simulator/physics_core/target/release/examples/validate_models.exe",
+  "cfd_dir": "C:/path/to/cfd_results_folder",
+  "threads": 4,
+  "git_hash": "unknown"
+}

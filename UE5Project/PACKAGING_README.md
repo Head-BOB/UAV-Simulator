@@ -27,7 +27,7 @@ still runs: the 3D view shows simple shapes. Then run `python tools\gen_demo_hea
 ## 3. Prepare the bundled Python (once)
 1. Download `python-3.12.10-embed-amd64.zip` from python.org (Windows embeddable package, 64-bit).
 2. Compute its hash: `certutil -hashfile python-3.12.10-embed-amd64.zip SHA256`. Compare it with the checksum python.org shows for that release.
-3. Open `tools\package\pins.json` and replace the `TODO(HUMAN-VERIFY)` text after `"sha256":` with that hash. The stager refuses a different file.
+3. Open `tools\package\pins.json` and replace the `TODO(HUMAN-VERIFY)` text after `"sha256":` with that hash. The stager refuses a different file. (Already filled in from the Windows build machine, 2026-10-11: that hash was compared only with the MD5 python.org lists. TODO(HUMAN-VERIFY): MD5-checked download only; Sigstore or GPG verification not done.)
 4. Download the packages the helpers need, exactly the hash-locked ones (no other file is accepted):
    ```
    python -m pip download --require-hashes --no-deps --only-binary=:all: --platform win_amd64 --python-version 3.12 --implementation cp --abi cp312 ^

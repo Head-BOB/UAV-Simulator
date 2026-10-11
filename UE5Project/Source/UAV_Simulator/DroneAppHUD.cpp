@@ -5,6 +5,7 @@
 #include "DroneBuildPreview.h"
 #include "DroneDataPaths.h"
 #include "DroneDemoPawn.h"
+#include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
@@ -77,12 +78,12 @@ void ADroneAppHUD::BeginPlay()
 	}
 	if (ADroneDemoPawn* Pawn = GetDronePawn()) Pawn->SetReplayMode(true);   // the demo's own flight stays off: the app shows recorded runs
 
-	Canvas = SNew(SDroneAppCanvas).Model(Model.get()).List(&List).OnChanged(FSimpleDelegate::CreateUObject(this, &ADroneAppHUD::MarkDirty));
-	if (GEngine && GEngine->GameViewport) GEngine->GameViewport->AddViewportWidgetContent(SNew(SWeakWidget).PossiblyNullContent(Canvas.ToSharedRef()), 10);
+	AppCanvas = SNew(SDroneAppCanvas).Model(Model.get()).List(&List).OnChanged(FSimpleDelegate::CreateUObject(this, &ADroneAppHUD::MarkDirty));
+	if (GEngine && GEngine->GameViewport) GEngine->GameViewport->AddViewportWidgetContent(SNew(SWeakWidget).PossiblyNullContent(AppCanvas.ToSharedRef()), 10);
 	if (APlayerController* PC = GetOwningPlayerController())
 	{
 		FInputModeGameAndUI Mode;
-		Mode.SetWidgetToFocus(Canvas);
+		Mode.SetWidgetToFocus(AppCanvas);
 		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 		PC->SetInputMode(Mode);
 		PC->bShowMouseCursor = true;
@@ -92,8 +93,8 @@ void ADroneAppHUD::BeginPlay()
 
 void ADroneAppHUD::EndPlay(const EEndPlayReason::Type Reason)
 {
-	if (GEngine && GEngine->GameViewport && Canvas.IsValid()) GEngine->GameViewport->RemoveAllViewportWidgets();
-	Canvas.Reset();
+	if (GEngine && GEngine->GameViewport && AppCanvas.IsValid()) GEngine->GameViewport->RemoveAllViewportWidgets();
+	AppCanvas.Reset();
 	Super::EndPlay(Reason);
 }
 

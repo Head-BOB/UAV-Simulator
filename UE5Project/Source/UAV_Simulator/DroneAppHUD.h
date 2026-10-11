@@ -12,11 +12,13 @@
 
 #include "DroneAppModel.h"
 #include "DroneDrawList.h"
+// The full definition, not a forward declaration: std::unique_ptr<FDroneAppIO> needs a complete type wherever the destructor is
+// instantiated, and the UHT-generated DroneAppHUD.gen.cpp does that (FVTableHelper constructor) without seeing DroneAppHUD.cpp.
+#include "UI/DroneAppIO.h"
 #include "DroneAppHUD.generated.h"
 
 class ADroneDemoPawn;
 class ADroneBuildPreview;
-class FDroneAppIO;
 class SDroneAppCanvas;
 
 UCLASS()
@@ -40,7 +42,7 @@ private:
 	std::unique_ptr<FDroneAppIO> IO;
 	std::unique_ptr<DroneApp::AppModel> Model;
 	DroneApp::DrawList List;
-	TSharedPtr<SDroneAppCanvas> Canvas;
+	TSharedPtr<SDroneAppCanvas> AppCanvas;   // not `Canvas`: AHUD::Canvas (UCanvas*) is a base member
 	UPROPERTY() TObjectPtr<ADroneBuildPreview> Preview;
 	bool bDirty = true;
 	double DataAccumS = 0.0;

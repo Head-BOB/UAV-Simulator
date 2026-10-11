@@ -86,16 +86,16 @@ void ADroneBuildPreview::ApplyBaseColours()
 	for (int32 I = 0; I < Parts.Num(); ++I)
 	{
 		if (!Materials.IsValidIndex(I) || !Materials[I]) continue;
-		const std::string& Role = Roles[static_cast<size_t>(I)];
-		const uint32 Hex = Role == "frame" ? 0x6B7480 : (Role == "motor" ? 0x8C95A1 : (Role == "propeller" ? 0xA9C6E4 : (Role == "battery" ? 0x555D68 : 0x7A838F)));
+		const std::string& PartRole = Roles[static_cast<size_t>(I)];
+		const uint32 Hex = PartRole == "frame" ? 0x6B7480 : (PartRole == "motor" ? 0x8C95A1 : (PartRole == "propeller" ? 0xA9C6E4 : (PartRole == "battery" ? 0x555D68 : 0x7A838F)));
 		Materials[I]->SetVectorParameterValue(TEXT("Color"), Real[static_cast<size_t>(I)] ? Srgb(0xE8ECEF) : Srgb(Hex));   // TODO(HUMAN-VERIFY): BasicShapeMaterial parameter name "Color"
 	}
 }
 
-void ADroneBuildPreview::SetRoleColour(const char* Role, const FLinearColor& Colour)
+void ADroneBuildPreview::SetRoleColour(const char* InRole, const FLinearColor& Colour)
 {
 	for (int32 I = 0; I < Parts.Num(); ++I)
-		if (Roles[static_cast<size_t>(I)] == Role && Materials.IsValidIndex(I) && Materials[I]) Materials[I]->SetVectorParameterValue(TEXT("Color"), Colour);
+		if (Roles[static_cast<size_t>(I)] == InRole && Materials.IsValidIndex(I) && Materials[I]) Materials[I]->SetVectorParameterValue(TEXT("Color"), Colour);
 }
 
 void ADroneBuildPreview::SetHeatTints(const FLinearColor& Motor, const FLinearColor& Esc, const FLinearColor& Battery)

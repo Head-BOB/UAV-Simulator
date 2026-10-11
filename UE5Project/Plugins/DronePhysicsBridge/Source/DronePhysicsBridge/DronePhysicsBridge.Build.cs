@@ -1,3 +1,4 @@
+using System;   // MemoryExtensions.AsSpan / SequenceEqual below
 using UnrealBuildTool;
 using System.IO;
 

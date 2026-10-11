@@ -33,8 +33,8 @@ struct AppIO
     virtual bool ReadText(const std::string& Path, std::string& Out) = 0;
     virtual bool WriteText(const std::string& Path, const std::string& Text) = 0;   // creates parent folders
     virtual bool Exists(const std::string& Path) = 0;
-    // Starts a program with its output (stdout + stderr) going to LogPath. Returns a handle > 0, or -1 when it could not be started.
-    virtual int StartProcess(const Command& C, const std::string& LogPath) = 0;
+    // Starts a program with its output (stdout + stderr) going to InLogPath. Returns a handle > 0, or -1 when it could not be started.
+    virtual int StartProcess(const Command& C, const std::string& InLogPath) = 0;
     // True when the process has ended (ExitCode set); false while it runs.
     virtual bool PollProcess(int Handle, int& ExitCode) = 0;
     virtual void OpenPath(const std::string& Path) = 0;   // folder or file in the system viewer

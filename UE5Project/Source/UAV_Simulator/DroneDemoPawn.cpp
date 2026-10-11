@@ -508,7 +508,7 @@ void ADroneDemoPawn::BeginPlay()
 			EnvironmentNotice = FString::Printf(TEXT("Cannot hover here: needs %.0f%% throttle"), Tune.HoverThrottle * 100.0);
 			Tune.HoverThrottle = 1.0;
 		}
-		Controller = MakeUnique<DroneDemo::Controller>(Tune);
+		DemoController = MakeUnique<DroneDemo::Controller>(Tune);
 	}
 	WindGenerator = DroneWind::Generator(DroneWind::Generator::kDefaultSeed);
 
@@ -633,15 +633,15 @@ void ADroneDemoPawn::ApplyEnvironmentLook(const FDroneEnvironmentEntry* Entry)
 void ADroneDemoPawn::ReadInput(APlayerController* PC, DroneDemo::Command& OutCommand)
 {
 	OutCommand = DroneDemo::Command();
-	if (!PC || !Controller || !bPilotInputEnabled) return;  // the control panel pauses pilot input
+	if (!PC || !DemoController || !bPilotInputEnabled) return;  // the control panel pauses pilot input
 
 	if (PC->WasInputKeyJustPressed(EKeys::T) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Bottom))
 	{
-		Controller->RequestTakeoff(-PhysicsState.position[2]);
+		DemoController->RequestTakeoff(-PhysicsState.position[2]);
 	}
 	if (PC->WasInputKeyJustPressed(EKeys::L) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Right))
 	{
-		Controller->RequestLand();
+		DemoController->RequestLand();
 	}
 
 	double Forward = 0.0, Right = 0.0, Climb = 0.0, Yaw = 0.0;
@@ -719,7 +719,7 @@ void ADroneDemoPawn::PinToGround()
 	PhysicsState.orientation[1] = 0.0f;
 	PhysicsState.orientation[2] = static_cast<float>(FMath::Sin(Half));
 	PhysicsState.orientation[3] = static_cast<float>(FMath::Cos(Half));
-	Controller->NotifyOnGround();
+	DemoController->NotifyOnGround();
 	if (bFlewSinceLanding)
 	{
 		bLandedEvent = true;  // the HUD opens the flight report once
@@ -744,8 +744,8 @@ void ADroneDemoPawn::StepFixed(double FixedDt, const DroneDemo::Command& Command
 	for (int32 I = 0; I < 4; ++I) Est.QuatXyzw[I] = PhysicsState.orientation[I];
 
 	DroneDemo::Output Out;
-	if (!Controller->Update(Est, Command, FixedDt, &Out)) return;
-	if (Controller->GetMode() == DroneDemo::Mode::OnGround) return;  // pinned: no physics step
+	if (!DemoController->Update(Est, Command, FixedDt, &Out)) return;
+	if (DemoController->GetMode() == DroneDemo::Mode::OnGround) return;  // pinned: no physics step
 
 	ControlInputs Inputs;
 	Inputs.throttle = static_cast<float>(Out.Throttle);
@@ -781,7 +781,7 @@ void ADroneDemoPawn::StepFixed(double FixedDt, const DroneDemo::Command& Command
 		BatteryUsedAh += Total * FixedDt / 3600.0;
 	}
 
-	if (DroneDemo::ShouldTouchDown(Controller->GetMode(), -PhysicsState.position[2]))
+	if (DroneDemo::ShouldTouchDown(DemoController->GetMode(), -PhysicsState.position[2]))
 	{
 		PinToGround();
 	}
@@ -817,7 +817,7 @@ void ADroneDemoPawn::Tick(float DeltaTime)
 		DrawWindArrows();   // the replay layer calls SetReplayView() each data tick
 		return;
 	}
-	if (!bPhysicsReady || !Controller)
+	if (!bPhysicsReady || !DemoController)
 	{
 		DrawHud();  // shows why physics is off
 		return;
@@ -968,9 +968,9 @@ void ADroneDemoPawn::DrawHud() const
 	const double WindMag = FMath::Sqrt(WindSample.Total[0] * WindSample.Total[0] + WindSample.Total[1] * WindSample.Total[1] + WindSample.Total[2] * WindSample.Total[2]);
 
 	const TCHAR* ModeText = TEXT("?");
-	if (Controller)
+	if (DemoController)
 	{
-		switch (Controller->GetMode())
+		switch (DemoController->GetMode())
 		{
 		case DroneDemo::Mode::OnGround: ModeText = TEXT("ON GROUND (press T)"); break;
 		case DroneDemo::Mode::Takeoff: ModeText = TEXT("TAKEOFF"); break;
@@ -1012,12 +1012,12 @@ void ADroneDemoPawn::DrawHud() const
 
 void ADroneDemoPawn::RequestTakeoffFromUi()
 {
-	if (Controller) Controller->RequestTakeoff(-PhysicsState.position[2]);
+	if (DemoController) DemoController->RequestTakeoff(-PhysicsState.position[2]);
 }
 
 void ADroneDemoPawn::RequestLandFromUi()
 {
-	if (Controller) Controller->RequestLand();
+	if (DemoController) DemoController->RequestLand();
 }
 
 bool ADroneDemoPawn::ConsumeLandedEvent()
@@ -1029,9 +1029,9 @@ bool ADroneDemoPawn::ConsumeLandedEvent()
 
 FString ADroneDemoPawn::GetModeString() const
 {
-	if (!bPhysicsReady || !Controller) return TEXT("PHYSICS OFF");
+	if (!bPhysicsReady || !DemoController) return TEXT("PHYSICS OFF");
 	if (bPhysicsFault) return TEXT("PHYSICS FAULT");
-	switch (Controller->GetMode())
+	switch (DemoController->GetMode())
 	{
 		case DroneDemo::Mode::OnGround: return TEXT("ON GROUND");
 		case DroneDemo::Mode::Takeoff: return TEXT("TAKEOFF");

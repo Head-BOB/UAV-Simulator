@@ -43,5 +43,5 @@ private:
 	std::vector<bool> Real;
 	float RadiusCm = 60.0f;
 	void ApplyBaseColours();
-	void SetRoleColour(const char* Role, const FLinearColor& Colour);
+	void SetRoleColour(const char* InRole, const FLinearColor& Colour);
 };

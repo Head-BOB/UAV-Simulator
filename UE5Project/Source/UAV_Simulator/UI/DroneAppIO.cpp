@@ -47,10 +47,10 @@ bool FDroneAppIO::Exists(const std::string& Path)
 	return IFileManager::Get().FileExists(*P) || IFileManager::Get().DirectoryExists(*P);
 }
 
-int FDroneAppIO::StartProcess(const DroneApp::Command& C, const std::string& LogPath)
+int FDroneAppIO::StartProcess(const DroneApp::Command& C, const std::string& InLogPath)
 {
 	FJob J;
-	J.LogPath = Utf8(LogPath);
+	J.LogPath = Utf8(InLogPath);
 	if (!FPlatformProcess::CreatePipe(J.ReadPipe, J.WritePipe)) return -1;
 	uint32 Pid = 0;
 	// stdout and stderr of the child both go to the write end of the pipe. TODO(HUMAN-VERIFY): CreateProc argument order; stderr is

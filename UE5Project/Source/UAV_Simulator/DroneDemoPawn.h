@@ -144,7 +144,7 @@ private:
 	void ApplyEnvironmentLook(const FDroneEnvironmentEntry* Entry);
 
 	// Demo controller and wind.
-	TUniquePtr<DroneDemo::Controller> Controller;
+	TUniquePtr<DroneDemo::Controller> DemoController;   // not `Controller`: APawn::Controller (AController*) is a base member
 	DroneWind::Params WindParams;
 	DroneWind::Generator WindGenerator;
 	DroneWind::Sample WindSample = {};

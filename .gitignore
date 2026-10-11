@@ -40,3 +40,6 @@ parts_db/source_cache/
 
 # CFD cases and results generated on the GPU laptop (large; send back only the CSV, manifest, geometry.json, slices and the sanity report)
 offline_pipeline/cfd/generated/
+
+# Per-machine helper settings of the app (absolute paths of the build laptop). Never commit; copy helpers.json.example to helpers.json.
+/helpers.json

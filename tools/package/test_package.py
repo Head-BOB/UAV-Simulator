@@ -585,10 +585,11 @@ class ReadmeTests(unittest.TestCase):
         self.assertIn("history", old.splitlines()[0].lower())
         self.assertNotIn("START FLIGHT", self.TEXT)
 
-    def test_the_pin_file_is_honest_about_the_unknown_hash(self):
-        pin = json.loads(S.PINS.read_text(encoding="utf-8"))["python_embeddable"]
-        self.assertFalse(re.fullmatch(r"[0-9a-f]{64}", pin["sha256"]))     # until a human fills it in
-        self.assertIn("TODO(HUMAN-VERIFY)", pin["sha256"])
+    def test_the_pin_file_is_a_real_hash_and_still_says_how_weakly_it_was_checked(self):
+        text = S.PINS.read_text(encoding="utf-8")
+        pin = json.loads(text)["python_embeddable"]
+        self.assertRegex(pin["sha256"], r"^[0-9a-f]{64}$")                  # filled in from the Windows build machine
+        self.assertIn("TODO(HUMAN-VERIFY): MD5-checked download only; Sigstore or GPG verification not done", text)
 
 
 if __name__ == "__main__":
