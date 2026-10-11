@@ -1,0 +1,456 @@
+{
+  "arm": {
+    "max_bending_stress_pa_at_full_throttle": 29611071.75237855,
+    "section": {
+      "area_m2": 6.8329640215578e-05,
+      "half_thickness_m": 0.008,
+      "id_m": 0.013,
+      "kind": "tube",
+      "od_m": 0.016,
+      "second_moment_m4": 1.8150060682262915e-09,
+      "section_modulus_m3": 2.2687575852828642e-07
+    }
+  },
+  "assumed_inputs": [
+    {
+      "field": "mass_kg",
+      "note": "plates plus four arms, no design. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_frame_quad_400"
+    },
+    {
+      "field": "motor_spacing_adjacent_m",
+      "note": "human decision 2026-10-10 and vehicle_config.json motor_pos_m (+-0.2, +-0.2) [catalog status was CITED, no URL]. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_frame_quad_400"
+    },
+    {
+      "field": "arm_count",
+      "note": "quad. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_frame_quad_400"
+    },
+    {
+      "field": "central_body_box_m",
+      "note": "for the inertia estimate only. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_frame_quad_400"
+    },
+    {
+      "field": "body_half_width_m",
+      "note": "centre plate half width; prop clearance needs body half width < 0.13 m. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_frame_quad_400"
+    },
+    {
+      "field": "tube_od_m",
+      "note": "hollow carbon tube, no design. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_frame_quad_400"
+    },
+    {
+      "field": "arm_allowable_bending_stress_pa",
+      "note": "conservative laminate allowable, NOT a tested value. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_frame_quad_400"
+    },
+    {
+      "field": "projected_area_top_m2",
+      "note": "placeholder, not used by the core yet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_frame_quad_400"
+    },
+    {
+      "field": "projected_area_front_m2",
+      "note": "placeholder, not used by the core yet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_frame_quad_400"
+    },
+    {
+      "field": "projected_area_side_m2",
+      "note": "placeholder, not used by the core yet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_frame_quad_400"
+    },
+    {
+      "field": "cg_offset_m",
+      "note": "frame CG at the geometric centre. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_frame_quad_400"
+    },
+    {
+      "field": "mass_kg",
+      "note": "not on the manufacturer page; No mass or size source found for the 40 A.. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_air_40a_2_6s"
+    },
+    {
+      "field": "bounding_box_m",
+      "note": "not on the manufacturer page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_air_40a_2_6s"
+    },
+    {
+      "field": "efficiency",
+      "note": "typical, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_air_40a_2_6s"
+    },
+    {
+      "field": "mass_kg",
+      "note": "typical 12 inch plastic prop, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "apc_12x6e"
+    },
+    {
+      "field": "bounding_box_m",
+      "note": "disc diameter x diameter x assumed hub height. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "apc_12x6e"
+    },
+    {
+      "field": "bore_m",
+      "note": "1/4 in hub bore with adapters, from memory of APC hubs. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "apc_12x6e"
+    },
+    {
+      "field": "mass_kg",
+      "note": "human decision 2026-10-10 (about 450 g). TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_battery_generic_4s_5000"
+    },
+    {
+      "field": "bounding_box_m",
+      "note": "typical 4S 5000 mAh pack size, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_battery_generic_4s_5000"
+    },
+    {
+      "field": "cells",
+      "note": "human decision 2026-10-10. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_battery_generic_4s_5000"
+    },
+    {
+      "field": "capacity_ah",
+      "note": "human decision 2026-10-10 (about 5000 mAh). TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_battery_generic_4s_5000"
+    },
+    {
+      "field": "voltage_per_cell_nominal_v",
+      "note": "nominal_voltage_v / cells from the catalog (3.7 V per cell convention). TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_battery_generic_4s_5000"
+    },
+    {
+      "field": "max_continuous_c",
+      "note": "generic, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_battery_generic_4s_5000"
+    },
+    {
+      "field": "mass_kg",
+      "note": "flight controller, wiring, receiver, no list. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "ref_avionics_wiring_lump"
+    }
+  ],
+  "build_name": "reference_quad",
+  "builder_assumptions": [
+    "layout slots and offsets (layout.py)",
+    "arm mass from CFRP density 1600.0 kg/m3",
+    "nominal pack voltage, no sag, no ESC drop",
+    "static propeller coefficients, sea-level ISA density",
+    "rule thresholds in compat.py"
+  ],
+  "config_provenance": {
+    "inertia_kgm2": {
+      "formula": "diagonal of the combined tensor about the CG; parallel axis; shapes: box, cylinder (motor), thin disc (prop), thin rod (arm)",
+      "source_type": "CALCULATED"
+    },
+    "mass_kg": {
+      "formula": "sum of part mass_kg (with cables) x counts",
+      "source_type": "CALCULATED"
+    },
+    "max_rpm": {
+      "formula": "full-throttle motor/prop torque balance at nominal pack voltage 14.800 V; design-time estimate (tools/parts/estimates.py); P3's electrical model supersedes it",
+      "source_type": "CALCULATED"
+    },
+    "motor_pos_m": {
+      "formula": "(+-s/2, +-s/2) from motor_spacing_adjacent_m; z = propeller plane z minus CG z; order FR, FL, RR, RL",
+      "source_type": "CALCULATED"
+    },
+    "motor_spin": {
+      "formula": "same convention as the shipped vehicle_config.json (open point B-3 TODO(HUMAN-VERIFY))",
+      "source_type": "ASSUMED"
+    },
+    "prop_diameter_m": {
+      "formula": "propeller record diameter_m",
+      "source_type": "CITED/ASSUMED"
+    },
+    "thrust_coeff": {
+      "formula": "static Ct fit, UIUC_MEASURED, file offline_pipeline/props/apce_12x6.json, band [3000.0, 4500.0] rpm",
+      "source_type": "CALCULATED"
+    },
+    "torque_coeff": {
+      "formula": "kappa = Cp D / (2 pi Ct)",
+      "source_type": "CALCULATED"
+    }
+  },
+  "database": {
+    "db_version": "0.1.0",
+    "schema_version": "1.0.0"
+  },
+  "estimates": {
+    "ct_cp_basis": "UIUC_MEASURED",
+    "full_throttle": {
+      "current_a": 27.353062146480898,
+      "electrical_w": 404.82531976791734,
+      "iterations": 200,
+      "rpm": 8981.405667817362,
+      "shaft_w": 344.54034937236486,
+      "thrust_n": 23.75181413242116,
+      "torque_nm": 0.36632550666568253
+    },
+    "hover_point": {
+      "current_a": 4.757443868723395,
+      "electrical_w": 25.934700655765724,
+      "rpm": 3576.20058406135,
+      "terminal_voltage_v": 5.451393935778585,
+      "thrust_n": 3.7657536,
+      "torque_nm": 0.05807942028373806
+    },
+    "hover_throttle": 0.3981782567296646,
+    "note": "design-time estimate (tools/parts/estimates.py); P3's electrical model supersedes it",
+    "pack_full_a": 115.17078798518274,
+    "pack_hover_a": 7.378293216434061,
+    "pack_limit_a": 125.0,
+    "pack_voltage_nominal_v": 14.8,
+    "rho_kgpm3": 1.2250122659906946,
+    "thrust_to_weight": 6.3073203016844115
+  },
+  "findings": [
+    {
+      "message": "estimated full-throttle current 27.4 A exceeds the motor's 23.0 A rating",
+      "parts": [
+        "tmotor_mn3508_kv700"
+      ],
+      "rule": "W-FULL-I-MOTOR",
+      "severity": "warning"
+    },
+    {
+      "message": "tmotor_mn3508_kv700: thermal_time_constant_s 150.0 s (record) vs R x C 28.1 s (mass-based) differ by a factor 5.3; the mass-based capacity is used",
+      "parts": [
+        "tmotor_mn3508_kv700"
+      ],
+      "rule": "W-THERMAL-TAU",
+      "severity": "warning"
+    },
+    {
+      "message": "24 ASSUMED input values influence this result (listed in the sidecar)",
+      "parts": [],
+      "rule": "I-ASSUMED-COUNT",
+      "severity": "info"
+    }
+  ],
+  "generated_by": "tools/parts/build_vehicle.py",
+  "hover_duty_estimate": 0.3683374280931476,
+  "inertia_cross_check_old_lumped": {
+    "asserted_equal": false,
+    "new_minus_old_percent": [
+      5.835869819714335,
+      8.206509014282359,
+      0.9378007699711038
+    ],
+    "old_kgm2": [
+      0.028473333333333337,
+      0.028473333333333337,
+      0.05541333333333334
+    ],
+    "old_method": "point masses at motors + remaining mass as one central box (build_ref_config.py)"
+  },
+  "mass_properties": {
+    "cg_from_frame_centre_m": [
+      0.0,
+      0.0,
+      0.01002604166666667
+    ],
+    "core_limitation": "the core takes only the diagonal; the off-diagonal products above are dropped",
+    "frame_split": {
+      "arm_mass_each_kg": 0.030922496683991562,
+      "body_mass_kg": 0.22631001326403372,
+      "density_kgpm3": 1600.0
+    },
+    "inertia_tensor_about_cg_kgm2": [
+      [
+        0.03013519362975514,
+        -2.168404344971009e-19,
+        -2.168404344971009e-19
+      ],
+      [
+        -2.168404344971009e-19,
+        0.030809756129755148,
+        0.0
+      ],
+      [
+        -2.168404344971009e-19,
+        0.0,
+        0.055932764154070204
+      ]
+    ]
+  },
+  "parts": [
+    {
+      "manufacturer": "generic",
+      "model": "4S LiPo 5000 mAh",
+      "part_id": "ref_battery_generic_4s_5000",
+      "role": "battery"
+    },
+    {
+      "manufacturer": "T-Motor",
+      "model": "AIR 40A 2-6S NO BEC ESC",
+      "part_id": "tmotor_air_40a_2_6s",
+      "role": "esc"
+    },
+    {
+      "manufacturer": "generic",
+      "model": "reference quad frame 400 mm",
+      "part_id": "ref_frame_quad_400",
+      "role": "frame"
+    },
+    {
+      "manufacturer": "T-Motor",
+      "model": "MN3508 KV700",
+      "part_id": "tmotor_mn3508_kv700",
+      "role": "motor"
+    },
+    {
+      "manufacturer": "APC",
+      "model": "Thin Electric 12x6 (12x6E)",
+      "part_id": "apc_12x6e",
+      "role": "propeller"
+    },
+    {
+      "manufacturer": "generic",
+      "model": "reference avionics and wiring allowance (lump)",
+      "part_id": "ref_avionics_wiring_lump",
+      "role": "wiring"
+    }
+  ],
+  "powertrain": {
+    "assumed_part_inputs": [
+      {
+        "field": "winding_temp_limit_c",
+        "part_id": "tmotor_mn3508_kv700"
+      },
+      {
+        "field": "thermal_resistance_k_per_w",
+        "part_id": "tmotor_mn3508_kv700"
+      },
+      {
+        "field": "efficiency",
+        "part_id": "tmotor_air_40a_2_6s"
+      },
+      {
+        "field": "temp_limit_c",
+        "part_id": "tmotor_air_40a_2_6s"
+      },
+      {
+        "field": "thermal_resistance_k_per_w",
+        "part_id": "tmotor_air_40a_2_6s"
+      },
+      {
+        "field": "mass_kg",
+        "part_id": "tmotor_air_40a_2_6s"
+      },
+      {
+        "field": "capacity_ah",
+        "part_id": "ref_battery_generic_4s_5000"
+      },
+      {
+        "field": "internal_resistance_ohm",
+        "part_id": "ref_battery_generic_4s_5000"
+      },
+      {
+        "field": "voltage_per_cell_cutoff_v",
+        "part_id": "ref_battery_generic_4s_5000"
+      },
+      {
+        "field": "max_continuous_c",
+        "part_id": "ref_battery_generic_4s_5000"
+      },
+      {
+        "field": "temp_limit_c",
+        "part_id": "ref_battery_generic_4s_5000"
+      },
+      {
+        "field": "thermal_resistance_k_per_w",
+        "part_id": "ref_battery_generic_4s_5000"
+      },
+      {
+        "field": "mass_kg",
+        "part_id": "ref_battery_generic_4s_5000"
+      },
+      {
+        "field": "ocv_curve",
+        "part_id": "ref_battery_generic_4s_5000"
+      },
+      {
+        "field": "cells",
+        "part_id": "ref_battery_generic_4s_5000"
+      }
+    ],
+    "builder_assumptions": [
+      "motor R split",
+      "motor C split",
+      "specific heats",
+      "cooling reference air speed",
+      "cooling exponent"
+    ],
+    "derived": {
+      "battery_c_j_per_k": {
+        "formula": "pack mass x 1000.0 J/kg/K",
+        "value": 450.0
+      },
+      "battery_max_continuous_a": {
+        "formula": "max_continuous_c x capacity_ah",
+        "value": 125.0
+      },
+      "esc_c_j_per_k": {
+        "formula": "ESC mass x 900.0 J/kg/K",
+        "value": 27.0
+      },
+      "motor_c_total_j_per_k": {
+        "formula": "motor mass x 450.0 J/kg/K",
+        "value": 46.8
+      },
+      "motor_c_winding": "0.25 x motor heat capacity",
+      "motor_r_winding_case": "0.3 x the record's thermal_resistance_k_per_w",
+      "motor_tau_from_rc_s": 28.08,
+      "motor_tau_record_s": 150.0
+    },
+    "parameters_verified_rule": "1 only if no part input and no builder constant is ASSUMED",
+    "propeller_model": "table",
+    "propeller_table": {
+      "basis": "UIUC_MEASURED",
+      "curves": 4,
+      "grouping_tolerance": 0.02,
+      "hover_cp_table": 0.03181242409305293,
+      "hover_ct_table": 0.09932387866553599,
+      "hover_ct_table_minus_static_percent": -0.9297411969996869,
+      "hover_outside_data": false,
+      "hover_rpm_estimate": 3576.20058406135,
+      "measured_j_end_per_curve": [
+        0.630072,
+        0.593284,
+        0.617992,
+        0.653931
+      ],
+      "measured_rpm_range": [
+        3040.0,
+        6018.5
+      ],
+      "method": "runs within 2 % of rpm merged with a linear blend over the J overlap; static Ct/Cp added as the J = 0 point; nominal rpm from the file names",
+      "note": "the core uses the table; estimates.py (max_rpm, hover point) still use the static constants, so hover thrust and duty in the core differ slightly",
+      "points_per_curve": [
+        15,
+        18,
+        28,
+        35
+      ],
+      "source_file": "offline_pipeline/props/apce_12x6.json",
+      "source_sha256": "6c1965034700e50cf8ad25fc04847ddf14c9a20823f29c0166bcaeadc70d8247",
+      "stand_in": false,
+      "static_cp": 0.03187466666666666,
+      "static_ct": 0.100256
+    },
+    "source": "tools/parts/powertrain_export.py"
+  },
+  "projected_areas_m2": {
+    "note": "frame record areas + bounding-box faces of motors, battery and other parts; props excluded; overlap ignored (conservative)",
+    "values": {
+      "front": 0.021892799999999997,
+      "side": 0.0265228,
+      "top": 0.06892296
+    }
+  },
+  "vehicle_class": "quad_standard"
+}

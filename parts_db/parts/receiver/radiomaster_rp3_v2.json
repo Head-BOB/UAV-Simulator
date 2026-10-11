@@ -1,0 +1,51 @@
+{
+  "availability_url": "https://radiomasterrc.com/products/rp3-expresslrs-2-4ghz-nano-receiver",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimension: 22mm*13mm*4mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "b0fc1086bc42805e50c7e59a8e77a21ad78f5152163b66cd57981dcf7ec32cfd",
+      "source_type": "CITED",
+      "source_url": "https://radiomasterrc.com/products/rp3-expresslrs-2-4ghz-nano-receiver"
+    },
+    "value": [
+      0.022,
+      0.013,
+      0.004
+    ]
+  },
+  "category": "receiver",
+  "current_draw_a": {
+    "provenance": {
+      "note": "receiver current is not on the page; ExpressLRS nano receivers are low-power but the number is ASSUMED. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.1
+  },
+  "id": "radiomaster_rp3_v2",
+  "manufacturer": "RadioMaster",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight: 4.6g (Including two antenna)",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "b0fc1086bc42805e50c7e59a8e77a21ad78f5152163b66cd57981dcf7ec32cfd",
+      "source_type": "CITED",
+      "source_url": "https://radiomasterrc.com/products/rp3-expresslrs-2-4ghz-nano-receiver"
+    },
+    "value": 0.0046
+  },
+  "model": "RP3 V2 ExpressLRS 2.4GHz nano diversity",
+  "mount_slot": "frame_plate",
+  "price_url": "https://radiomasterrc.com/products/rp3-expresslrs-2-4ghz-nano-receiver",
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Working voltage: DC 5V",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "b0fc1086bc42805e50c7e59a8e77a21ad78f5152163b66cd57981dcf7ec32cfd",
+      "source_type": "CITED",
+      "source_url": "https://radiomasterrc.com/products/rp3-expresslrs-2-4ghz-nano-receiver"
+    },
+    "value": 5.0
+  }
+}

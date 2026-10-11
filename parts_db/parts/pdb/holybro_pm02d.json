@@ -1,0 +1,56 @@
+{
+  "availability_url": "https://holybro.com/products/pm02d-power-module",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "size not on the page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.03,
+      0.03,
+      0.01
+    ]
+  },
+  "category": "pdb",
+  "current_draw_a": {
+    "provenance": {
+      "note": "module quiescent current not on the page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.05
+  },
+  "id": "holybro_pm02d",
+  "manufacturer": "Holybro",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight: 20g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "1ebf555a3542e7a34284827bd2a876bf985c77a37eae498b324f248e5ce24d97",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/pm02d-power-module"
+    },
+    "value": 0.02
+  },
+  "model": "PM02D power module (2S-12S)",
+  "mount_slot": "power_input",
+  "notes": "Outputs 5.2 V / 3 A max; PCB 60 A continuous, 100 A burst (<60 s); sensing max 327 A.",
+  "price_url": "https://holybro.com/products/pm02d-power-module",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Regular price on the product page; prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "1ebf555a3542e7a34284827bd2a876bf985c77a37eae498b324f248e5ce24d97",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/pm02d-power-module"
+    },
+    "value": 24.99
+  },
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "input 2S-12S on the page; 4S nominal assumed. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 14.8
+  }
+}

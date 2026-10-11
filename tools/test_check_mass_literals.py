@@ -81,6 +81,34 @@ class StructureChecks(unittest.TestCase):
     def test_cfg_test_not_before_mod_tests_rejected(self):
         self.assertEqual(n_errors("#[cfg(test)]\nfn helper() {}\n"), 1)
 
+    # ADDED (2026-10-11): `pub(crate) mod tests` is a normal way to share test helpers between modules
+    def test_pub_crate_mod_tests_is_accepted_and_the_cut_point_holds(self):
+        self.assertEqual(n_errors("fn f() {}\n#[cfg(test)]\npub(crate) mod tests {\n    fn t() { let mass = 1.0; }\n}\n"), 0)
+        self.assertEqual(n_errors("fn f() {}\n#[cfg(test)]\npub mod tests {}\n"), 0)
+
+    def test_a_mass_literal_before_a_pub_crate_test_module_is_still_caught(self):
+        self.assertEqual(n_errors("let mass = 1.0;\n#[cfg(test)]\npub(crate) mod tests {}\n"), 1)
+
+    def test_two_cfg_test_are_still_refused_with_pub_crate(self):
+        self.assertEqual(n_errors("#[cfg(test)]\npub(crate) mod tests {}\n#[cfg(test)]\nmod more {}\n"), 1)
+
+    def test_pub_crate_on_something_that_is_not_mod_tests_is_refused(self):
+        self.assertEqual(n_errors("#[cfg(test)]\npub(crate) mod helpers {}\n"), 1)
+        self.assertEqual(n_errors("#[cfg(test)]\npub(crate) fn tests() {}\n"), 1)
+
+    def test_a_named_constant_instead_of_a_literal_comparison_passes(self):
+        self.assertEqual(n_errors("if !(m.is_finite() && m >= MIN_VEHICLE_MASS_KG) { }\n"), 0)
+        self.assertEqual(n_errors("pub const MIN_VEHICLE_MASS_KG: f64 = f64::MIN_POSITIVE;\n"), 0)
+
+
+class RepositoryIsClean(unittest.TestCase):
+    def test_the_rust_sources_have_no_mass_or_inertia_literal(self):
+        root = Path(__file__).resolve().parent.parent
+        errors = []
+        for p in sorted((root / "physics_core" / "src").rglob("*.rs")):
+            errors += cml.check_text(p.relative_to(root).as_posix(), p.read_text(encoding="utf-8"))
+        self.assertEqual(errors, [])
+
 
 if __name__ == "__main__":
     unittest.main()

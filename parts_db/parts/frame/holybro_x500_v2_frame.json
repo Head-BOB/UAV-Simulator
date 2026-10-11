@@ -1,0 +1,139 @@
+{
+  "arm_count": {
+    "provenance": {
+      "note": "quadcopter frame. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 4
+  },
+  "arm_length_m": {
+    "provenance": {
+      "note": "wheelbase 0.5 m / 2 (centre to motor)",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.25
+  },
+  "availability_url": "https://holybro.com/products/x500-v2-kits",
+  "body_half_width_m": {
+    "provenance": {
+      "note": "plate 144 x 144 mm (page) / 2",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.072
+  },
+  "bounding_box_m": {
+    "provenance": {
+      "note": "x,y = adjacent motor spacing + tube OD 0.016; z = landing gear height 215 mm (page)",
+      "source_type": "CALCULATED"
+    },
+    "value": [
+      0.369553,
+      0.369553,
+      0.215
+    ]
+  },
+  "category": "frame",
+  "central_body_box_m": {
+    "provenance": {
+      "note": "plates 144 x 144 mm; height = 28 mm plate gap + 2 x 2 mm plates (page)",
+      "source_type": "CALCULATED"
+    },
+    "value": [
+      0.144,
+      0.144,
+      0.032
+    ]
+  },
+  "cg_offset_m": {
+    "provenance": {
+      "note": "frame CG at the geometric centre. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "frame_class": "quad_standard",
+  "id": "holybro_x500_v2_frame",
+  "manufacturer": "Holybro",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight: 610g (frame kit vs ARF kit ambiguity noted)",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "3fb6b10e7d4128ac14c332f9b7bafef7fc94edf02296607d50108bb4d9952c10",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/x500-v2-kits"
+    },
+    "value": 0.61
+  },
+  "max_prop_diameter_m": {
+    "provenance": {
+      "note": "zero-gap geometric bound: adjacent motor spacing; the builder applies a clearance margin",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.353553
+  },
+  "model": "X500 V2 frame kit",
+  "motor_mount_pattern": "16x16mm&19x19mm",
+  "motor_spacing_adjacent_m": {
+    "provenance": {
+      "note": "wheelbase 0.5 m / sqrt(2) for a square X layout (motors on a circle of diameter = wheelbase)",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.353553
+  },
+  "notes": "Spec block on the page (wheelbase, plates, tube, mount pattern, weight 610 g). Unclear whether 610 g is the frame kit alone (the same page sells an ARF kit): TODO(HUMAN-VERIFY). Areas and tube wall are placeholders.",
+  "price_url": "https://holybro.com/products/x500-v2-kits",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Frame Kit variant price 13500 cents in the page's product JSON; prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "3fb6b10e7d4128ac14c332f9b7bafef7fc94edf02296607d50108bb4d9952c10",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/x500-v2-kits"
+    },
+    "value": 135.0
+  },
+  "projected_area_front_m2": {
+    "provenance": {
+      "note": "rough, landing gear and arms. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.02
+  },
+  "projected_area_side_m2": {
+    "provenance": {
+      "note": "rough, landing gear and arms. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.02
+  },
+  "projected_area_top_m2": {
+    "provenance": {
+      "note": "plates 0.144^2 + four 16 mm arms, rough. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.032
+  },
+  "schema_version": "1.0.0",
+  "tube_id_m": {
+    "provenance": {
+      "note": "wall thickness not on the page; 1 mm wall assumed. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.014
+  },
+  "tube_material": "carbon fibre tube",
+  "tube_od_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Arm: 16mm carbon fiber tubes",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "3fb6b10e7d4128ac14c332f9b7bafef7fc94edf02296607d50108bb4d9952c10",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/x500-v2-kits"
+    },
+    "value": 0.016
+  }
+}

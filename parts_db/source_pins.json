@@ -1,0 +1,402 @@
+{
+  "http://www.tarotrc.com/Product/Detail.aspx?Lang=en&Id=2e556afc-84be-4944-8569-57d99f606df9": {
+    "bytes": 43975,
+    "cache_file": "b41bf9064adb9d3b",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "23a8bc7480e78ee8aa615b981f02973a3cb9788de02f908f03b11254269f3cf7"
+  },
+  "http://www.tarotrc.com/Product/Detail.aspx?Lang=en&Id=d75355bf-3ce7-4a2d-9850-638836ae450d": {
+    "bytes": 44576,
+    "cache_file": "b601dce8cf8d7ed0",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "688e69185b43ac381e7b751894a64a0405a5c982b1cb712546aa7d4626d4472b"
+  },
+  "http://www.tarotrc.com/Product/Detail.aspx?Lang=en&Id=e0c3cff6-7dd1-4f2f-b2fd-a5df1f5d9f2a": {
+    "bytes": 24789,
+    "cache_file": "2effb8bfe7d7f16c",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "918535850edae7c253d26fb2f19024b95f541ba7cdbfe0221da42a407c5ddc35"
+  },
+  "https://docs.holybro.com/autopilot/pixhawk-6c/technical-specification": {
+    "bytes": 663566,
+    "cache_file": "b04a3ca8b630ef39",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "ec33c4e12cbeb23096b88149eaad85d3cc5a0e5fa0bbb01ad61f3f8f9d6242b5"
+  },
+  "https://docs.px4.io/main/en/flight_controller/pixhawk6c": {
+    "bytes": 1075993,
+    "cache_file": "d71b6c570224c690",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "f2af9366f971180fce8bfaab9b06f1d3dfe20a75035ead3e04d1f80e9fa43d01"
+  },
+  "https://genstattu.com/gens-ace-5000mah-14-8v-50c-4s1p-hardcase-lipo-battery14-with-deans-plug.html": {
+    "bytes": 338074,
+    "cache_file": "0e93e5a191ae2e23",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "9f85c4c20ccdaf4a300469c9f223986103ec8d4a8117b2a315e74a81a94a7394"
+  },
+  "https://genstattu.com/gens-ace-5000mah-4s-45c-14-8v-g-tech-lipo-battery-pack-with-ec5-plug/": {
+    "bytes": 318446,
+    "cache_file": "9b05abe9cbfe5f1c",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "fda9fbe6e8cc5dbee247a4508eaa5c6f80efb0d03992177dc2fdb0f8c3180cf2"
+  },
+  "https://genstattu.com/ta-rl3-120c-1300-6s1p.html": {
+    "bytes": 319585,
+    "cache_file": "75157ba3e70f325d",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "2bb8d9b30ae6ce50fd3eb2db815e8619ab3ff0696ca8ac6dd1cad2dc33aa6a71"
+  },
+  "https://genstattu.com/tattu-5200mah-14-8v-35c-4s1p-lipo-battery-pack-with-xt60-plug.html": {
+    "bytes": 327239,
+    "cache_file": "86095dfbae6bdede",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "c1a9d68f70d6d8e1e73c976763f819b8eae553adabbce52b8fc5c059ee4969a5"
+  },
+  "https://genstattu.com/tattu-r-line-v6-1300mah-6s-160c-22-2v-st-lipo-battery-with-xt60-plug/": {
+    "bytes": 337903,
+    "cache_file": "bd51bfd5cd387606",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "cf5898f4b5e026d93979bf1154f8be9fb2e0bfe7e13fb458d82246d908e995d6"
+  },
+  "https://holybro.com/collections/power-modules-pdbs/products/pixhawk-4-power-module-pm07": {
+    "bytes": 502009,
+    "cache_file": "42006f603dd54ace",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "3b93414ee5ae79f939354ff9609dff07a9d2330161d176245424b53725c0ac31"
+  },
+  "https://holybro.com/products/kakute-h7-mini": {
+    "bytes": 444027,
+    "cache_file": "905021869512c218",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "3678d11f8a4069edeb514ab0add6eaaa7e169c2cb05512dfb4dd7b5351f11564"
+  },
+  "https://holybro.com/products/kakute-h7-v2": {
+    "bytes": 443147,
+    "cache_file": "d57c1b3ec19d2224",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "91334d96b3b89af07b879aed16dfc7d96e5791b0ab0135f0097830ad4b4e81b5"
+  },
+  "https://holybro.com/products/kopis2-6s-v2free-shipping": {
+    "bytes": 471345,
+    "cache_file": "0f6a2ce7f55f1fa0",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "8dd9f6bc5ab26dc91adc9e2d76228d16dc6a588cd7216d9d9330aa89cfa69f68"
+  },
+  "https://holybro.com/products/kopis2-hdv-free-shipping": {
+    "bytes": 486256,
+    "cache_file": "908322953008c569",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "28aa932597d196a033f6bb90ca29e128b52d8be6a59634ec65fdef5cccf7f68d"
+  },
+  "https://holybro.com/products/m10-gps": {
+    "bytes": 560509,
+    "cache_file": "62d0a0b570076568",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "be9c3b0bc278bb4a55c797627bde61a56ce2513ba4757edba2fa33c2451f372b"
+  },
+  "https://holybro.com/products/m9n-gps": {
+    "bytes": 593123,
+    "cache_file": "c292346db90fdaf2",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "37b811ca9bff09ab8933ef764ac331fea9e6a8ec197b2376dbbbdd800a010734"
+  },
+  "https://holybro.com/products/micro-m10-gps": {
+    "bytes": 516250,
+    "cache_file": "75355fc172c09d7c",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "bfc0cf0757344822a6a2af25ccf5495fea42de3794fba917fc4aa48659f2196f"
+  },
+  "https://holybro.com/products/pixhawk-4": {
+    "bytes": 488847,
+    "cache_file": "42e24c6f2a6d1de1",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "1d25841ac55068d35cdabba13d9a748e88fb9491ee4d1dce5a60e02f962d9c9e"
+  },
+  "https://holybro.com/products/pixhawk-6c": {
+    "bytes": 611703,
+    "cache_file": "6d5c7dc985d3f513",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "05d5cc4f49c2b8240a725b9b335f9531ede46b8c7f9c82e5b0081ddac24758f5"
+  },
+  "https://holybro.com/products/pixhawk-6x": {
+    "bytes": 614990,
+    "cache_file": "847559a970b9feff",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "08e21d2d01ad75557abdc2b75bead058b20bec104f0698217d945225c790e4c0"
+  },
+  "https://holybro.com/products/pm02d-power-module": {
+    "bytes": 429010,
+    "cache_file": "4dea91950853b200",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "1ebf555a3542e7a34284827bd2a876bf985c77a37eae498b324f248e5ce24d97"
+  },
+  "https://holybro.com/products/power-distribution-board-pdb": {
+    "bytes": 448772,
+    "cache_file": "bb06301fe413fa3a",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "613c4c369c64c29b71337f4aab098a96b0fbd3dba345e0e30a65a999fbd3d343"
+  },
+  "https://holybro.com/products/tekko32-f4-4in1-50a-esc": {
+    "bytes": 410738,
+    "cache_file": "053cca2faf70aeb5",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "df415783aa271092868e30eb52623053eca19089b216f738383a3a6aed4b502e"
+  },
+  "https://holybro.com/products/tekko32-f4-4in1-mini-50a-escam32": {
+    "bytes": 448683,
+    "cache_file": "237eeef3d6eec71e",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "1725d8dde56313d2abb7797064ee9713accfa7384e1cf9931a6fddc24dd2a348"
+  },
+  "https://holybro.com/products/x500-v2-kits": {
+    "bytes": 582286,
+    "cache_file": "e314fd83e029994e",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "3fb6b10e7d4128ac14c332f9b7bafef7fc94edf02296607d50108bb4d9952c10"
+  },
+  "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html": {
+    "bytes": 21549,
+    "cache_file": "f01947d8b51e39fd",
+    "http_status": 200,
+    "note": "UIUC propeller database volume 4 index",
+    "retrieved_on": "2026-10-10",
+    "sha256": "a21a14deb553002fa8a837c56c8673d2afa4d2e88cf05ba0e43266bf668b8336"
+  },
+  "https://radiomasterrc.com/products/rp1-expresslrs-2-4ghz-nano-receiver": {
+    "bytes": 995899,
+    "cache_file": "c78fdf182a522cc7",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "74aff9f0244d47db30d128f27e99147f00c577e66988c96a6b461a9097453b12"
+  },
+  "https://radiomasterrc.com/products/rp3-expresslrs-2-4ghz-nano-receiver": {
+    "bytes": 1028803,
+    "cache_file": "9644071c67336949",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "b0fc1086bc42805e50c7e59a8e77a21ad78f5152163b66cd57981dcf7ec32cfd"
+  },
+  "https://radiomasterrc.com/products/xr1-nano-multi-frequency-expresslrs-receiver": {
+    "bytes": 1028151,
+    "cache_file": "2e69891104c04dae",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "1eb86a51828c20465f8711b59587f144f1e6e460b9e2eed8ad17809462b696ec"
+  },
+  "https://shop.runcam.com/runcam-phoenix-2-pro/": {
+    "bytes": 182290,
+    "cache_file": "acab328811cbd874",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "7273587037e6a6d7224a1996bc3bf59b7362757c5e84a5f1dc5d07a8938a4ca8"
+  },
+  "https://shop.runcam.com/runcam-phoenix-2-sp/": {
+    "bytes": 180161,
+    "cache_file": "93aef85ff32a80f2",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "7850531d20ed79af6220dd0bcc9bfa13124d8df2d6ae30e0595cbad0dd1c81a8"
+  },
+  "https://shop.runcam.com/runcam-phoenix-2/": {
+    "bytes": 217721,
+    "cache_file": "c4eda28769485873",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "6ddc4657bfe7a90bafbea6e5709ea747a07518fa276ff2fac73b8d063b3e0576"
+  },
+  "https://siyi.biz/en/product/single-axis-agri-camera/a2-mini/spec/": {
+    "bytes": 271916,
+    "cache_file": "ba155bba7725dde5",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "2b59cab9d0e0f8e749613eba5c88b7fd67a7efbc74e2355ec5b7fe3472cc8f2b"
+  },
+  "https://siyi.biz/en/product/tri-axis-multi-sensor-gimbal-pod/zt6/spec/": {
+    "bytes": 317072,
+    "cache_file": "9131210a7a0b1554",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "2b7d9ffa63e25328c340f7dce7119115035eb97194742f4a5df9a8d0277ef68f"
+  },
+  "https://siyi.biz/en/product/tri-axis-single-camera-gimbal/a8-mini/spec/": {
+    "bytes": 300661,
+    "cache_file": "0d8eb9c3aa43a0ff",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "d4dd530c05f66d3f34442da8e57c7e51783ea3a8c88097161f877d74fecd911d"
+  },
+  "https://siyi.biz/en/product/tri-axis-single-camera-gimbal/zr30/spec/": {
+    "bytes": 304291,
+    "cache_file": "6652784c292ad98a",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "15426fc7fb58048488ec0484721b0e2a4006b71d22b2b19b238e4ec5c3869ccd"
+  },
+  "https://store.tmotor.com/goods-354-MN3508.html": {
+    "bytes": 213523,
+    "cache_file": "14f65b10809a3c9c",
+    "http_status": 200,
+    "note": "T-Motor MN3508 store page (manufacturer)",
+    "retrieved_on": "2026-10-10",
+    "sha256": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+  },
+  "https://store.tmotor.com/product/air-20a-4s-esc.html": {
+    "bytes": 194647,
+    "cache_file": "d4f8c45b2c546247",
+    "http_status": 200,
+    "note": "T-Motor store page (manufacturer)",
+    "retrieved_on": "2026-10-10",
+    "sha256": "f35f694537923c2ecc0ccf0a67ce6f52da6ac63532d3b8ae585cfba82f4076ac"
+  },
+  "https://store.tmotor.com/product/air-40a-6s-esc.html": {
+    "bytes": 206907,
+    "cache_file": "ff59226f07923691",
+    "http_status": 200,
+    "note": "T-Motor store page (manufacturer)",
+    "retrieved_on": "2026-10-10",
+    "sha256": "d150b086904d2a9b24ec5af68f21c6e2206c631c1b8093dc2a501da7dbb05683"
+  },
+  "https://store.tmotor.com/product/air-gear-450II-combo-set.html": {
+    "bytes": 181060,
+    "cache_file": "1a1a182b5cb96269",
+    "http_status": 200,
+    "note": "T-Motor store page (manufacturer)",
+    "retrieved_on": "2026-10-10",
+    "sha256": "88d1ec61fce6a8bf42045f1ea1c675898e680bb24a84912c886bd4e16d6ee052"
+  },
+  "https://store.tmotor.com/product/mn3110-motor-navigator-type.html": {
+    "bytes": 214831,
+    "cache_file": "abbbcf0cba160269",
+    "http_status": 200,
+    "note": "T-Motor store page (manufacturer)",
+    "retrieved_on": "2026-10-10",
+    "sha256": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c"
+  },
+  "https://store.tmotor.com/product/mn3510-motor-navigator-type.html": {
+    "bytes": 214900,
+    "cache_file": "0a763e646281b562",
+    "http_status": 200,
+    "note": "T-Motor store page (manufacturer)",
+    "retrieved_on": "2026-10-10",
+    "sha256": "4a36433767d78773824434afaf53bbea780f678fffc8cc05c625c5a1a43b9aa0"
+  },
+  "https://store.tmotor.com/product/polish-carbon-fiber-13x4_4-prop.html": {
+    "bytes": 190615,
+    "cache_file": "ef12ffc9c9ca7c2d",
+    "http_status": 200,
+    "note": "T-Motor store page (manufacturer)",
+    "retrieved_on": "2026-10-10",
+    "sha256": "5c4eefc906255ba8df0948c0c6fcb626caf218c65e24d728150aad4829791dbf"
+  },
+  "https://store.tmotor.com/product/polish-carbon-fiber-14x4_8-prop.html": {
+    "bytes": 195864,
+    "cache_file": "b637cc812a0d4063",
+    "http_status": 200,
+    "note": "T-Motor store page (manufacturer)",
+    "retrieved_on": "2026-10-10",
+    "sha256": "49cff94fc2e2bf2adaa825b890aec127818b1a061240fffefd28c71597a68241"
+  },
+  "https://store.tmotor.com/product/polish-carbon-fiber-15x5-prop.html": {
+    "bytes": 197765,
+    "cache_file": "456f60149fae60b8",
+    "http_status": 200,
+    "note": "T-Motor store page (manufacturer)",
+    "retrieved_on": "2026-10-10",
+    "sha256": "f81a409812eb8d8656476d34fb19fe49b3d27c544193a27dd84fe0c80a83a08b"
+  },
+  "https://store.tmotor.com/product/v50a-se-4in1-velox-esc.html": {
+    "bytes": 731398,
+    "cache_file": "22deb1ca98fafb54",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "7e8e6cd4e0630ccbdd111ffa79b8679ddd7157d96bdba047a5ba39f494ecc32a"
+  },
+  "https://www.caddxfpv.com/products/caddxfpv-baby-ratel2-analog-camera": {
+    "bytes": 952006,
+    "cache_file": "0dcb01ca2078a73d",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "6742494a5e86fee78cf0c4750a9ee45d25d79a8000b1cf473ebe6ecf59499b71"
+  },
+  "https://www.caddxfpv.com/products/caddxfpv-ratel-pro-analog-camera": {
+    "bytes": 996792,
+    "cache_file": "51455531b6456e72",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "5b70479a018899ba4f3caee6ecf05a7365729ece45bdb32df80a54a7eca06a32"
+  },
+  "https://www.caddxfpv.com/products/ratel-2-1-1-8inch-starlight-sensor-freestyle-fpv-camera": {
+    "bytes": 976758,
+    "cache_file": "136e2036abdcd5b6",
+    "http_status": 200,
+    "note": "",
+    "retrieved_on": "2026-10-10",
+    "sha256": "e02f40b5496d42eb9777eb9fc08a0b04cbe3ef76f13052f150d7bec7c9623f0b"
+  }
+}

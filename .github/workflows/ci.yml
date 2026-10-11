@@ -74,6 +74,25 @@ jobs:
         env:
           ORT_DYLIB_PATH: ${{ github.workspace }}/onnxruntime-linux-x64-1.19.0/lib/libonnxruntime.so
 
+      - name: Validation reports are current (model vs published data, report only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for b in reference_quad fpv_5in; do
+            cargo run --release --example validate_models -- "../tools/parts/builds/$b" "$RUNNER_TEMP/val_$b"
+            diff "$RUNNER_TEMP/val_$b/validation_report.json" "../tools/parts/builds/$b/validation_report.json"
+            diff "$RUNNER_TEMP/val_$b/validation_report.csv" "../tools/parts/builds/$b/validation_report.csv"
+          done
+
+      - name: Test campaign smoke run is current and independent of the thread count
+        shell: bash
+        run: |
+          set -euo pipefail
+          for n in 1 4; do
+            cargo run --release --example run_campaign -- ../tools/parts/builds/reference_quad ../campaign/conditions_smoke.json ../campaign/smoke_definitions.json "$RUNNER_TEMP/camp_$n" --threads "$n" --git-hash golden > /dev/null
+            diff -r "$RUNNER_TEMP/camp_$n" ../tools/parts/builds/reference_quad/campaign_smoke
+          done
+
       - name: Pure subset without ONNX Runtime (the part miri runs)
         shell: bash
         run: |
@@ -140,6 +159,60 @@ jobs:
           python -m unittest discover -s tools/geometry -p 'test_*.py'
           python -m unittest discover -s offline_pipeline/components -p 'test_*.py'
           python -m unittest discover -s offline_pipeline/cfd -p 'test_*.py'
+
+      - name: Validate and test the parts database
+        working-directory: .
+        run: |
+          python -m unittest discover -s tools/parts -p 'test_*.py'
+          python tools/parts/parts_cli.py validate
+          python tools/parts/parts_cli.py schema --check
+          python tools/parts/build_vehicle.py tools/parts/builds/reference_quad.build.json --out tools/parts/builds/reference_quad --check
+          python tools/parts/build_vehicle.py tools/parts/builds/fpv_5in.build.json --out tools/parts/builds/fpv_5in --check
+          python tools/parts/extract_tmotor_table.py --check
+
+      - name: Report tools - unit tests, and the committed smoke report is current
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tools/report -p 'test_*.py'
+          python tools/report/make_report.py --build tools/parts/builds/reference_quad --campaign tools/parts/builds/reference_quad/campaign_smoke --validation tools/parts/builds/reference_quad/validation_report.json --out "$RUNNER_TEMP/report_smoke"
+          diff -r "$RUNNER_TEMP/report_smoke" tools/parts/builds/reference_quad/report_smoke
+
+      - name: Vehicle CFD pipeline without a GPU (geometry, sweep cases, sanity cases, synthetic training, verify)
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          for b in reference_quad fpv_5in; do
+            python offline_pipeline/cfd/vehicle_stl.py --build tools/parts/builds/$b --out "$RUNNER_TEMP/geo_$b"
+            python offline_pipeline/cfd/vehicle_sweep.py generate --build tools/parts/builds/$b --out "$RUNNER_TEMP/sweep_$b" --bytes-per-cell 55 --max-cases 2
+            python offline_pipeline/cfd/vehicle_sweep.py synthetic --build tools/parts/builds/$b --out "$RUNNER_TEMP/syn_$b.csv"
+            python offline_pipeline/cfd/train_vehicle_aero.py train --build tools/parts/builds/$b --csv "$RUNNER_TEMP/syn_$b.csv" --out "$RUNNER_TEMP/m_$b.onnx" --now 2026-10-11T00:00:00+00:00
+            python offline_pipeline/cfd/train_vehicle_aero.py verify --build tools/parts/builds/$b --model "$RUNNER_TEMP/m_$b.onnx" --csv "$RUNNER_TEMP/syn_$b.csv"
+          done
+          python offline_pipeline/cfd/sphere_validation.py generate-sphere --out "$RUNNER_TEMP/sphere" --bytes-per-cell 55
+          python offline_pipeline/cfd/sphere_validation.py report --sphere "$RUNNER_TEMP/sphere" --out "$RUNNER_TEMP/sanity.json"
+          python offline_pipeline/cfd/train_vehicle_aero.py verify --build tools/parts/builds/reference_quad --model offline_pipeline/cfd/sample/synthetic_quad_standard_aero.onnx --csv offline_pipeline/cfd/sample/synthetic_quad_standard_cfd.csv
+
+      - name: P7 application flow test (UI model and screens against the REAL helpers) and catalogue is current
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/parts/export_catalogue.py --check
+          python tools/check_ui_tripwires.py
+          g++ -std=c++17 -Wall -Wextra -Werror -I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public tools/cpp_ffi_check/app_flow_test.cpp -o "$RUNNER_TEMP/app_flow_test"
+          "$RUNNER_TEMP/app_flow_test" . python physics_core/target/release/examples/run_campaign physics_core/target/release/examples/validate_models "$RUNNER_TEMP/appflow"
+
+      - name: P8 packaging tools - helpers lock is current, tests, and a dev-mode stage verifies
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/package/make_helpers_lock.py --check
+          python -m unittest discover -s tools/package -p 'test_*.py'
+          python tools/package/stage_package.py --dest "$RUNNER_TEMP/stage" --dev-python "$(command -v python)" --exe-dir physics_core/target/release/examples --exe-suffix ""
 
       - name: Run Traceability Check
         working-directory: .
@@ -252,3 +325,16 @@ jobs:
           tools/cpp_ffi_check/demo_control_test.cpp
           -o "$RUNNER_TEMP/demo_control_test"
           && "$RUNNER_TEMP/demo_control_test"
+
+      - name: P7 app logic tests without Unreal (JSON reader, tokens vs the UI preview, replay and margins vs the Python report, catalogue, build files, conditions, helpers, report data, app state)
+        shell: bash
+        run: |
+          set -euo pipefail
+          INC="-I UE5Project/Plugins/DronePhysicsBridge/Source/DronePhysicsBridge/Public"
+          g++ -std=c++17 -Wall -Wextra -Werror $INC tools/cpp_ffi_check/json_test.cpp -o "$RUNNER_TEMP/json_test" && "$RUNNER_TEMP/json_test"
+          g++ -std=c++17 -Wall -Wextra -Werror $INC tools/cpp_ffi_check/ui_tokens_test.cpp -o "$RUNNER_TEMP/ui_tokens_test" && "$RUNNER_TEMP/ui_tokens_test" dev-docs/ui-reference/quad_ui_preview_v4.html
+          for t in replay_margins_test catalogue_build_test conditions_helpers_test report_state_test; do
+            g++ -std=c++17 -Wall -Wextra -Werror $INC tools/cpp_ffi_check/$t.cpp -o "$RUNNER_TEMP/$t" && "$RUNNER_TEMP/$t" .
+          done
+          g++ -std=c++17 -Wall -Wextra -Werror $INC tools/cpp_ffi_check/ui_preview.cpp -o "$RUNNER_TEMP/ui_preview"
+          g++ -std=c++17 -Wall -Wextra -Werror $INC tools/cpp_ffi_check/ui_files_writer.cpp -o "$RUNNER_TEMP/ui_files_writer"

@@ -1,0 +1,41 @@
+{
+  "bounding_box_m": {
+    "provenance": {
+      "note": "cube of side (m / 1000 kg/m^3)^(1/3) for a water-density block, m = 0.25 kg",
+      "source_type": "CALCULATED"
+    },
+    "value": [
+      0.063,
+      0.063,
+      0.063
+    ]
+  },
+  "category": "payload",
+  "current_draw_a": {
+    "provenance": {
+      "note": "passive mass, no load (0 by construction)",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.0
+  },
+  "id": "payload_test_mass_250g",
+  "manufacturer": "n/a",
+  "mass_kg": {
+    "provenance": {
+      "note": "defined test mass. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.25
+  },
+  "model": "250 g dummy test mass",
+  "mount_slot": "belly_mount",
+  "notes": "A defined test mass for payload-limit tests (not a product). Weigh the real payload and replace the mass.",
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "passive mass, no supply (0 by construction)",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.0
+  }
+}

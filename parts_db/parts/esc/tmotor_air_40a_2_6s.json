@@ -1,0 +1,99 @@
+{
+  "availability_url": "https://store.tmotor.com/product/air-40a-6s-esc.html",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "not on the manufacturer page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.06,
+      0.025,
+      0.01
+    ]
+  },
+  "category": "esc",
+  "cells_max": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; product name AIR 40A 2-6S NO BEC ESC",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "d150b086904d2a9b24ec5af68f21c6e2206c631c1b8093dc2a501da7dbb05683",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/air-40a-6s-esc.html"
+    },
+    "value": 6
+  },
+  "cells_min": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; product name AIR 40A 2-6S NO BEC ESC",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "d150b086904d2a9b24ec5af68f21c6e2206c631c1b8093dc2a501da7dbb05683",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/air-40a-6s-esc.html"
+    },
+    "value": 2
+  },
+  "channels": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; single-motor ESC",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "d150b086904d2a9b24ec5af68f21c6e2206c631c1b8093dc2a501da7dbb05683",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/air-40a-6s-esc.html"
+    },
+    "value": 1
+  },
+  "efficiency": {
+    "provenance": {
+      "note": "typical, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.95
+  },
+  "id": "tmotor_air_40a_2_6s",
+  "manufacturer": "T-Motor",
+  "mass_kg": {
+    "provenance": {
+      "note": "not on the manufacturer page; No mass or size source found for the 40 A.. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.03
+  },
+  "max_continuous_current_a": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; product name AIR 40A 2-6S NO BEC ESC",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "d150b086904d2a9b24ec5af68f21c6e2206c631c1b8093dc2a501da7dbb05683",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/air-40a-6s-esc.html"
+    },
+    "value": 40.0
+  },
+  "model": "AIR 40A 2-6S NO BEC ESC",
+  "notes": "The product page states only the model name (current, cells) and marketing text; mass, size, efficiency and thermal values are NOT on it. No mass or size source found for the 40 A.",
+  "price_url": "https://store.tmotor.com/product/air-40a-6s-esc.html",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; price shown on the product page; store prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "d150b086904d2a9b24ec5af68f21c6e2206c631c1b8093dc2a501da7dbb05683",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/air-40a-6s-esc.html"
+    },
+    "value": 39.99
+  },
+  "schema_version": "1.0.0",
+  "temp_limit_c": {
+    "provenance": {
+      "note": "placeholder, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 100.0
+  },
+  "thermal_resistance_k_per_w": {
+    "provenance": {
+      "note": "placeholder, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 2.0
+  }
+}

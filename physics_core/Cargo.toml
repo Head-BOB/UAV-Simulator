@@ -14,9 +14,27 @@ hex = "0.4.3"
 
 [dependencies]
 glam = "0.33.2"
+sha2 = "0.10.8"
+hex = "0.4.3"
 ort = { version = "2.0.0-rc.13", features = ["load-dynamic"], optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+[[example]]
+name = "controller_tuning"
+required-features = ["onnx"]
+
+[[example]]
+name = "validate_models"
+required-features = ["onnx"]
+
+[[example]]
+name = "run_campaign"
+required-features = ["onnx"]
+
+[[example]]
+name = "check_per_build_model"
+required-features = ["onnx"]
 
 [features]
 # `onnx` pulls in ONNX Runtime (surrogate loader and the FFI that uses it). Without it the crate is the

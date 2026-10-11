@@ -1,0 +1,53 @@
+{
+  "availability_url": "https://holybro.com/products/power-distribution-board-pdb",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "45x45mm is the MOUNTING hole pattern (page); board size not stated. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.045,
+      0.045,
+      0.005
+    ]
+  },
+  "category": "pdb",
+  "current_draw_a": {
+    "provenance": {
+      "note": "passive board, no electrical load (formula: I = 0 A by construction)",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.0
+  },
+  "id": "holybro_pdb_60a",
+  "manufacturer": "Holybro",
+  "mass_kg": {
+    "provenance": {
+      "note": "mass not on the page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.02
+  },
+  "model": "Power Distribution Board 60A",
+  "mount_slot": "power_input",
+  "notes": "Rated 60 A, max 120 A (<60 s); pre-soldered XT60.",
+  "price_url": "https://holybro.com/products/power-distribution-board-pdb",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Regular price on the product page; prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "613c4c369c64c29b71337f4aab098a96b0fbd3dba345e0e30a65a999fbd3d343",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/power-distribution-board-pdb"
+    },
+    "value": 4.59
+  },
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "battery side, 4S nominal assumed. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 14.8
+  }
+}

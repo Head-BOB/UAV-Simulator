@@ -319,6 +319,194 @@ pub fn load_surrogate(path: &str) -> Result<SurrogateHandle, SurrogateLoadError>
     })
 }
 
+// ---------------------------------------------------------------------------------------------- per-build models
+
+/// Lowercase hex SHA-256 of `bytes`.
+#[must_use]
+pub fn sha256_hex(bytes: &[u8]) -> String {
+    use sha2::{Digest, Sha256};
+    hex::encode(Sha256::digest(bytes))
+}
+
+/// Binding hash of a per-build model: SHA-256 of `config_hash|geometry_hash|training_data_sha256|trainer_version`
+/// (UTF-8). Produced by `offline_pipeline/cfd/train_vehicle_aero.py`, recomputed here.
+#[must_use]
+pub fn binding_hash_of(config: &str, geometry: &str, data: &str, trainer_version: &str) -> String {
+    sha256_hex(format!("{config}|{geometry}|{data}|{trainer_version}").as_bytes())
+}
+
+/// What the caller knows about the build a model must belong to (all lowercase hex).
+#[derive(Debug, Clone, Copy)]
+pub struct BuildBinding<'a> {
+    /// SHA-256 of the build's CFD geometry STL.
+    pub geometry_hash: &'a str,
+    /// SHA-256 of the build's `vehicle_config.json`.
+    pub config_hash: &'a str,
+    /// The binding hash the model must carry.
+    pub binding_hash: &'a str,
+    /// SHA-256 the model FILE must have, if the caller knows it (from the sidecar).
+    pub model_sha256: Option<&'a str>,
+}
+
+/// Facts about a loaded per-build model, for the run manifest.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModelInfo {
+    /// SHA-256 of the model file as read.
+    pub model_sha256: String,
+    /// `kind` metadata (`trained` or `stub`).
+    pub kind: String,
+    /// The binding hash the model carries (checked).
+    pub binding_hash: String,
+    /// `cfd_sanity_status` metadata, if present.
+    pub cfd_sanity_status: Option<String>,
+    /// `propellers` metadata, if present.
+    pub propellers: Option<String>,
+}
+
+/// Why a per-build model was refused.
+#[derive(Debug, PartialEq, Eq)]
+pub enum BuildLoadError {
+    /// The generic checks failed (file, runtime, kind, geometry hash, config hash, shapes).
+    Load(SurrogateLoadError),
+    /// `binding_hash`, `training_data_sha256` or `trainer_version` is missing from the model.
+    MissingBindingMetadata,
+    /// The model's `binding_hash` is not the hash of its own parts.
+    BindingInconsistent,
+    /// The model's binding hash differs from the one the caller expects.
+    BindingMismatch {
+        /// Hash the caller expects.
+        expected: String,
+        /// Hash the model carries.
+        found: String,
+    },
+    /// The model file's SHA-256 differs from the one the caller expects.
+    ModelFileMismatch {
+        /// Hash the caller expects.
+        expected: String,
+        /// Hash of the file read.
+        found: String,
+    },
+}
+
+impl From<SurrogateLoadError> for BuildLoadError {
+    fn from(e: SurrogateLoadError) -> Self {
+        Self::Load(e)
+    }
+}
+
+/// Binding-related metadata of a per-build model; `None` = key absent.
+struct BuildMeta<'a> {
+    config_hash: &'a str,
+    geometry_hash: &'a str,
+    binding_hash: Option<&'a str>,
+    training_data_sha256: Option<&'a str>,
+    trainer_version: Option<&'a str>,
+}
+
+/// Checks the binding: all three parts present, `binding_hash` equals the hash of its parts, and equals what the caller expects.
+fn check_build_binding(
+    m: &BuildMeta<'_>,
+    expected: &BuildBinding<'_>,
+) -> Result<String, BuildLoadError> {
+    let (Some(binding), Some(data), Some(version)) =
+        (m.binding_hash, m.training_data_sha256, m.trainer_version)
+    else {
+        return Err(BuildLoadError::MissingBindingMetadata);
+    };
+    if binding_hash_of(m.config_hash, m.geometry_hash, data, version) != binding {
+        return Err(BuildLoadError::BindingInconsistent);
+    }
+    if binding != expected.binding_hash {
+        return Err(BuildLoadError::BindingMismatch {
+            expected: expected.binding_hash.to_string(),
+            found: binding.to_string(),
+        });
+    }
+    Ok(binding.to_string())
+}
+
+/// Loads a per-build surrogate model and checks it belongs to THIS build.
+///
+/// Same checks as `load_surrogate`, but against the hashes in `expected` instead of the compiled-in ones, plus the binding
+/// (`binding_hash` is recomputed from the model's metadata) and, if given, the model file's own SHA-256. The compiled-in hashes
+/// and the FFI loader are untouched. Stub models need the `allow_stub_models` feature, as with `load_surrogate`.
+///
+/// # Errors
+/// `BuildLoadError::Load` wraps every error of `load_surrogate` (`IoError`, `EngineError`, `MissingProvenance`, `StubModel`,
+/// `GeometryMismatch`, `ConfigMismatch`, `BadModelShape`); the other variants are the binding and file-hash failures.
+pub fn load_surrogate_for_build(
+    path: &str,
+    expected: &BuildBinding<'_>,
+) -> Result<(SurrogateHandle, ModelInfo), BuildLoadError> {
+    let bytes = std::fs::read(path).map_err(|_| SurrogateLoadError::IoError)?;
+    let model_sha256 = sha256_hex(&bytes);
+    if let Some(want) = expected.model_sha256
+        && want != model_sha256
+    {
+        return Err(BuildLoadError::ModelFileMismatch {
+            expected: want.to_string(),
+            found: model_sha256,
+        });
+    }
+    init_ort_from(&ort_dylib_path())?;
+    let session = Session::builder()
+        .map_err(|e| SurrogateLoadError::EngineError(e.to_string()))?
+        .commit_from_memory(&bytes)
+        .map_err(|e| SurrogateLoadError::EngineError(e.to_string()))?;
+    let (is_stub, info) = {
+        let metadata = session
+            .metadata()
+            .map_err(|e| SurrogateLoadError::EngineError(e.to_string()))?;
+        let get = |k: &str| metadata.custom(k);
+        let (kind, geometry, config) = (get("kind"), get("geometry_hash"), get("config_hash"));
+        let is_stub = check_provenance(
+            &Provenance {
+                kind: kind.as_deref(),
+                geometry_hash: geometry.as_deref(),
+                config_hash: config.as_deref(),
+            },
+            cfg!(feature = "allow_stub_models"),
+            expected.geometry_hash,
+            expected.config_hash,
+        )?;
+        let (binding, data, version) = (
+            get("binding_hash"),
+            get("training_data_sha256"),
+            get("trainer_version"),
+        );
+        let binding = check_build_binding(
+            &BuildMeta {
+                config_hash: config.as_deref().unwrap_or_default(),
+                geometry_hash: geometry.as_deref().unwrap_or_default(),
+                binding_hash: binding.as_deref(),
+                training_data_sha256: data.as_deref(),
+                trainer_version: version.as_deref(),
+            },
+            expected,
+        )?;
+        (
+            is_stub,
+            ModelInfo {
+                model_sha256,
+                kind: kind.unwrap_or_default(),
+                binding_hash: binding,
+                cfd_sanity_status: get("cfd_sanity_status"),
+                propellers: get("propellers"),
+            },
+        )
+    };
+    let (input_width, predicted_width) = declared_widths(&session)?;
+    Ok((
+        SurrogateHandle {
+            session,
+            is_stub,
+            input_width,
+            predicted_width,
+        },
+        info,
+    ))
+}
+
 /// Reads and validates the session's declared tensor shapes.
 fn declared_widths(session: &Session) -> Result<(usize, usize), SurrogateLoadError> {
     if session.inputs().len() != 1 {
@@ -652,6 +840,95 @@ mod tests {
         assert!(
             matches!(r, Err(SurrogateLoadError::EngineError(_))),
             "{r:?}"
+        );
+    }
+
+    // ------------------------------------------------------------------ per-build binding (no ONNX Runtime needed)
+
+    fn expect<'a>(binding: &'a str) -> BuildBinding<'a> {
+        BuildBinding {
+            geometry_hash: "g",
+            config_hash: "c",
+            binding_hash: binding,
+            model_sha256: None,
+        }
+    }
+
+    fn meta<'a>(
+        binding: Option<&'a str>,
+        data: Option<&'a str>,
+        version: Option<&'a str>,
+    ) -> BuildMeta<'a> {
+        BuildMeta {
+            config_hash: "c",
+            geometry_hash: "g",
+            binding_hash: binding,
+            training_data_sha256: data,
+            trainer_version: version,
+        }
+    }
+
+    #[test]
+    fn test_binding_hash_is_the_hash_of_its_four_parts() {
+        // independent (Python hashlib) value: sha256("c|g|d|1")
+        let want = binding_hash_of("c", "g", "d", "1");
+        assert_eq!(want.len(), 64);
+        assert_eq!(binding_hash_of("c", "g", "d", "1"), want);
+        assert_ne!(binding_hash_of("c", "g", "d", "2"), want);
+        assert_ne!(binding_hash_of("g", "c", "d", "1"), want);
+        assert_ne!(binding_hash_of("c", "g", "e", "1"), want);
+        assert_eq!(
+            binding_hash_of("a", "b", "c", "1"),
+            "4128761d4504d08c6bf2197fd092e345ffeabd124bfea6e96c0b823b992c5206"
+        );
+    }
+
+    #[test]
+    fn test_check_build_binding_accepts_a_consistent_model() {
+        let good = binding_hash_of("c", "g", "d", "1");
+        let got = check_build_binding(&meta(Some(&good), Some("d"), Some("1")), &expect(&good));
+        assert_eq!(got, Ok(good));
+    }
+
+    #[test]
+    fn test_check_build_binding_refusals() {
+        let good = binding_hash_of("c", "g", "d", "1");
+        // any of the three binding keys absent
+        for m in [
+            meta(None, Some("d"), Some("1")),
+            meta(Some(&good), None, Some("1")),
+            meta(Some(&good), Some("d"), None),
+        ] {
+            assert_eq!(
+                check_build_binding(&m, &expect(&good)),
+                Err(BuildLoadError::MissingBindingMetadata)
+            );
+        }
+        // the stored binding is not the hash of the stored parts (a part was edited)
+        assert_eq!(
+            check_build_binding(&meta(Some(&good), Some("other"), Some("1")), &expect(&good)),
+            Err(BuildLoadError::BindingInconsistent)
+        );
+        // consistent, but for another build than the caller expects
+        let other = "0".repeat(64);
+        assert_eq!(
+            check_build_binding(&meta(Some(&good), Some("d"), Some("1")), &expect(&other)),
+            Err(BuildLoadError::BindingMismatch {
+                expected: other,
+                found: good
+            })
+        );
+    }
+
+    #[test]
+    fn test_per_build_loader_missing_file_is_an_io_error_before_the_runtime() {
+        let r = load_surrogate_for_build(
+            concat!(env!("CARGO_MANIFEST_DIR"), "/tests/no_such_model.onnx"),
+            &expect("x"),
+        );
+        assert_eq!(
+            r.err(),
+            Some(BuildLoadError::Load(SurrogateLoadError::IoError))
         );
     }
 }

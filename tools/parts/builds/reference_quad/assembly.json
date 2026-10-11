@@ -1,0 +1,466 @@
+{
+  "build_name": "reference_quad",
+  "frame_convention": "NED world; body X forward, Y right, Z down; origin = geometric centre of the frame's central body box; metres",
+  "generated_by": "tools/parts/build_vehicle.py",
+  "mesh_policy": "every part is a dimension-true stand-in; the Unreal phase (P7) decides which parts have real meshes",
+  "motor_order": [
+    "FR",
+    "FL",
+    "RR",
+    "RL"
+  ],
+  "parts": [
+    {
+      "bbox_m": [
+        0.2,
+        0.2,
+        0.1
+      ],
+      "instance": "body",
+      "mass_kg": 0.22631001326403372,
+      "mesh": "stand_in",
+      "part_id": "ref_frame_quad_400",
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "role": "frame",
+      "visual": {
+        "dims_m": [
+          0.2,
+          0.2,
+          0.1
+        ],
+        "kind": "box"
+      }
+    },
+    {
+      "bbox_m": [
+        0.282843,
+        0.016,
+        0.016
+      ],
+      "instance": "arm_0",
+      "mass_kg": 0.030922496683991562,
+      "mesh": "stand_in",
+      "part_id": "ref_frame_quad_400",
+      "position_m": [
+        0.100000102,
+        0.100000102,
+        0.0
+      ],
+      "role": "frame",
+      "visual": {
+        "id_m": 0.013,
+        "kind": "tube",
+        "length_m": 0.282843,
+        "od_m": 0.016
+      }
+    },
+    {
+      "bbox_m": [
+        0.282843,
+        0.016,
+        0.016
+      ],
+      "instance": "arm_1",
+      "mass_kg": 0.030922496683991562,
+      "mesh": "stand_in",
+      "part_id": "ref_frame_quad_400",
+      "position_m": [
+        0.100000102,
+        -0.100000102,
+        0.0
+      ],
+      "role": "frame",
+      "visual": {
+        "id_m": 0.013,
+        "kind": "tube",
+        "length_m": 0.282843,
+        "od_m": 0.016
+      }
+    },
+    {
+      "bbox_m": [
+        0.282843,
+        0.016,
+        0.016
+      ],
+      "instance": "arm_2",
+      "mass_kg": 0.030922496683991562,
+      "mesh": "stand_in",
+      "part_id": "ref_frame_quad_400",
+      "position_m": [
+        -0.100000102,
+        0.100000102,
+        0.0
+      ],
+      "role": "frame",
+      "visual": {
+        "id_m": 0.013,
+        "kind": "tube",
+        "length_m": 0.282843,
+        "od_m": 0.016
+      }
+    },
+    {
+      "bbox_m": [
+        0.282843,
+        0.016,
+        0.016
+      ],
+      "instance": "arm_3",
+      "mass_kg": 0.030922496683991562,
+      "mesh": "stand_in",
+      "part_id": "ref_frame_quad_400",
+      "position_m": [
+        -0.100000102,
+        -0.100000102,
+        0.0
+      ],
+      "role": "frame",
+      "visual": {
+        "id_m": 0.013,
+        "kind": "tube",
+        "length_m": 0.282843,
+        "od_m": 0.016
+      }
+    },
+    {
+      "bbox_m": [
+        0.0418,
+        0.0418,
+        0.0265
+      ],
+      "instance": "motor_0",
+      "mass_kg": 0.104,
+      "mesh": "stand_in",
+      "part_id": "tmotor_mn3508_kv700",
+      "position_m": [
+        0.2,
+        0.2,
+        -0.02125
+      ],
+      "role": "motor",
+      "visual": {
+        "diameter_m": 0.0418,
+        "height_m": 0.0265,
+        "kind": "cylinder",
+        "spin": 1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.3048,
+        0.3048,
+        0.015
+      ],
+      "instance": "prop_0",
+      "mass_kg": 0.02,
+      "mesh": "stand_in",
+      "part_id": "apc_12x6e",
+      "position_m": [
+        0.2,
+        0.2,
+        -0.042
+      ],
+      "role": "propeller",
+      "visual": {
+        "diameter_m": 0.3048,
+        "kind": "disc",
+        "spin": 1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.06,
+        0.025,
+        0.01
+      ],
+      "instance": "esc_0",
+      "mass_kg": 0.03,
+      "mesh": "stand_in",
+      "part_id": "tmotor_air_40a_2_6s",
+      "position_m": [
+        0.2,
+        0.2,
+        -0.02125
+      ],
+      "role": "esc",
+      "visual": {
+        "dims_m": [
+          0.06,
+          0.025,
+          0.01
+        ],
+        "kind": "box"
+      }
+    },
+    {
+      "bbox_m": [
+        0.0418,
+        0.0418,
+        0.0265
+      ],
+      "instance": "motor_1",
+      "mass_kg": 0.104,
+      "mesh": "stand_in",
+      "part_id": "tmotor_mn3508_kv700",
+      "position_m": [
+        0.2,
+        -0.2,
+        -0.02125
+      ],
+      "role": "motor",
+      "visual": {
+        "diameter_m": 0.0418,
+        "height_m": 0.0265,
+        "kind": "cylinder",
+        "spin": -1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.3048,
+        0.3048,
+        0.015
+      ],
+      "instance": "prop_1",
+      "mass_kg": 0.02,
+      "mesh": "stand_in",
+      "part_id": "apc_12x6e",
+      "position_m": [
+        0.2,
+        -0.2,
+        -0.042
+      ],
+      "role": "propeller",
+      "visual": {
+        "diameter_m": 0.3048,
+        "kind": "disc",
+        "spin": -1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.06,
+        0.025,
+        0.01
+      ],
+      "instance": "esc_1",
+      "mass_kg": 0.03,
+      "mesh": "stand_in",
+      "part_id": "tmotor_air_40a_2_6s",
+      "position_m": [
+        0.2,
+        -0.2,
+        -0.02125
+      ],
+      "role": "esc",
+      "visual": {
+        "dims_m": [
+          0.06,
+          0.025,
+          0.01
+        ],
+        "kind": "box"
+      }
+    },
+    {
+      "bbox_m": [
+        0.0418,
+        0.0418,
+        0.0265
+      ],
+      "instance": "motor_2",
+      "mass_kg": 0.104,
+      "mesh": "stand_in",
+      "part_id": "tmotor_mn3508_kv700",
+      "position_m": [
+        -0.2,
+        0.2,
+        -0.02125
+      ],
+      "role": "motor",
+      "visual": {
+        "diameter_m": 0.0418,
+        "height_m": 0.0265,
+        "kind": "cylinder",
+        "spin": -1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.3048,
+        0.3048,
+        0.015
+      ],
+      "instance": "prop_2",
+      "mass_kg": 0.02,
+      "mesh": "stand_in",
+      "part_id": "apc_12x6e",
+      "position_m": [
+        -0.2,
+        0.2,
+        -0.042
+      ],
+      "role": "propeller",
+      "visual": {
+        "diameter_m": 0.3048,
+        "kind": "disc",
+        "spin": -1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.06,
+        0.025,
+        0.01
+      ],
+      "instance": "esc_2",
+      "mass_kg": 0.03,
+      "mesh": "stand_in",
+      "part_id": "tmotor_air_40a_2_6s",
+      "position_m": [
+        -0.2,
+        0.2,
+        -0.02125
+      ],
+      "role": "esc",
+      "visual": {
+        "dims_m": [
+          0.06,
+          0.025,
+          0.01
+        ],
+        "kind": "box"
+      }
+    },
+    {
+      "bbox_m": [
+        0.0418,
+        0.0418,
+        0.0265
+      ],
+      "instance": "motor_3",
+      "mass_kg": 0.104,
+      "mesh": "stand_in",
+      "part_id": "tmotor_mn3508_kv700",
+      "position_m": [
+        -0.2,
+        -0.2,
+        -0.02125
+      ],
+      "role": "motor",
+      "visual": {
+        "diameter_m": 0.0418,
+        "height_m": 0.0265,
+        "kind": "cylinder",
+        "spin": 1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.3048,
+        0.3048,
+        0.015
+      ],
+      "instance": "prop_3",
+      "mass_kg": 0.02,
+      "mesh": "stand_in",
+      "part_id": "apc_12x6e",
+      "position_m": [
+        -0.2,
+        -0.2,
+        -0.042
+      ],
+      "role": "propeller",
+      "visual": {
+        "diameter_m": 0.3048,
+        "kind": "disc",
+        "spin": 1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.06,
+        0.025,
+        0.01
+      ],
+      "instance": "esc_3",
+      "mass_kg": 0.03,
+      "mesh": "stand_in",
+      "part_id": "tmotor_air_40a_2_6s",
+      "position_m": [
+        -0.2,
+        -0.2,
+        -0.02125
+      ],
+      "role": "esc",
+      "visual": {
+        "dims_m": [
+          0.06,
+          0.025,
+          0.01
+        ],
+        "kind": "box"
+      }
+    },
+    {
+      "bbox_m": [
+        0.138,
+        0.043,
+        0.034
+      ],
+      "instance": "pack",
+      "mass_kg": 0.45,
+      "mesh": "stand_in",
+      "part_id": "ref_battery_generic_4s_5000",
+      "position_m": [
+        0.0,
+        0.0,
+        0.067
+      ],
+      "role": "battery",
+      "visual": {
+        "dims_m": [
+          0.138,
+          0.043,
+          0.034
+        ],
+        "kind": "box"
+      }
+    },
+    {
+      "bbox_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "instance": "lump",
+      "mass_kg": 0.12,
+      "mesh": "stand_in",
+      "part_id": "ref_avionics_wiring_lump",
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "role": "wiring",
+      "visual": {
+        "kind": "none"
+      }
+    }
+  ],
+  "propeller_plane_z_m": -0.042,
+  "totals": {
+    "cg_from_frame_centre_m": [
+      0.0,
+      0.0,
+      0.01002604166666667
+    ],
+    "mass_kg": 1.536
+  },
+  "vehicle_class": "quad_standard"
+}

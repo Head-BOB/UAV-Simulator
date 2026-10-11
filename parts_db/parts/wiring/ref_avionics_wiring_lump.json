@@ -1,0 +1,15 @@
+{
+  "category": "wiring",
+  "id": "ref_avionics_wiring_lump",
+  "manufacturer": "generic",
+  "mass_kg": {
+    "provenance": {
+      "note": "flight controller, wiring, receiver, no list. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.12
+  },
+  "model": "reference avionics and wiring allowance (lump)",
+  "notes": "Stands in for flight controller, receiver and wiring of the reference build.",
+  "schema_version": "1.0.0"
+}

@@ -1,0 +1,28 @@
+{
+  "events": [
+    {"name": "motor_over_current", "first_t_s": 2.002, "last_t_s": 2.002, "active_steps": 1, "activations": 1},
+    {"name": "esc_over_current", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "battery_over_current", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "motor_over_temp", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "esc_over_temp", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "battery_over_temp", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "battery_cutoff", "first_t_s": 2.002, "last_t_s": 3.502, "active_steps": 751, "activations": 1},
+    {"name": "prop_outside_table", "first_t_s": 0.004, "last_t_s": 3.502, "active_steps": 1529, "activations": 2},
+    {"name": "axis_saturated", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "collective_limited", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "tilt_limit_active", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "altitude_hold_lost", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "instability", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0}
+  ],
+  "peaks": [
+    {"name": "winding_c", "value": 22.7111212142, "t_s": 3.502},
+    {"name": "case_c", "value": 20.5631665607, "t_s": 3.502},
+    {"name": "esc_c", "value": 20.7486032832, "t_s": 3.502},
+    {"name": "battery_c", "value": 20.4488459042, "t_s": 3.502},
+    {"name": "motor_current_a", "value": 23.9703522603, "t_s": 2.002},
+    {"name": "pack_current_a", "value": 100.927798991, "t_s": 2.002},
+    {"name": "min_pack_v", "value": 11.8097402406, "t_s": 2.002},
+    {"name": "tilt_rad", "value": 0, "t_s": 0.002},
+    {"name": "min_thrust_reserve_ratio", "value": 2.29718520838, "t_s": 3.502}
+  ]
+}

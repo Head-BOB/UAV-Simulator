@@ -1,0 +1,196 @@
+{
+  "availability_url": "https://store.tmotor.com/goods-354-MN3508.html",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Motor Dimensions Φ41.8x26.5 mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": [
+      0.0418,
+      0.0418,
+      0.0265
+    ]
+  },
+  "category": "motor",
+  "cells_max": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; No.of Cells(Lipo) 3-6S",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 6
+  },
+  "cells_min": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; No.of Cells(Lipo) 3-6S",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 3
+  },
+  "id": "tmotor_mn3508_kv380",
+  "kv_rpm_per_v": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; model name KV380",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 380.0
+  },
+  "manufacturer": "T-Motor",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight Including Cables 103 g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 0.103
+  },
+  "mass_without_cables_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight Excluding Cables 82 g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 0.082
+  },
+  "max_current_a": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Max Continuous Current 180S 14 A",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 14.0
+  },
+  "max_power_w": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Max Power (180S) 310 W",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 310.0
+  },
+  "model": "MN3508 KV380",
+  "mount_pattern": "REF_MN35_MOUNT",
+  "no_load_current_a": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Idle Current@10v 0.4 A",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 0.4
+  },
+  "no_load_test_voltage_v": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Idle Current@10v",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 10.0
+  },
+  "notes": "mount_pattern is a LABEL only (hole pattern is in the drawing image on the page). TODO(HUMAN-VERIFY): read it from the drawing. Thermal fields are placeholders (the page publishes none). Prop range = props in the page's thrust table.",
+  "price_url": "https://store.tmotor.com/goods-354-MN3508.html",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Relevant Products price list on the T-Motor Air 20A page, one price for all KV of the model; store prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "f35f694537923c2ecc0ccf0a67ce6f52da6ac63532d3b8ae585cfba82f4076ac",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/air-20a-4s-esc.html"
+    },
+    "value": 69.9
+  },
+  "prop_diameter_max_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; KV380 thrust table (12x4 ... 16x5.4). largest tested prop 16 in; TESTED range, not a maker limit",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 0.4064
+  },
+  "prop_diameter_min_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; KV380 thrust table (12x4 ... 16x5.4). smallest tested prop 12 in; TESTED range, not a maker limit",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 0.3048
+  },
+  "rating_duration_s": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Max Continuous Current 180S",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 180.0
+  },
+  "schema_version": "1.0.0",
+  "shaft_diameter_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Shaft Diameter 4 mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 0.004
+  },
+  "thermal_resistance_k_per_w": {
+    "provenance": {
+      "note": "placeholder winding-to-ambient resistance, order of magnitude only, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.6
+  },
+  "thermal_time_constant_s": {
+    "provenance": {
+      "note": "placeholder thermal time constant, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 150.0
+  },
+  "winding_resistance_ohm": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Internal Resistance 205 mOhm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/goods-354-MN3508.html"
+    },
+    "value": 0.205
+  },
+  "winding_temp_limit_c": {
+    "provenance": {
+      "note": "same placeholder as physics_core thermal::MOTOR_TEMP_LIMIT_C. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 120.0
+  }
+}

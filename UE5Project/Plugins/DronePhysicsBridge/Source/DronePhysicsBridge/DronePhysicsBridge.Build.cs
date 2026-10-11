@@ -28,6 +28,34 @@ public class DronePhysicsBridge : ModuleRules
             // Two-argument form: copy the built DLL next to the game executable (and into the packaged build).
             // Build it first on Windows: `cargo build --release` in physics_core/ (see UE5Project/PACKAGING_README.md).
             RuntimeDependencies.Add("$(TargetOutputDir)/physics_core.dll", Path.Combine(RustLibPath, "physics_core.dll"));
+
+            // RuntimeDependencies are only copied when STAGING, so the editor kept loading whatever DLL was already in
+            // <Project>/Binaries/Win64 (a stale one gave "Rust FFI Version Mismatch! Expected 12, got 11"). Copy the freshly built
+            // DLL there on every build of this module when the bytes differ.
+            string BuiltDll = Path.Combine(RustLibPath, "physics_core.dll");
+            if (File.Exists(BuiltDll) && Target.ProjectFile != null)
+            {
+                string DestDir = Path.Combine(Target.ProjectFile.Directory.FullName, "Binaries", "Win64");
+                string DestDll = Path.Combine(DestDir, "physics_core.dll");
+                try
+                {
+                    Directory.CreateDirectory(DestDir);
+                    if (!File.Exists(DestDll) || !File.ReadAllBytes(DestDll).AsSpan().SequenceEqual(File.ReadAllBytes(BuiltDll)))
+                    {
+                        File.Copy(BuiltDll, DestDll, true);
+                        System.Console.WriteLine("DronePhysicsBridge.Build.cs: copied physics_core.dll to " + DestDll);
+                    }
+                }
+                catch (System.Exception E)
+                {
+                    // Most likely the editor is running and holds the DLL: close it, then build again.
+                    System.Console.WriteLine("DronePhysicsBridge.Build.cs: WARNING could not update " + DestDll + ": " + E.Message);
+                }
+            }
+            else
+            {
+                System.Console.WriteLine("DronePhysicsBridge.Build.cs: WARNING " + BuiltDll + " does not exist: run `cargo build --release` in physics_core/ first.");
+            }
         }
         else if (Target.Platform == UnrealTargetPlatform.Linux)
         {

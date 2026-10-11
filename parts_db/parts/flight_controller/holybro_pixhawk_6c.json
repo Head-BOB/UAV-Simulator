@@ -1,0 +1,49 @@
+{
+  "availability_url": "https://holybro.com/products/pixhawk-6c",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimensions: 84.8 * 44 * 12.4 mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "ec33c4e12cbeb23096b88149eaad85d3cc5a0e5fa0bbb01ad61f3f8f9d6242b5",
+      "source_type": "CITED",
+      "source_url": "https://docs.holybro.com/autopilot/pixhawk-6c/technical-specification"
+    },
+    "value": [
+      0.0848,
+      0.044,
+      0.0124
+    ]
+  },
+  "category": "flight_controller",
+  "current_draw_a": {
+    "provenance": {
+      "note": "board current not on the pages read. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.3
+  },
+  "id": "holybro_pixhawk_6c",
+  "manufacturer": "Holybro",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight (Aluminum Case): 59.3g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "ec33c4e12cbeb23096b88149eaad85d3cc5a0e5fa0bbb01ad61f3f8f9d6242b5",
+      "source_type": "CITED",
+      "source_url": "https://docs.holybro.com/autopilot/pixhawk-6c/technical-specification"
+    },
+    "value": 0.0593
+  },
+  "model": "Pixhawk 6C",
+  "mount_slot": "frame_plate",
+  "notes": "Mass is the aluminium-case figure (plastic case 34.6 g).",
+  "price_url": "https://holybro.com/products/pixhawk-6c",
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "power input is 5 V class (max input 6 V on the page); nominal value assumed. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 5.0
+  }
+}

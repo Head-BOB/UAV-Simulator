@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "build": "reference_quad",
+  "definitions_set_version": "1.1.0-smoke",
+  "git_hash": "golden",
+  "drag_model": "analytic_legacy",
+  "turbulence": "Dryden (MIL-HDBK-1797 low-altitude form), UNVERIFIED",
+  "tests": [
+    {"test": "hover_payload", "outcome": "BREAKING_POINT_FOUND", "result": "hover_payload/result.json"},
+    {"test": "wind_gust", "outcome": "BREAKING_POINT_FOUND", "result": "wind_gust/result.json"},
+    {"test": "climb", "outcome": "COMPLETED", "result": "climb/result.json"},
+    {"test": "endurance", "outcome": "COMPLETED", "result": "endurance/result.json"},
+    {"test": "thermal_soak", "outcome": "STEADY_STATE", "result": "thermal_soak/result.json"},
+    {"test": "max_speed", "outcome": "NOT_REACHED_WITHIN_BOUND", "result": "max_speed/result.json"},
+    {"test": "fpv_sprint", "outcome": "COMPLETED", "result": "fpv_sprint/result.json"},
+    {"test": "fpv_punchout", "outcome": "COMPLETED", "result": "fpv_punchout/result.json"}
+  ]
+}

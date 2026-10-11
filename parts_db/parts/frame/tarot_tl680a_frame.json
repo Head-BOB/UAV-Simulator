@@ -1,0 +1,126 @@
+{
+  "arm_count": {
+    "provenance": {
+      "note": "quadcopter frame. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 4
+  },
+  "arm_length_m": {
+    "provenance": {
+      "note": "wheelbase 0.68 m / 2 (centre to motor)",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.34
+  },
+  "availability_url": "http://www.tarotrc.com/Product/Detail.aspx?Lang=en&Id=2e556afc-84be-4944-8569-57d99f606df9",
+  "body_half_width_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Center plate size 170*170mm, halved",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "23a8bc7480e78ee8aa615b981f02973a3cb9788de02f908f03b11254269f3cf7",
+      "source_type": "CITED",
+      "source_url": "http://www.tarotrc.com/Product/Detail.aspx?Lang=en&Id=2e556afc-84be-4944-8569-57d99f606df9"
+    },
+    "value": 0.085
+  },
+  "bounding_box_m": {
+    "provenance": {
+      "note": "x,y = adjacent motor spacing + assumed tube OD 0.03; z = frame height 0.324 m (page)",
+      "source_type": "CALCULATED"
+    },
+    "value": [
+      0.510833,
+      0.510833,
+      0.324
+    ]
+  },
+  "category": "frame",
+  "central_body_box_m": {
+    "provenance": {
+      "note": "plate size from the page, height assumed. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.17,
+      0.17,
+      0.06
+    ]
+  },
+  "cg_offset_m": {
+    "provenance": {
+      "note": "frame CG at the geometric centre. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "frame_class": "quad_standard",
+  "id": "tarot_tl680a_frame",
+  "manufacturer": "Tarot",
+  "mass_kg": {
+    "provenance": {
+      "note": "frame-only mass not on the pinned page; unconfirmed search-snippet value 880 g. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.88
+  },
+  "max_prop_diameter_m": {
+    "provenance": {
+      "note": "zero-gap geometric bound: adjacent motor spacing; the builder applies a clearance margin",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.480833
+  },
+  "model": "TL680A non-folding quadcopter frame (metal joints)",
+  "motor_mount_pattern": "TAROT_TL680A_FRAME_MOTOR_MOUNT",
+  "motor_spacing_adjacent_m": {
+    "provenance": {
+      "note": "wheelbase 0.68 m (CITED on the page: http://www.tarotrc.com/Product/Detail.aspx?Lang=en&Id=2e556afc-84be-4944-8569-57d99f606df9) / sqrt(2)",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.480833
+  },
+  "notes": "Page gives wheelbase, centre plate and frame height. Its 'empty aircraft weight' is a CONFIGURED aircraft (motors, ESC, FC) and is NOT the frame mass. A search snippet quoted 880 g for the frame alone but that text is not in the pinned copy: mass is ASSUMED. Recommended on the page: 18 in props, 6S.",
+  "price_url": "http://www.tarotrc.com/Product/Detail.aspx?Lang=en&Id=2e556afc-84be-4944-8569-57d99f606df9",
+  "projected_area_front_m2": {
+    "provenance": {
+      "note": "rough. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.05
+  },
+  "projected_area_side_m2": {
+    "provenance": {
+      "note": "rough. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.05
+  },
+  "projected_area_top_m2": {
+    "provenance": {
+      "note": "rough. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.08
+  },
+  "schema_version": "1.0.0",
+  "tube_id_m": {
+    "provenance": {
+      "note": "wall thickness not on the page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.027
+  },
+  "tube_material": "carbon fibre tube",
+  "tube_od_m": {
+    "provenance": {
+      "note": "page lists a 30 mm tube-diameter arm clamp accessory; the arm tube OD itself is not stated. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.03
+  }
+}

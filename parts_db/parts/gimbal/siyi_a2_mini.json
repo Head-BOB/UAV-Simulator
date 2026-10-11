@@ -1,0 +1,52 @@
+{
+  "availability_url": "https://siyi.biz/en/product/single-axis-agri-camera/a2-mini/spec/",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimension 65*43*50 mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "2b59cab9d0e0f8e749613eba5c88b7fd67a7efbc74e2355ec5b7fe3472cc8f2b",
+      "source_type": "CITED",
+      "source_url": "https://siyi.biz/en/product/single-axis-agri-camera/a2-mini/spec/"
+    },
+    "value": [
+      0.065,
+      0.043,
+      0.05
+    ]
+  },
+  "category": "gimbal",
+  "current_draw_a": {
+    "provenance": {
+      "note": "average power 2.0 W (page: 'Power Consumption Average') / 12.0 V supply",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.166667
+  },
+  "id": "siyi_a2_mini",
+  "manufacturer": "SIYI",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight 85 g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "2b59cab9d0e0f8e749613eba5c88b7fd67a7efbc74e2355ec5b7fe3472cc8f2b",
+      "source_type": "CITED",
+      "source_url": "https://siyi.biz/en/product/single-axis-agri-camera/a2-mini/spec/"
+    },
+    "value": 0.085
+  },
+  "model": "A2 mini single-axis camera",
+  "mount_slot": "belly_mount",
+  "notes": "Current is the AVERAGE; the page also gives a higher 'summit' power (size the supply for it).",
+  "price_url": "https://siyi.biz/en/product/single-axis-agri-camera/a2-mini/spec/",
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Working Voltage 12V",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "2b59cab9d0e0f8e749613eba5c88b7fd67a7efbc74e2355ec5b7fe3472cc8f2b",
+      "source_type": "CITED",
+      "source_url": "https://siyi.biz/en/product/single-axis-agri-camera/a2-mini/spec/"
+    },
+    "value": 12.0
+  }
+}

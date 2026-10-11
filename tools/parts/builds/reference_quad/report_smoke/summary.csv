@@ -1,0 +1,11 @@
+label,value,unit,detail
+Limiting component,Motor current,,margin 0.96 (limit / peak)
+Max hover payload,2.5,kg,"between 2.5 and 3 kg (criterion altitude_hold, resolution 0.5)"
+Max wind held,12.5,m/s,"between 12.5 and 13.75 m/s (criterion position_error, resolution 1.25)"
+Climb time to target,3.842,s,
+Endurance,70.32,s,
+Energy used (endurance run),2.37132598,Wh,
+"Max speed (commanded, passing)",12,m/s,"LIMIT-BOUND: the class speed limit ended the search, not the vehicle"
+FPV sprint terminal speed,11.8618211,m/s,
+FPV punch-out climb rate,16.1704404,m/s,
+Mean pack power (endurance run),122.822079,W,shaft 80.2 % of pack power

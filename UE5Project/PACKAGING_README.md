@@ -1,40 +1,50 @@
-# Building and packaging the demo (Windows, RTX laptop)
+# Building, packaging and checking the UAV test bench (Windows, RTX laptop)
 
-Plain steps for the person with the Windows GPU laptop. Nothing here was run by the author (no Unreal on the author's machine):
-if a step fails, copy the error text and send it back. Every number on screen is PRELIMINARY: most inputs are ASSUMED.
+Plain, numbered steps for the person with the Windows GPU laptop. Nothing here was run by the author (no Unreal and no Windows on the author's
+machine): if a step fails, copy the error text and send it back. Every number in the app is PRELIMINARY: most inputs are ASSUMED, and nothing has
+been checked against hardware. The app replays RECORDED test runs; it is not live physics.
 
 ## 0. What you need
 - Windows 10/11, Unreal Engine 5.8 (the project says `EngineAssociation 5.8`), Visual Studio with the "Game development with C++" workload.
 - Rust through `rustup` (the repo pins the toolchain in `physics_core/rust-toolchain.toml`).
-- Python 3.12 (only for the checks at the end).
+- Python 3.12 ONCE, only to download the packages for the bundled Python in step 3. The packaged app brings its own Python: the person who
+  runs the finished app needs to install nothing.
 
-## 1. Get the code and build the physics DLL
-1. `git pull` on the `phase2` branch (or the branch you were told).
+## 1. Get the code and build the physics DLL and the two helper programs
+1. `git pull` on the branch you were told.
 2. Open a terminal in `physics_core\` and run `cargo build --release`.
-3. Check that `physics_core\target\release\physics_core.dll` and `physics_core.dll.lib` exist. (Unreal links the `.lib` and ships the `.dll`.)
+3. In the same folder run `cargo build --release --example run_campaign --example validate_models`.
+4. Check that these exist in `physics_core\target\release\`: `physics_core.dll`, `physics_core.dll.lib`, and in `examples\`: `run_campaign.exe`, `validate_models.exe`.
+   (Unreal links the `.lib` and ships the `.dll`; the two `.exe` files are the helpers the app starts to run the tests.)
 
-## 2. Import the free environments (optional but wanted)
-1. Download one free Fab environment per place: beach, rolling hills, mountains, desert, tropical.
-2. Import each into the project, for example under `/Game/Environments/Beach/`.
-3. Open `UE5Project\Plugins\DronePhysicsBridge\Content\DroneEnvironments.json` and write each level's asset path into `level_asset_path`
-   (for example `/Game/Environments/Beach/L_Beach`). An empty path is fine: that environment then uses the default level and the screen says so.
-4. Add each level to the cooked maps: in `UE5Project\Config\DefaultGame.ini`, under `[/Script/UnrealEd.ProjectPackagingSettings]`, add
-   `+MapsToCook=(FilePath="/Game/Environments/Beach/L_Beach")` (one line per level).
-5. Import the drone model as `/Game/Drone/Drone` and create the `/Game/Drone/M_MotionDisc` material as described in
-   `UE5Project\Plugins\DronePhysicsBridge\README.md`. Then re-run `python tools\gen_demo_headers.py --check` (it must say nothing).
+## 2. Import the free environments and the drone model (optional but wanted)
+Follow `UE5Project\Plugins\DronePhysicsBridge\README.md` (environments, `/Game/Drone/Drone`, the `/Game/Drone/M_MotionDisc` material). Without them the app
+still runs: the 3D view shows simple shapes. Then run `python tools\gen_demo_headers.py --check` (it must say nothing).
 
-## 3. Try it in the editor first
-1. Double-click `UE5Project\UAV_Simulator.uproject`. Let it build the plugin and the game module. If it fails to compile, send the errors.
-2. Press Play. You should see the start menu. Pick an environment, press START FLIGHT, press T to take off.
-3. Follow "What to check on the first run" in the plugin README (propeller axis, FR/FL/RR/RL, model yaw).
+## 3. Prepare the bundled Python (once)
+1. Download `python-3.12.10-embed-amd64.zip` from python.org (Windows embeddable package, 64-bit).
+2. Compute its hash: `certutil -hashfile python-3.12.10-embed-amd64.zip SHA256`. Compare it with the checksum python.org shows for that release.
+3. Open `tools\package\pins.json` and replace the `TODO(HUMAN-VERIFY)` text after `"sha256":` with that hash. The stager refuses a different file.
+4. Download the packages the helpers need, exactly the hash-locked ones (no other file is accepted):
+   ```
+   python -m pip download --require-hashes --no-deps --only-binary=:all: --platform win_amd64 --python-version 3.12 --implementation cp --abi cp312 ^
+     -r tools\package\helpers_lock.txt -d C:\path\wheels
+   ```
+   If `pip` says a hash is missing for a Windows file, stop and send the message: the lock may need regenerating (`tools\package\make_helpers_lock.py`).
 
-## 4. Package (File menu)
+## 4. Try it in the editor first
+1. Double-click `UE5Project\UAV_Simulator.uproject`. Let it build the plugin and the game module. If it fails to compile, send the errors
+   (the UI code has never been compiled: expect a few).
+2. In the editor the app finds the helpers through the folder above the project (needs `python` and `cargo` on the PATH), or through `helpers.json`.
+3. Press Play. You should see the step bar `1 Vehicle ... 8 Report`.
+
+## 5. Package (File menu)
 1. In the editor: File > Package Project > Windows. Choose an empty output folder.
 2. Wait. The first cook takes a long time.
-3. The program is `<output>\Windows\UAV_Simulator.exe`. Double-click it.
+3. The program is `<output>\Windows\UAV_Simulator.exe`. Do NOT start it yet: the helpers are added in step 6.
 
-## 5. Package (command line, same result)
-Replace the paths. `Development` keeps the console and the log lines the author needs (`DroneDemo-DIAG`); use `Shipping` only after everything works.
+## 5b. Package (command line, same result)
+Replace the paths. `Development` keeps the console and the log lines the author needs; use `Shipping` only after everything works.
 ```
 "C:\Program Files\Epic Games\UE_5.8\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun ^
   -project="C:\path\to\UAV-Simulator\UE5Project\UAV_Simulator.uproject" ^
@@ -42,47 +52,57 @@ Replace the paths. `Development` keeps the console and the log lines the author 
   -archivedirectory="C:\path\to\Packaged" -utf8output
 ```
 
-## 6. Check that the DLL and the data files came along
-1. From the repo root run: `python tools\verify_package.py --package C:\path\to\Packaged`
-2. It prints `package OK` or a list of `PROBLEM:` lines (missing or stale files). Fix the first one and package again.
-3. By hand: `Packaged\Windows\UAV_Simulator\Binaries\Win64\physics_core.dll` must exist, and `Packaged\Windows\UAV_Simulator\DroneData\` must hold the JSON files
-   (`quad_ref_build_config.json`, `DroneEnvironments.json`, `DroneModelMap.json`, the catalog, the models).
-4. The reports are written to `Packaged\Windows\UAV_Simulator\Saved\Reports\<environment>\` (HTML, JSON, CSV).
+## 6. Add the helper programs to the package
+```
+python tools\package\stage_package.py --package C:\path\to\Packaged --python-zip C:\path\python-3.12.10-embed-amd64.zip ^
+  --wheels-dir C:\path\wheels --exe-dir physics_core\target\release\examples
+```
+It checks the Python zip against the pin and every package against the lock, copies the helper scripts, the parts database, the test definitions, the golden
+builds (a demo session you can open without running anything), and writes `DroneData\helpers\helpers_manifest.json` with the hash of every file. Add
+`--cfd-dir <folder>` to include CFD results or per-build models if you have any (they are copied and listed, never used yet). It refuses to overwrite an
+earlier `helpers` folder: delete it first.
 
-## 7. If packaging fails
+## 7. Check that everything came along (before the first launch)
+1. From the repo root run: `python tools\verify_package.py --package C:\path\to\Packaged --require-helpers`
+2. It prints `package OK` or a list of `PROBLEM:` lines (missing, stale, altered or unlisted files). Fix the first one and stage again.
+3. By hand: `Packaged\Windows\UAV_Simulator\Binaries\Win64\physics_core.dll` must exist, and `...\DroneData\helpers\python\python.exe` too.
+4. Results of the app are written to `...\UAV_Simulator\Saved\DroneApp\session\` (the build, the test runs, the report with `report.html`).
+
+## 8. If something fails
 - Fallback: in the editor use the Play button's menu > Standalone Game (or "New Editor Window"). The same code and data run there.
 - A missing `physics_core.dll` or `.lib`: go back to step 1.
+- The app says "Could not start ... Check helpers.json": the helpers were not staged (step 6) or `DroneData\helpers\helpers.json` points to a missing file.
+  `verify_package.py --require-helpers` names the file.
 - Missing data files: the file is not in the list in `UAV_Simulator.Build.cs`, or it does not exist in the repo. `python tools\verify_package.py` names it.
-- "Rust FFI Version Mismatch" at startup: the DLL is older than the code (interface version 12). Rebuild it (step 1) and package again.
+- "Rust FFI Version Mismatch" at startup: the DLL is older than the code (interface version 14). Rebuild it (step 1) and package again.
+- The old demo's checklist is in `dev-docs\DEMO-SMOKE-CHECKLIST-OLD.md` (history only; that UI no longer exists).
 
 ## Smoke test (30 items at most; tick each one)
-1. The window opens windowed-fullscreen at 1080p, and the frame rate stays at the 60 fps cap (vsync on).
-2. The start menu shows five environment cards, a title and the line "PRELIMINARY: most inputs are ASSUMED".
-3. The model credit "Model: Animated Drone by hartwelkisaka, CC BY 4.0" is visible on the start menu.
-4. A card without an installed level says "level not installed: default level".
-5. Clicking a card highlights it with the cyan outline.
-6. START FLIGHT hides the menu and shows the flight display (top bar, instruments, motor bars, right column).
-7. Nothing covers the middle of the screen: the drone is visible.
-8. The top bar shows mode, environment name and a clock.
-9. T takes off; the mode changes to TAKEOFF then FLYING and the altitude tape follows.
-10. The four propellers spin flat about their own shaft (no wobble); adjacent propellers turn opposite ways.
-11. Above about 1700 RPM the propeller blades fade into the motion disc.
-12. WASD or the arrow keys move the drone; the horizon, speed tape and compass follow.
-13. The wind arrow in the compass points where the wind blows relative to the nose.
-14. Press TAB: the control panel opens at the left, the mouse cursor appears, the drone hovers (pilot input paused).
-15. Type a wind speed of 10 in the panel and press APPLY WEATHER: the wind arrow and the drone's drift change.
-16. Type a wind speed of 20: the panel says "Rejected, nothing changed" and the wind stays as it was.
-17. Type an altitude of 2500 and a temperature of 2: the air density on the right column drops (about 0.95 kg/m3) and the drone needs more throttle.
-18. Type letters in a number field: the panel says "... is not a number".
-19. Click another environment in the panel: the physics preset changes (density, wind).
-20. TAB again closes the panel and gives control back.
-21. The right column shows five live margins; none of them is red in a gentle hover.
-22. Land with L: the mode shows LANDING then ON GROUND.
-23. A moment after landing the report screen opens and says it is flying the standard mission (a few seconds).
-24. The report shows a verdict, components ranked weakest first, causes, and suggestions marked TESTED or NOT TESTED.
-25. The report lists all five environments with a verdict each, and the PRELIMINARY / ASSUMED banner.
-26. EXPORT REPORT opens the folder with `report.html`, `report.json` and two CSV files; the HTML opens in a browser.
-27. BACK TO FLIGHT returns to the flight display; R opens the report again.
-28. Switch the drone model off (rename the mesh): the demo still runs with simple shapes and says so.
-29. The Output Log shows `Drone Physics Rust Bridge successfully loaded and verified!` and no `Rust FFI Version Mismatch`.
-30. Close the game, start it again, pick another environment: it starts without errors.
+1. The window opens windowed-fullscreen at 1080p and the step bar `1 Vehicle ... 8 Report` is on top; steps 2 to 8 are dim.
+2. Clicking a dim step shows why it is locked (for example "Choose a vehicle first").
+3. Vehicle: Quadcopter and FPV quadcopter are listed; Fixed wing, Hexacopter and Underwater vehicle say "Not available yet" and cannot be chosen.
+4. Choosing Quadcopter opens Parts (step 2 is underlined).
+5. Parts: the category tabs start with frame, motor, esc, propeller, battery; typing in Search filters the list; a manufacturer filter works.
+6. A part's detail shows mass and key values, each with a tag (Cited, Assumed, Calculated or Measured), the price (or n/a) and "Unverified".
+7. "Add to build" puts the part in "Your build"; the parts total shows mass (before arms and cables).
+8. An FPV frame cannot be added to the Quadcopter class (a message says so).
+9. Choose a 400 mm quad frame, an MN3508 motor, a 12x6E propeller, a 4S battery and the T-Motor AIR 40A ESC; "Continue to Build" turns on.
+10. Build: the name field takes letters, digits and underscore (a space is refused with a message); "Build vehicle" shows "Working ..." then design estimates.
+11. The estimates show mass about 1.4 to 1.5 kg and thrust-to-weight about 6; the compatibility list shows Caution lines in amber (nothing red).
+12. The 3D view shows the vehicle as plain boxes and cylinders, and the panel says "All stand-ins".
+13. Going back to Parts and choosing the generic 20 A ESC, then Build: the builder refuses and "E-ESC-I" is shown in red; Conditions stays locked.
+14. Choose the AIR 40A ESC again and build: it works again.
+15. Conditions: all eight tests are ticked (Hover with payload, Wind and gusts, Climb, Endurance, Thermal soak, Maximum speed, FPV sprint, FPV punch-out).
+16. Typing 1.5 as the battery state of charge and pressing "Run tests" is refused with a message that names the field and the range (nothing is changed silently).
+17. Untick all tests except Climb. Change a limit (for example target_height_m); it shows "edited (was ...)" and a yellow "Edited" tag.
+18. "Run tests" starts; the top bar shows the job; when it ends the status says tests finished and the report was written (the first run takes a while).
+19. Run opens: seven instruments in the bottom bar, a top bar with the test name, and nothing covering the middle of the screen.
+20. Space plays and pauses the replay; I opens the details panel (motors, power, temperatures, margins with the limit mark, two charts); Tab opens the controls.
+21. The speed buttons change 1x to 64x; clicking the seek bar jumps; Restart goes back to the start; the text says "Recorded run, not live physics".
+22. Results: the tests, breaking points (for example hover payload) with the criterion and step size, the limiting component, the validation summary and "CFD: no CFD run".
+23. Results: no test is listed as "Not implemented"; an "Edited" banner is shown because a limit was edited. If you also ran Maximum speed, FPV sprint or FPV punch-out, a banner says they use the legacy drag and are not vehicle limits (try them once, they take longer).
+24. Report: "Open report" opens `report.html` in the browser (print it to PDF from there); "Open folder" opens the session folder.
+25. Compare: "Run upgrade study" starts a long job; afterwards a table shows deltas in green (better) and red (worse), rejected parts with the reason, and "not tested" rows.
+26. Going back to Vehicle and choosing another class clears Build, Run, Results, Compare and Report (they become locked again).
+27. Close the app, start it again: it opens on Vehicle without errors; the Output Log shows `Drone Physics Rust Bridge successfully loaded and verified!` and no `Rust FFI Version Mismatch`.
+28. Delete `DroneData\helpers\python` and start the app, build a vehicle: the message says it could not start `python` and names helpers.json (then restore the folder).

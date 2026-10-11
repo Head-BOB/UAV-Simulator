@@ -1,0 +1,132 @@
+{
+  "arm_count": {
+    "provenance": {
+      "note": "quadcopter frame. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 4
+  },
+  "arm_length_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Wheelbase:220mm, / 2",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "8dd9f6bc5ab26dc91adc9e2d76228d16dc6a588cd7216d9d9330aa89cfa69f68",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/kopis2-6s-v2free-shipping"
+    },
+    "value": 0.11
+  },
+  "arm_plate_thickness_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; 5mm full 3k carbon fiber (arms)",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "8dd9f6bc5ab26dc91adc9e2d76228d16dc6a588cd7216d9d9330aa89cfa69f68",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/kopis2-6s-v2free-shipping"
+    },
+    "value": 0.005
+  },
+  "arm_plate_width_m": {
+    "provenance": {
+      "note": "arm width not published. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.025
+  },
+  "availability_url": "https://holybro.com/products/kopis2-6s-v2free-shipping",
+  "body_half_width_m": {
+    "provenance": {
+      "note": "not published. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.02
+  },
+  "bounding_box_m": {
+    "provenance": {
+      "note": "not published. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.2,
+      0.2,
+      0.04
+    ]
+  },
+  "category": "frame",
+  "central_body_box_m": {
+    "provenance": {
+      "note": "not published. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.06,
+      0.12,
+      0.03
+    ]
+  },
+  "cg_offset_m": {
+    "provenance": {
+      "note": "frame CG at the geometric centre. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "frame_class": "quad_fpv_5in",
+  "id": "holybro_kopis2_220_frame",
+  "manufacturer": "Holybro",
+  "mass_kg": {
+    "provenance": {
+      "note": "frame-only mass not published; whole PNF is 325 g without battery and props. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.1
+  },
+  "max_prop_diameter_m": {
+    "provenance": {
+      "note": "the page lists 4x T5143S props supplied with this kit, so at least 5.1 in (0.12954 m, read from the prop NAME) fits; the product name '5 in' is a size class, not a limit. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.12954
+  },
+  "model": "Kopis2 6S V2 5in frame (220 mm)",
+  "motor_mount_pattern": "16x16mm_ASSUMED",
+  "motor_spacing_adjacent_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Wheelbase:220mm, / sqrt(2) for adjacent spacing",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "8dd9f6bc5ab26dc91adc9e2d76228d16dc6a588cd7216d9d9330aa89cfa69f68",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/kopis2-6s-v2free-shipping"
+    },
+    "value": 0.155563
+  },
+  "notes": "The page sells a complete PNF quad: wheelbase and arm thickness are about the frame, but the 325 g is the whole aircraft without battery and props, so the frame mass is ASSUMED. Frame-only data is not published on the page.",
+  "price_url": "https://holybro.com/products/kopis2-6s-v2free-shipping",
+  "projected_area_front_m2": {
+    "provenance": {
+      "note": "rough. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.004
+  },
+  "projected_area_side_m2": {
+    "provenance": {
+      "note": "rough. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.006
+  },
+  "projected_area_top_m2": {
+    "provenance": {
+      "note": "rough. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.012
+  },
+  "schema_version": "1.0.0",
+  "tube_material": "3k carbon plate"
+}

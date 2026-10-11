@@ -1,0 +1,58 @@
+{
+  "availability_url": "https://holybro.com/products/pixhawk-4",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimensions: 44x84x12mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "1d25841ac55068d35cdabba13d9a748e88fb9491ee4d1dce5a60e02f962d9c9e",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/pixhawk-4"
+    },
+    "value": [
+      0.044,
+      0.084,
+      0.012
+    ]
+  },
+  "category": "flight_controller",
+  "current_draw_a": {
+    "provenance": {
+      "note": "board current not on the page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.3
+  },
+  "id": "holybro_pixhawk_4",
+  "manufacturer": "Holybro",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight(plastic case): 33.3g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "1d25841ac55068d35cdabba13d9a748e88fb9491ee4d1dce5a60e02f962d9c9e",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/pixhawk-4"
+    },
+    "value": 0.0333
+  },
+  "model": "Pixhawk 4",
+  "mount_slot": "frame_plate",
+  "price_url": "https://holybro.com/products/pixhawk-4",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Regular price on the product page; prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "1d25841ac55068d35cdabba13d9a748e88fb9491ee4d1dce5a60e02f962d9c9e",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/pixhawk-4"
+    },
+    "value": 143.98
+  },
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "power module output 4.9-5.5 V on the page; nominal value assumed. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 5.0
+  }
+}

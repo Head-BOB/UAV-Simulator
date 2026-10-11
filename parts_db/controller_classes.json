@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "description": "Per-vehicle-class defaults of the Rust flight controller (physics_core::controller). EVERY value is ASSUMED; the build tool copies the class entry into controller_config.json. Rate-loop gains are derived from the vehicle in the core, not stored here.",
+  "provenance": {
+    "source_type": "ASSUMED",
+    "note": "TODO(HUMAN-VERIFY): no source; engineering starting values chosen for stability, to be replaced by flight-test or vendor data. Gains are derived from the vehicle (tools: physics_core::controller::Tuning)."
+  },
+  "classes": {
+    "quad_standard": {
+      "max_tilt_rad": 0.6108652381980153,
+      "max_rate_rps": 3.839724354387525,
+      "max_yaw_rate_rps": 1.5707963267948966,
+      "max_speed_h_mps": 12.0,
+      "max_accel_h_mps2": 6.0,
+      "max_climb_mps": 3.0,
+      "max_descent_mps": 2.0,
+      "max_accel_up_mps2": 4.0,
+      "max_accel_down_mps2": 4.0,
+      "position_kp_per_s": 1.0,
+      "velocity_kp_per_s": 3.0,
+      "velocity_ki_per_s2": 2.0,
+      "accel_integral_limit_mps2": 4.0,
+      "attitude_kp_per_s": 8.0,
+      "yaw_kp_per_s": 3.0,
+      "rate_bandwidth_rps": 40.0,
+      "yaw_rate_bandwidth_rps": 15.0,
+      "rate_integral_corner_rps": 5.0,
+      "rate_derivative_time_s": 0.0,
+      "rate_integral_limit": 0.3,
+      "acro_max_rate_rps": 5.0,
+      "acro_max_yaw_rate_rps": 2.0,
+      "acro_expo": 0.3,
+      "mixer_axis_authority": 0.2
+    },
+    "quad_fpv_5in": {
+      "max_tilt_rad": 1.0471975511965976,
+      "max_rate_rps": 6.981317007977318,
+      "max_yaw_rate_rps": 3.490658503988659,
+      "max_speed_h_mps": 35.0,
+      "max_accel_h_mps2": 20.0,
+      "max_climb_mps": 15.0,
+      "max_descent_mps": 10.0,
+      "max_accel_up_mps2": 20.0,
+      "max_accel_down_mps2": 8.0,
+      "position_kp_per_s": 1.5,
+      "velocity_kp_per_s": 4.0,
+      "velocity_ki_per_s2": 3.0,
+      "accel_integral_limit_mps2": 5.0,
+      "attitude_kp_per_s": 12.0,
+      "yaw_kp_per_s": 6.0,
+      "rate_bandwidth_rps": 60.0,
+      "yaw_rate_bandwidth_rps": 25.0,
+      "rate_integral_corner_rps": 5.0,
+      "rate_derivative_time_s": 0.0,
+      "rate_integral_limit": 0.3,
+      "acro_max_rate_rps": 11.693705988362009,
+      "acro_max_yaw_rate_rps": 6.981317007977318,
+      "acro_expo": 0.4,
+      "mixer_axis_authority": 0.2
+    }
+  }
+}

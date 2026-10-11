@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "model_file": "synthetic_quad_standard_aero.onnx",
+  "model_sha256": "f41c465cd0e5372da7ee0119327e60ba82b6b52a689adabaa3e8bae185fccb45",
+  "kind": "stub",
+  "provenance": "SYNTHETIC formula, not CFD | NOT VALIDATED against any measurement",
+  "geometry_hash": "4bda03c5d666093d9ae43849c72f922b1eede80d341b5a5ceda9d061480a952b",
+  "config_hash": "b3dbfd2126d0f9c9d23ffe752c2843a2c0ed3eec8325e979a714fdcd45ae522b",
+  "training_data_sha256": "2931bfe29e60b9329349ccae803ab68485e91c87aa6e866208e202f694a591cd",
+  "trainer_version": "1",
+  "binding_hash": "5416afb9397e3e1e69ca1dbe664124925d579d6d976a06b5ae5a28a1e0b08158",
+  "vehicle_class": "quad_standard",
+  "build_name": "reference_quad",
+  "propellers": "omit",
+  "cfd_sanity_status": "NOT_RUN",
+  "training_rows": "36",
+  "holdout_rms_n": "2.531502995810294e-09",
+  "fit_rms_n": "1.7662793706990943e-09",
+  "trained_at_utc": "2026-10-11T00:00:00+00:00",
+  "cfd_sanity_statement": "The sphere and grid-refinement checks have NOT been run.",
+  "valid_range": {
+    "speed_mps": [
+      0.0,
+      20.0
+    ],
+    "alpha_rad": 0.3490658503988659,
+    "beta_rad": 0.3490658503988659
+  },
+  "model_form": "F = V^2 (c0 + c1 alpha + c2 beta + c3 alpha^2 + c4 beta^2) per body axis; force only (no moments)",
+  "limitations": [
+    "preliminary CFD, unvalidated",
+    "propellers omitted from the CFD geometry unless the sidecar says otherwise",
+    "force only, no moments"
+  ]
+}

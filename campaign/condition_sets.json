@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "provenance": {
+    "source_type": "ASSUMED",
+    "note": "TODO(HUMAN-VERIFY): four illustrative condition sets chosen as engineering starting points, not requirements or standards. Edit them freely; every run records the set it used in its manifest."
+  },
+  "sets": [
+    {"schema_version": 1, "name": "standard_day", "ambient_c": 20.0, "site_altitude_m": 0.0, "wind_speed_mps": 0.0, "wind_from_deg": 270.0,
+     "turbulence": "dryden", "gust_level": 0.0, "seed": 1, "payload_kg": 0.0, "payload_position_m": [0.0, 0.0, 0.0], "battery_soc": 1.0, "battery_temp_c": null},
+    {"schema_version": 1, "name": "hot_day", "ambient_c": 40.0, "site_altitude_m": 0.0, "wind_speed_mps": 0.0, "wind_from_deg": 270.0,
+     "turbulence": "dryden", "gust_level": 0.0, "seed": 1, "payload_kg": 0.0, "payload_position_m": [0.0, 0.0, 0.0], "battery_soc": 1.0, "battery_temp_c": null},
+    {"schema_version": 1, "name": "hot_high_altitude", "ambient_c": 35.0, "site_altitude_m": 1500.0, "wind_speed_mps": 0.0, "wind_from_deg": 270.0,
+     "turbulence": "dryden", "gust_level": 0.0, "seed": 1, "payload_kg": 0.0, "payload_position_m": [0.0, 0.0, 0.0], "battery_soc": 1.0, "battery_temp_c": null},
+    {"schema_version": 1, "name": "windy_day", "ambient_c": 15.0, "site_altitude_m": 0.0, "wind_speed_mps": 8.0, "wind_from_deg": 270.0,
+     "turbulence": "dryden", "gust_level": 0.0, "seed": 1, "payload_kg": 0.0, "payload_position_m": [0.0, 0.0, 0.0], "battery_soc": 1.0, "battery_temp_c": null}
+  ]
+}

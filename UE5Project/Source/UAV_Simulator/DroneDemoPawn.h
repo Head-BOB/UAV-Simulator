@@ -70,6 +70,15 @@ public:
 	DroneReport::EnvInfo MakeEnvInfo() const;
 	void SetEnvironmentNotice(const FString& Text) { EnvironmentNotice = Text; }
 
+	// ---- Replay viewer (P7) ----
+	// The application replays a RECORDED campaign run: physics stepping and the demo controller are off, this pawn only hosts the camera,
+	// the environment and the wind arrows. The vehicle itself is drawn by ADroneBuildPreview (the user's own build, not the demo model).
+	void SetReplayMode(bool bEnable);
+	bool IsReplayMode() const { return bReplayMode; }
+	// Camera target and wind arrow from a recorded sample: NED metres, NED orientation (x, y, z, w), NED m/s. Position and rotation go through
+	// the bridge's audited NED-to-Unreal conversion.
+	void SetReplayView(const double PosNed[3], const float OrientNed[4], const double WindNed[3]);
+
 private:
 	// One motor's bones, in the order of DroneModelMap.json (FR, FL, RR, RL = config index order).
 	struct FMotorVisual
@@ -154,4 +163,5 @@ private:
 	TArray<FMotorVisual> Motors;
 	bool bUseFallbackShapes = false;
 	bool bDiscMaterialMissingLogged = false;
+	bool bReplayMode = false;
 };

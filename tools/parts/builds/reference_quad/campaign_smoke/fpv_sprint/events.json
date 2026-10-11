@@ -1,0 +1,28 @@
+{
+  "events": [
+    {"name": "motor_over_current", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "esc_over_current", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "battery_over_current", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "motor_over_temp", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "esc_over_temp", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "battery_over_temp", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "battery_cutoff", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "prop_outside_table", "first_t_s": 0.004, "last_t_s": 2.036, "active_steps": 796, "activations": 2},
+    {"name": "axis_saturated", "first_t_s": 2.002, "last_t_s": 2.014, "active_steps": 7, "activations": 1},
+    {"name": "collective_limited", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "tilt_limit_active", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "altitude_hold_lost", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "instability", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0}
+  ],
+  "peaks": [
+    {"name": "winding_c", "value": 20.6440171951, "t_s": 6.002},
+    {"name": "case_c", "value": 20.3608507843, "t_s": 6.002},
+    {"name": "esc_c", "value": 20.324766441, "t_s": 6.002},
+    {"name": "battery_c", "value": 20.0255027932, "t_s": 6.002},
+    {"name": "motor_current_a", "value": 10.2062346557, "t_s": 2.002},
+    {"name": "pack_current_a", "value": 14.0904929222, "t_s": 2.002},
+    {"name": "min_pack_v", "value": 13.5464863619, "t_s": 2.002},
+    {"name": "tilt_rad", "value": 0.478378557367, "t_s": 2.464},
+    {"name": "min_thrust_reserve_ratio", "value": 5.3792597378, "t_s": 2.002}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "test": "thermal_soak",
+  "definition_version": "1",
+  "outcome": "STEADY_STATE",
+  "breaking_point": null,
+  "metrics": [{"name": "winding_limit_c", "value": 120}, {"name": "time_to_winding_limit_s", "value": -1}, {"name": "esc_limit_c", "value": 100}, {"name": "time_to_esc_limit_s", "value": -1}, {"name": "battery_limit_c", "value": 60}, {"name": "time_to_battery_limit_s", "value": -1}, {"name": "peak_winding_c", "value": 21.0488535588}, {"name": "peak_winding_time_s", "value": 21}, {"name": "peak_esc_c", "value": 20.8969240314}, {"name": "peak_battery_c", "value": 20.0615091555}, {"name": "final_max_temperature_rate_k_per_min", "value": 2.77705895528}, {"name": "duration_s", "value": 21}],
+  "notes": ["a time of -1 means the limit was never crossed", "state of charge held constant to isolate the thermal behaviour (see endurance for discharge)"],
+  "series": [{"file": "timeseries_thermal_soak.csv", "rows": 11}],
+  "steps_simulated": 10500,
+  "turbulence": "Dryden (MIL-HDBK-1797 low-altitude form), UNVERIFIED",
+  "turbulence_height_clamped_steps": 0,
+  "wind_limited_steps": 0,
+  "drag_model": "analytic_legacy"
+}

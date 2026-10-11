@@ -1,0 +1,49 @@
+{
+  "availability_url": "https://siyi.biz/en/product/tri-axis-single-camera-gimbal/a8-mini/spec/",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimension 55*55*70 mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "d4dd530c05f66d3f34442da8e57c7e51783ea3a8c88097161f877d74fecd911d",
+      "source_type": "CITED",
+      "source_url": "https://siyi.biz/en/product/tri-axis-single-camera-gimbal/a8-mini/spec/"
+    },
+    "value": [
+      0.055,
+      0.055,
+      0.07
+    ]
+  },
+  "category": "gimbal",
+  "current_draw_a": {
+    "provenance": {
+      "note": "average power 5.0 W (page: 'Power Consumption Average') / 14.8 V supply",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.337838
+  },
+  "id": "siyi_a8_mini",
+  "manufacturer": "SIYI",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight 95 g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "d4dd530c05f66d3f34442da8e57c7e51783ea3a8c88097161f877d74fecd911d",
+      "source_type": "CITED",
+      "source_url": "https://siyi.biz/en/product/tri-axis-single-camera-gimbal/a8-mini/spec/"
+    },
+    "value": 0.095
+  },
+  "model": "A8 mini 3-axis gimbal camera",
+  "mount_slot": "belly_mount",
+  "notes": "Current is the AVERAGE; the page also gives a higher 'summit' power (size the supply for it).",
+  "price_url": "https://siyi.biz/en/product/tri-axis-single-camera-gimbal/a8-mini/spec/",
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "Working Voltage 11 ~ 25.2 V (3S to 6S); 4S nominal used. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 14.8
+  }
+}

@@ -787,9 +787,36 @@ void ADroneDemoPawn::StepFixed(double FixedDt, const DroneDemo::Command& Command
 	}
 }
 
+void ADroneDemoPawn::SetReplayMode(bool bEnable)
+{
+	bReplayMode = bEnable;
+	SetActorHiddenInGame(bEnable);   // the demo model stays out of the way; the replayed vehicle is ADroneBuildPreview
+	bSimulationActive = !bEnable;
+	Accumulator = 0.0;
+}
+
+void ADroneDemoPawn::SetReplayView(const double PosNed[3], const float OrientNed[4], const double WindNed[3])
+{
+	const FVector Ned = FDronePhysicsBridgeModule::NedToUnrealWorld(PosNed);
+	const FQuat Rot = FDronePhysicsBridgeModule::NedToUnrealQuat(OrientNed);
+	SetActorLocationAndRotation(WorldOriginCm + Ned, Rot);
+	if (CameraArm) CameraArm->SetWorldRotation(FRotator(kCameraPitchDeg, Rot.Rotator().Yaw, 0.0f));
+	for (int32 I = 0; I < 3; ++I)
+	{
+		WindSample.Total[I] = WindNed[I];
+		WindSample.Steady[I] = WindNed[I];
+		WindSample.Gust[I] = 0.0;
+	}
+}
+
 void ADroneDemoPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (bReplayMode)
+	{
+		DrawWindArrows();   // the replay layer calls SetReplayView() each data tick
+		return;
+	}
 	if (!bPhysicsReady || !Controller)
 	{
 		DrawHud();  // shows why physics is off

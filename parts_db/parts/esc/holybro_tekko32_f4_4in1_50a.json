@@ -1,0 +1,115 @@
+{
+  "availability_url": "https://holybro.com/products/tekko32-f4-4in1-50a-esc",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimensions",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "df415783aa271092868e30eb52623053eca19089b216f738383a3a6aed4b502e",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/tekko32-f4-4in1-50a-esc"
+    },
+    "value": [
+      0.048,
+      0.037,
+      0.006
+    ]
+  },
+  "burst_current_a": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Burst current: 60A x4",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "df415783aa271092868e30eb52623053eca19089b216f738383a3a6aed4b502e",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/tekko32-f4-4in1-50a-esc"
+    },
+    "value": 60.0
+  },
+  "category": "esc",
+  "cells_max": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Supports 4-6S battery",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "df415783aa271092868e30eb52623053eca19089b216f738383a3a6aed4b502e",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/tekko32-f4-4in1-50a-esc"
+    },
+    "value": 6
+  },
+  "cells_min": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Supports 4-6S battery",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "df415783aa271092868e30eb52623053eca19089b216f738383a3a6aed4b502e",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/tekko32-f4-4in1-50a-esc"
+    },
+    "value": 4
+  },
+  "channels": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; 4in1 (A x4)",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "df415783aa271092868e30eb52623053eca19089b216f738383a3a6aed4b502e",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/tekko32-f4-4in1-50a-esc"
+    },
+    "value": 4
+  },
+  "efficiency": {
+    "provenance": {
+      "note": "typical, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.95
+  },
+  "id": "holybro_tekko32_f4_4in1_50a",
+  "manufacturer": "Holybro",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight: 13.8g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "df415783aa271092868e30eb52623053eca19089b216f738383a3a6aed4b502e",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/tekko32-f4-4in1-50a-esc"
+    },
+    "value": 0.0138
+  },
+  "max_continuous_current_a": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Continuous current: 50A x4",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "df415783aa271092868e30eb52623053eca19089b216f738383a3a6aed4b502e",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/tekko32-f4-4in1-50a-esc"
+    },
+    "value": 50.0
+  },
+  "model": "Tekko32 F4 4in1 50A ESC",
+  "notes": "Mounting M4 30.5 x 30.5 mm (page). Efficiency and thermal values are NOT on the page: ASSUMED.",
+  "price_url": "https://holybro.com/products/tekko32-f4-4in1-50a-esc",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Regular price; prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "df415783aa271092868e30eb52623053eca19089b216f738383a3a6aed4b502e",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/tekko32-f4-4in1-50a-esc"
+    },
+    "value": 62.99
+  },
+  "schema_version": "1.0.0",
+  "temp_limit_c": {
+    "provenance": {
+      "note": "placeholder, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 100.0
+  },
+  "thermal_resistance_k_per_w": {
+    "provenance": {
+      "note": "placeholder, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 2.0
+  }
+}

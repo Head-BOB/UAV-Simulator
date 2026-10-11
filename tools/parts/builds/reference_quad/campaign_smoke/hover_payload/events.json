@@ -1,0 +1,28 @@
+{
+  "events": [
+    {"name": "motor_over_current", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "esc_over_current", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "battery_over_current", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "motor_over_temp", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "esc_over_temp", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "battery_over_temp", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "battery_cutoff", "first_t_s": 0.466, "last_t_s": 11, "active_steps": 5268, "activations": 1},
+    {"name": "prop_outside_table", "first_t_s": 0.004, "last_t_s": 3.084, "active_steps": 1541, "activations": 1},
+    {"name": "axis_saturated", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "collective_limited", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "tilt_limit_active", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "altitude_hold_lost", "first_t_s": 1.024, "last_t_s": 5.454, "active_steps": 2216, "activations": 1},
+    {"name": "instability", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0}
+  ],
+  "peaks": [
+    {"name": "winding_c", "value": 23.2158681063, "t_s": 11},
+    {"name": "case_c", "value": 21.6794323131, "t_s": 11},
+    {"name": "esc_c", "value": 22.0746926557, "t_s": 11},
+    {"name": "battery_c", "value": 20.5898912706, "t_s": 11},
+    {"name": "motor_current_a", "value": 12.0941126449, "t_s": 0.83},
+    {"name": "pack_current_a", "value": 36.0761388959, "t_s": 0.83},
+    {"name": "min_pack_v", "value": 12.8691769091, "t_s": 11},
+    {"name": "tilt_rad", "value": 0, "t_s": 0.002},
+    {"name": "min_thrust_reserve_ratio", "value": 1.86937700136, "t_s": 10.502}
+  ]
+}

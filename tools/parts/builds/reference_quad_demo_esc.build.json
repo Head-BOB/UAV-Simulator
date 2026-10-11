@@ -1,0 +1,13 @@
+{
+  "name": "reference_quad_demo_esc",
+  "vehicle_class": "quad_standard",
+  "notes": "The Monday demo's exact parts. EXPECTED TO BE REFUSED: generic 20 A ESC < MN3508 KV700 23 A (180 s) rating (rule E-ESC-I).",
+  "parts": {
+    "frame": "ref_frame_quad_400",
+    "motor": "tmotor_mn3508_kv700",
+    "esc": "ref_esc_generic_20a",
+    "propeller": "apc_12x6e",
+    "battery": "ref_battery_generic_4s_5000",
+    "wiring": "ref_avionics_wiring_lump"
+  }
+}

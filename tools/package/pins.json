@@ -1,0 +1,10 @@
+{
+  "_comment": "Pinned inputs of the Windows package that this repository cannot download or hash itself. TODO(HUMAN-VERIFY): download the file from python.org, compute its sha256 (`certutil -hashfile <file> SHA256` on Windows) and compare it with the checksum python.org lists for that release, then replace the TODO below. stage_package.py refuses a zip whose sha256 differs, and refuses this placeholder.",
+  "schema_version": 1,
+  "python_embeddable": {
+    "file": "python-3.12.10-embed-amd64.zip",
+    "url": "https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip",
+    "sha256": "TODO(HUMAN-VERIFY): sha256 of python-3.12.10-embed-amd64.zip",
+    "version_tag": "312"
+  }
+}

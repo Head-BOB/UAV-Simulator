@@ -1,0 +1,396 @@
+{
+  "build_name": "fpv_5in",
+  "frame_convention": "NED world; body X forward, Y right, Z down; origin = geometric centre of the frame's central body box; metres",
+  "generated_by": "tools/parts/build_vehicle.py",
+  "mesh_policy": "every part is a dimension-true stand-in; the Unreal phase (P7) decides which parts have real meshes",
+  "motor_order": [
+    "FR",
+    "FL",
+    "RR",
+    "RL"
+  ],
+  "parts": [
+    {
+      "bbox_m": [
+        0.06,
+        0.12,
+        0.03
+      ],
+      "instance": "body",
+      "mass_kg": 0.011999999999999997,
+      "mesh": "stand_in",
+      "part_id": "holybro_kopis2_220_frame",
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "role": "frame",
+      "visual": {
+        "dims_m": [
+          0.06,
+          0.12,
+          0.03
+        ],
+        "kind": "box"
+      }
+    },
+    {
+      "bbox_m": [
+        0.11,
+        0.005,
+        0.005
+      ],
+      "instance": "arm_0",
+      "mass_kg": 0.022000000000000002,
+      "mesh": "stand_in",
+      "part_id": "holybro_kopis2_220_frame",
+      "position_m": [
+        0.038890873,
+        0.038890873,
+        0.0
+      ],
+      "role": "frame",
+      "visual": {
+        "kind": "plate",
+        "length_m": 0.11,
+        "thickness_m": 0.005,
+        "width_m": 0.025
+      }
+    },
+    {
+      "bbox_m": [
+        0.11,
+        0.005,
+        0.005
+      ],
+      "instance": "arm_1",
+      "mass_kg": 0.022000000000000002,
+      "mesh": "stand_in",
+      "part_id": "holybro_kopis2_220_frame",
+      "position_m": [
+        0.038890873,
+        -0.038890873,
+        0.0
+      ],
+      "role": "frame",
+      "visual": {
+        "kind": "plate",
+        "length_m": 0.11,
+        "thickness_m": 0.005,
+        "width_m": 0.025
+      }
+    },
+    {
+      "bbox_m": [
+        0.11,
+        0.005,
+        0.005
+      ],
+      "instance": "arm_2",
+      "mass_kg": 0.022000000000000002,
+      "mesh": "stand_in",
+      "part_id": "holybro_kopis2_220_frame",
+      "position_m": [
+        -0.038890873,
+        0.038890873,
+        0.0
+      ],
+      "role": "frame",
+      "visual": {
+        "kind": "plate",
+        "length_m": 0.11,
+        "thickness_m": 0.005,
+        "width_m": 0.025
+      }
+    },
+    {
+      "bbox_m": [
+        0.11,
+        0.005,
+        0.005
+      ],
+      "instance": "arm_3",
+      "mass_kg": 0.022000000000000002,
+      "mesh": "stand_in",
+      "part_id": "holybro_kopis2_220_frame",
+      "position_m": [
+        -0.038890873,
+        -0.038890873,
+        0.0
+      ],
+      "role": "frame",
+      "visual": {
+        "kind": "plate",
+        "length_m": 0.11,
+        "thickness_m": 0.005,
+        "width_m": 0.025
+      }
+    },
+    {
+      "bbox_m": [
+        0.029,
+        0.029,
+        0.033
+      ],
+      "instance": "motor_0",
+      "mass_kg": 0.033,
+      "mesh": "stand_in",
+      "part_id": "tmotor_velox_v2207_v3_kv1750",
+      "position_m": [
+        0.0777815,
+        0.0777815,
+        -0.019
+      ],
+      "role": "motor",
+      "visual": {
+        "diameter_m": 0.029,
+        "height_m": 0.033,
+        "kind": "cylinder",
+        "spin": 1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.12954,
+        0.12954,
+        0.008
+      ],
+      "instance": "prop_0",
+      "mass_kg": 0.004,
+      "mesh": "stand_in",
+      "part_id": "tmotor_t5143s_prop",
+      "position_m": [
+        0.0777815,
+        0.0777815,
+        -0.0395
+      ],
+      "role": "propeller",
+      "visual": {
+        "diameter_m": 0.12954,
+        "kind": "disc",
+        "spin": 1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.029,
+        0.029,
+        0.033
+      ],
+      "instance": "motor_1",
+      "mass_kg": 0.033,
+      "mesh": "stand_in",
+      "part_id": "tmotor_velox_v2207_v3_kv1750",
+      "position_m": [
+        0.0777815,
+        -0.0777815,
+        -0.019
+      ],
+      "role": "motor",
+      "visual": {
+        "diameter_m": 0.029,
+        "height_m": 0.033,
+        "kind": "cylinder",
+        "spin": -1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.12954,
+        0.12954,
+        0.008
+      ],
+      "instance": "prop_1",
+      "mass_kg": 0.004,
+      "mesh": "stand_in",
+      "part_id": "tmotor_t5143s_prop",
+      "position_m": [
+        0.0777815,
+        -0.0777815,
+        -0.0395
+      ],
+      "role": "propeller",
+      "visual": {
+        "diameter_m": 0.12954,
+        "kind": "disc",
+        "spin": -1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.029,
+        0.029,
+        0.033
+      ],
+      "instance": "motor_2",
+      "mass_kg": 0.033,
+      "mesh": "stand_in",
+      "part_id": "tmotor_velox_v2207_v3_kv1750",
+      "position_m": [
+        -0.0777815,
+        0.0777815,
+        -0.019
+      ],
+      "role": "motor",
+      "visual": {
+        "diameter_m": 0.029,
+        "height_m": 0.033,
+        "kind": "cylinder",
+        "spin": -1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.12954,
+        0.12954,
+        0.008
+      ],
+      "instance": "prop_2",
+      "mass_kg": 0.004,
+      "mesh": "stand_in",
+      "part_id": "tmotor_t5143s_prop",
+      "position_m": [
+        -0.0777815,
+        0.0777815,
+        -0.0395
+      ],
+      "role": "propeller",
+      "visual": {
+        "diameter_m": 0.12954,
+        "kind": "disc",
+        "spin": -1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.029,
+        0.029,
+        0.033
+      ],
+      "instance": "motor_3",
+      "mass_kg": 0.033,
+      "mesh": "stand_in",
+      "part_id": "tmotor_velox_v2207_v3_kv1750",
+      "position_m": [
+        -0.0777815,
+        -0.0777815,
+        -0.019
+      ],
+      "role": "motor",
+      "visual": {
+        "diameter_m": 0.029,
+        "height_m": 0.033,
+        "kind": "cylinder",
+        "spin": 1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.12954,
+        0.12954,
+        0.008
+      ],
+      "instance": "prop_3",
+      "mass_kg": 0.004,
+      "mesh": "stand_in",
+      "part_id": "tmotor_t5143s_prop",
+      "position_m": [
+        -0.0777815,
+        -0.0777815,
+        -0.0395
+      ],
+      "role": "propeller",
+      "visual": {
+        "diameter_m": 0.12954,
+        "kind": "disc",
+        "spin": 1.0
+      }
+    },
+    {
+      "bbox_m": [
+        0.078,
+        0.0395,
+        0.033
+      ],
+      "instance": "pack",
+      "mass_kg": 0.203,
+      "mesh": "stand_in",
+      "part_id": "tattu_rline_v6_1300_6s_160c",
+      "position_m": [
+        0.0,
+        0.0,
+        0.0315
+      ],
+      "role": "battery",
+      "visual": {
+        "dims_m": [
+          0.078,
+          0.0395,
+          0.033
+        ],
+        "kind": "box"
+      }
+    },
+    {
+      "bbox_m": [
+        0.048,
+        0.037,
+        0.006
+      ],
+      "instance": "4in1",
+      "mass_kg": 0.0138,
+      "mesh": "stand_in",
+      "part_id": "holybro_tekko32_f4_4in1_50a",
+      "position_m": [
+        0.0175,
+        0.0,
+        -0.018
+      ],
+      "role": "esc",
+      "visual": {
+        "dims_m": [
+          0.048,
+          0.037,
+          0.006
+        ],
+        "kind": "box"
+      }
+    },
+    {
+      "bbox_m": [
+        0.035,
+        0.035,
+        0.008
+      ],
+      "instance": "unit",
+      "mass_kg": 0.008,
+      "mesh": "stand_in",
+      "part_id": "holybro_kakute_h7_v2",
+      "position_m": [
+        -0.024,
+        0.0,
+        -0.019
+      ],
+      "role": "flight_controller",
+      "visual": {
+        "dims_m": [
+          0.035,
+          0.035,
+          0.008
+        ],
+        "kind": "box"
+      }
+    }
+  ],
+  "propeller_plane_z_m": -0.03950000000000001,
+  "totals": {
+    "cg_from_frame_centre_m": [
+      0.00010469543147208124,
+      0.0,
+      0.006036590524534688
+    ],
+    "mass_kg": 0.4728
+  },
+  "vehicle_class": "quad_fpv_5in"
+}

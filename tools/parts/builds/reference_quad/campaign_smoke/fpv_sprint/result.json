@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "test": "fpv_sprint",
+  "definition_version": "1",
+  "outcome": "COMPLETED",
+  "breaking_point": null,
+  "metrics": [{"name": "peak_tilt_deg", "value": 27.4090723467}, {"name": "speed_demand_mps", "value": 12}, {"name": "terminal_speed_mps", "value": 11.8618210642}, {"name": "peak_speed_mps", "value": 12.0408382416}, {"name": "time_to_10_mps_s", "value": 2.456}, {"name": "time_to_20_mps_s", "value": -1}, {"name": "time_to_30_mps_s", "value": -1}, {"name": "altitude_sink_m", "value": 1.57225995468}],
+  "notes": ["speed results use the legacy analytic drag, which is known to under-predict forward speed and to sink when pitched (the FPV sprint reaches about 20 of 35 m/s): not a vehicle limit", "a time of -1 means the speed was never reached", "the demand is the class horizontal speed limit (12 m/s) in velocity mode"],
+  "series": [{"file": "timeseries_sprint.csv", "rows": 13}],
+  "steps_simulated": 3001,
+  "turbulence": "Dryden (MIL-HDBK-1797 low-altitude form), UNVERIFIED",
+  "turbulence_height_clamped_steps": 0,
+  "wind_limited_steps": 0,
+  "drag_model": "analytic_legacy"
+}

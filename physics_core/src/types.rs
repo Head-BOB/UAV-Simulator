@@ -427,6 +427,307 @@ impl Default for DebugTelemetry {
     }
 }
 
+/// Number of points the battery open-circuit-voltage table can hold (fixed size: no heap in the FFI).
+pub const MAX_OCV_POINTS: usize = 16;
+
+/// Number of propeller speed curves the Ct/Cp table can hold (fixed size: no heap in the FFI).
+pub const MAX_PROP_CURVES: usize = 8;
+
+/// Number of (J, Ct, Cp) points per propeller speed curve.
+pub const MAX_PROP_POINTS: usize = 48;
+
+/// Motor, ESC, battery and thermal parameters of the powertrain (interface v13).
+///
+/// Loaded from `powertrain_config.json` (written by `tools/parts/build_vehicle.py`) with
+/// `ffi_load_powertrain_config`. Separate from `VehicleConfig` on purpose: `vehicle_config.json` is
+/// hashed into every surrogate model, so it must not change when the powertrain model does.
+/// Every value is SI; the unit is in the field name. See `powertrain.rs` for the model.
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct PowertrainConfig {
+    /// Motor velocity constant, rpm per volt (no-load).
+    pub motor_kv_rpm_per_v: f64,
+    /// Motor phase-to-phase winding resistance, ohm.
+    pub motor_resistance_ohm: f64,
+    /// Motor no-load current, A (iron + friction loss = this times the back-EMF).
+    pub motor_no_load_current_a: f64,
+    /// Motor current rating, A (flag only; the model does not limit current).
+    pub motor_max_current_a: f64,
+    /// Motor winding temperature limit, deg C (flag only).
+    pub motor_winding_temp_limit_c: f64,
+    /// Propeller diameter, m. Must equal `VehicleConfig::prop_diameter_m`.
+    pub prop_diameter_m: f64,
+    /// Static thrust coefficient (unitless). Must equal `VehicleConfig::thrust_coeff`.
+    pub prop_ct: f64,
+    /// Static power coefficient (unitless).
+    pub prop_cp: f64,
+    /// ESC efficiency, unitless in (0, 1].
+    pub esc_efficiency: f64,
+    /// ESC continuous current rating, A (flag only).
+    pub esc_max_current_a: f64,
+    /// ESC temperature limit, deg C (flag only).
+    pub esc_temp_limit_c: f64,
+    /// Battery capacity, Ah.
+    pub battery_capacity_ah: f64,
+    /// Battery pack internal resistance, ohm.
+    pub battery_internal_resistance_ohm: f64,
+    /// Battery cutoff voltage per cell, V.
+    pub battery_cutoff_v_per_cell: f64,
+    /// Battery continuous current rating (C rating x capacity), A (flag only).
+    pub battery_max_continuous_a: f64,
+    /// Battery temperature limit, deg C (flag only).
+    pub battery_temp_limit_c: f64,
+    /// Thermal resistance motor winding to case, K/W.
+    pub motor_r_winding_case_k_per_w: f64,
+    /// Thermal resistance motor case to ambient in still air, K/W.
+    pub motor_r_case_ambient_k_per_w: f64,
+    /// Heat capacity of the motor winding, J/K.
+    pub motor_c_winding_j_per_k: f64,
+    /// Heat capacity of the motor case (stator, bell, magnets), J/K.
+    pub motor_c_case_j_per_k: f64,
+    /// Thermal resistance ESC to ambient in still air, K/W.
+    pub esc_r_ambient_k_per_w: f64,
+    /// Heat capacity of the ESC, J/K.
+    pub esc_c_j_per_k: f64,
+    /// Thermal resistance battery to ambient in still air, K/W.
+    pub battery_r_ambient_k_per_w: f64,
+    /// Heat capacity of the battery, J/K.
+    pub battery_c_j_per_k: f64,
+    /// Air speed at which forced convection doubles the cooling (`R_eff = R / (1 + (v/v_ref)^0.8)`), m/s.
+    pub cooling_ref_airspeed_mps: f64,
+    /// Open-circuit-voltage table: state of charge, strictly increasing from 0 to 1 (first `ocv_points` entries).
+    pub ocv_soc: [f64; MAX_OCV_POINTS],
+    /// Open-circuit voltage per cell at `ocv_soc`, V, non-decreasing.
+    pub ocv_v_per_cell: [f64; MAX_OCV_POINTS],
+    /// Number of cells in series (1..=14).
+    pub battery_cells: i32,
+    /// Number of used entries in the OCV table (2..=16).
+    pub ocv_points: i32,
+    /// 1 only if every thermal and electrical input is MEASURED or CITED. The builder writes 0 while any input is ASSUMED.
+    pub parameters_verified: i32,
+    /// Reserved, must be 0.
+    pub reserved: i32,
+    /// Speed of each propeller curve, rpm, strictly increasing (first `prop_curve_count` entries). Used when `prop_model` is 1.
+    pub prop_curve_rpm: [f64; MAX_PROP_CURVES],
+    /// Advance ratio `J = V_axial / (n D)` of each curve point, strictly increasing from exactly 0.
+    pub prop_j: [[f64; MAX_PROP_POINTS]; MAX_PROP_CURVES],
+    /// Thrust coefficient `Ct` at each curve point (may be negative at high J).
+    pub prop_ct_table: [[f64; MAX_PROP_POINTS]; MAX_PROP_CURVES],
+    /// Power coefficient `Cp` at each curve point, > 0.
+    pub prop_cp_table: [[f64; MAX_PROP_POINTS]; MAX_PROP_CURVES],
+    /// Number of used points of each curve (2..=48).
+    pub prop_curve_points: [i32; MAX_PROP_CURVES],
+    /// Number of used curves (1..=8 when `prop_model` is 1, else 0).
+    pub prop_curve_count: i32,
+    /// 0: constant `prop_ct`/`prop_cp` (the static fit). 1: the Ct/Cp(J, rpm) table.
+    pub prop_model: i32,
+}
+
+/// Evolving powertrain state, owned by the caller and updated by `ffi_step_powertrain` (interface v13).
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct PowertrainState {
+    /// Battery state of charge, unitless in [0, 1].
+    pub soc: f64,
+    /// Charge drawn from the battery since the start, Ah.
+    pub charge_used_ah: f64,
+    /// Battery current of the previous step, A (feeds the voltage sag of the next step).
+    pub battery_current_a: f64,
+    /// Battery temperature, deg C.
+    pub battery_temp_c: f64,
+    /// Time the loaded pack voltage has been continuously below the cutoff, s.
+    pub time_below_cutoff_s: f64,
+    /// Motor winding temperatures, deg C.
+    pub motor_winding_c: [f64; 4],
+    /// Motor case temperatures, deg C.
+    pub motor_case_c: [f64; 4],
+    /// ESC temperatures, deg C.
+    pub esc_temp_c: [f64; 4],
+    /// Total time during which at least one propeller was outside the measured Ct/Cp data, s.
+    pub prop_extrapolated_time_s: f64,
+}
+
+/// Per-step powertrain results (interface v13). All values are for the step just taken.
+/// A rejected step overwrites it with NaN floats and all flags 0 (`step_valid` 0).
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct PowertrainTelemetry {
+    /// Motor current, A.
+    pub motor_current_a: [f64; 4],
+    /// Voltage at the motor terminals (duty x pack voltage), V.
+    pub motor_voltage_v: [f64; 4],
+    /// Motor speed, rpm.
+    pub motor_rpm: [f64; 4],
+    /// Propeller torque, N*m.
+    pub motor_torque_nm: [f64; 4],
+    /// Propeller thrust, N.
+    pub motor_thrust_n: [f64; 4],
+    /// Copper loss, W.
+    pub motor_copper_loss_w: [f64; 4],
+    /// No-load (iron + friction) loss, W.
+    pub motor_noload_loss_w: [f64; 4],
+    /// ESC loss, W.
+    pub esc_loss_w: [f64; 4],
+    /// Motor winding temperature after the step, deg C.
+    pub motor_winding_c: [f64; 4],
+    /// Motor case temperature after the step, deg C.
+    pub motor_case_c: [f64; 4],
+    /// ESC temperature after the step, deg C.
+    pub esc_temp_c: [f64; 4],
+    /// Loaded pack voltage, V.
+    pub battery_voltage_v: f64,
+    /// Open-circuit pack voltage, V.
+    pub battery_ocv_v: f64,
+    /// Pack current, A.
+    pub battery_current_a: f64,
+    /// Power drawn from the pack, W.
+    pub battery_power_w: f64,
+    /// State of charge after the step, unitless.
+    pub battery_soc: f64,
+    /// Battery temperature after the step, deg C.
+    pub battery_temp_c: f64,
+    /// Battery heating, W.
+    pub battery_heat_w: f64,
+    /// Charge drawn since the start, Ah.
+    pub charge_used_ah: f64,
+    /// Time continuously below the cutoff voltage, s.
+    pub time_below_cutoff_s: f64,
+    /// 1 if this struct holds the results of a successful step.
+    pub step_valid: i32,
+    /// 1 if the loaded pack voltage is below cells x cutoff voltage (instantaneous; the step keeps running).
+    pub battery_cutoff: i32,
+    /// 1 if the pack current exceeds its continuous rating.
+    pub battery_over_current: i32,
+    /// 1 if the battery temperature exceeds its limit.
+    pub battery_over_temp: i32,
+    /// 1 if the state of charge reached 0 and was held there.
+    pub battery_soc_clamped: i32,
+    /// Bit i set: motor i current above its rating.
+    pub motor_over_current_mask: i32,
+    /// Bit i set: motor i winding above its temperature limit.
+    pub motor_over_temp_mask: i32,
+    /// Bit i set: ESC i input current above its rating.
+    pub esc_over_current_mask: i32,
+    /// Bit i set: ESC i above its temperature limit.
+    pub esc_over_temp_mask: i32,
+    /// Copy of `PowertrainConfig::parameters_verified` (0 while any input is ASSUMED).
+    pub thermal_valid: i32,
+    /// Bit i set: propeller i is outside the measured Ct/Cp data (held at the nearest edge value). Always 0 with `prop_model` 0.
+    pub prop_extrapolated: i32,
+    /// Reserved, 0.
+    pub reserved0: i32,
+    /// Reserved, 0.
+    pub reserved1: i32,
+    /// Reserved, 0.
+    pub reserved2: i32,
+    /// Advance ratio of each propeller (0 for a rotor at rest).
+    pub motor_advance_ratio: [f64; 4],
+    /// Thrust coefficient used for each propeller (0 for a rotor at rest).
+    pub motor_ct: [f64; 4],
+    /// Power coefficient used for each propeller (0 for a rotor at rest).
+    pub motor_cp: [f64; 4],
+}
+
+/// Result of a stateless motor + propeller bench point (`ffi_powertrain_bench_point`), interface v13.
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct PowertrainBenchOut {
+    /// Motor speed, rpm.
+    pub rpm: f64,
+    /// Motor current, A.
+    pub motor_current_a: f64,
+    /// Propeller torque, N*m.
+    pub torque_nm: f64,
+    /// Propeller thrust, N.
+    pub thrust_n: f64,
+    /// Shaft power, W.
+    pub shaft_w: f64,
+    /// Motor electrical input power, W.
+    pub motor_electrical_w: f64,
+    /// Copper loss, W.
+    pub copper_loss_w: f64,
+    /// No-load loss, W.
+    pub noload_loss_w: f64,
+    /// ESC loss, W.
+    pub esc_loss_w: f64,
+    /// Current drawn from the pack, A.
+    pub battery_current_a: f64,
+    /// Power drawn from the pack, W.
+    pub battery_power_w: f64,
+    /// Shaft power over pack power, unitless.
+    pub system_efficiency: f64,
+    /// Advance ratio used.
+    pub advance_ratio: f64,
+    /// Thrust coefficient used.
+    pub ct: f64,
+    /// Power coefficient used.
+    pub cp: f64,
+    /// 1 if the propeller was outside the measured Ct/Cp data.
+    pub extrapolated: i32,
+    /// Reserved, 0.
+    pub reserved: i32,
+}
+
+/// Propeller coefficients at one operating point (`ffi_propeller_coefficients`), interface v14.
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct PropCoefficients {
+    /// Thrust coefficient.
+    pub ct: f64,
+    /// Power coefficient.
+    pub cp: f64,
+    /// 1 if (J, rpm) is outside the measured data and the nearest edge value was used.
+    pub extrapolated: i32,
+    /// Reserved, 0.
+    pub reserved: i32,
+}
+
+impl PowertrainTelemetry {
+    /// "No data" telemetry: NaN floats, all flags 0. Written for a rejected step.
+    #[must_use]
+    pub const fn no_data() -> Self {
+        Self {
+            motor_current_a: [f64::NAN; 4],
+            motor_voltage_v: [f64::NAN; 4],
+            motor_rpm: [f64::NAN; 4],
+            motor_torque_nm: [f64::NAN; 4],
+            motor_thrust_n: [f64::NAN; 4],
+            motor_copper_loss_w: [f64::NAN; 4],
+            motor_noload_loss_w: [f64::NAN; 4],
+            esc_loss_w: [f64::NAN; 4],
+            motor_winding_c: [f64::NAN; 4],
+            motor_case_c: [f64::NAN; 4],
+            esc_temp_c: [f64::NAN; 4],
+            battery_voltage_v: f64::NAN,
+            battery_ocv_v: f64::NAN,
+            battery_current_a: f64::NAN,
+            battery_power_w: f64::NAN,
+            battery_soc: f64::NAN,
+            battery_temp_c: f64::NAN,
+            battery_heat_w: f64::NAN,
+            charge_used_ah: f64::NAN,
+            time_below_cutoff_s: f64::NAN,
+            step_valid: 0,
+            battery_cutoff: 0,
+            battery_over_current: 0,
+            battery_over_temp: 0,
+            battery_soc_clamped: 0,
+            motor_over_current_mask: 0,
+            motor_over_temp_mask: 0,
+            esc_over_current_mask: 0,
+            esc_over_temp_mask: 0,
+            thermal_valid: 0,
+            prop_extrapolated: 0,
+            reserved0: 0,
+            reserved1: 0,
+            reserved2: 0,
+            motor_advance_ratio: [f64::NAN; 4],
+            motor_ct: [f64::NAN; 4],
+            motor_cp: [f64::NAN; 4],
+        }
+    }
+}
+
 /// Largest accepted deviation of a state quaternion's norm from 1 at the FFI boundary.
 /// f32 storage keeps a unit quaternion within about 2.4e-7 of norm 1 and the integrator
 /// re-normalizes every step, so 1e-3 only trips on a caller bug (zero, scaled or garbage
@@ -484,6 +785,16 @@ const _: () = {
     assert!(size_of::<VehicleConfig>() == 200 && align_of::<VehicleConfig>() == 8);
     // 4 vec3 f32 (48) + 3 vec4 f32 (48) + margin f32 (4) + 9 i32 (36) = 136
     assert!(size_of::<DebugTelemetry>() == 136 && align_of::<DebugTelemetry>() == 4);
+    // PowertrainConfig: 472 + 8*8 (curve rpm) + 3*8*48*8 (tables) + 8*4 (point counts) + 2*4 = 472 + 64 + 9216 + 32 + 8 = 9792
+    assert!(size_of::<PowertrainConfig>() == 9792 && align_of::<PowertrainConfig>() == 8);
+    // PowertrainState: 5*8 + 3*4*8 + 8 = 144
+    assert!(size_of::<PowertrainState>() == 144 && align_of::<PowertrainState>() == 8);
+    // PowertrainTelemetry: 11*4*8 + 9*8 + 14*4 + 3*4*8 = 352 + 72 + 56 + 96 = 576
+    assert!(size_of::<PowertrainTelemetry>() == 576 && align_of::<PowertrainTelemetry>() == 8);
+    // PowertrainBenchOut: 12*8 + 3*8 + 2*4 = 128
+    assert!(size_of::<PowertrainBenchOut>() == 128 && align_of::<PowertrainBenchOut>() == 8);
+    // PropCoefficients: 2*8 + 2*4 = 24
+    assert!(size_of::<PropCoefficients>() == 24 && align_of::<PropCoefficients>() == 8);
 };
 
 #[cfg(test)]
@@ -610,6 +921,82 @@ mod tests {
         assert_eq!(offset_of!(DebugTelemetry, uncalibrated_flags), 124);
         assert_eq!(offset_of!(DebugTelemetry, thermal_valid), 128);
         assert_eq!(offset_of!(DebugTelemetry, thermal_over_temp), 132);
+    }
+
+    #[test]
+    fn test_powertrain_struct_layouts() {
+        // PowertrainConfig: 25 f64 scalars (0..200), two 16-entry tables (200, 328), four i32 (456..472).
+        assert_eq!(std::mem::size_of::<PowertrainConfig>(), 9792);
+        assert_eq!(offset_of!(PowertrainConfig, motor_kv_rpm_per_v), 0);
+        assert_eq!(offset_of!(PowertrainConfig, prop_diameter_m), 40);
+        assert_eq!(offset_of!(PowertrainConfig, esc_efficiency), 64);
+        assert_eq!(offset_of!(PowertrainConfig, battery_capacity_ah), 88);
+        assert_eq!(
+            offset_of!(PowertrainConfig, motor_r_winding_case_k_per_w),
+            128
+        );
+        assert_eq!(offset_of!(PowertrainConfig, cooling_ref_airspeed_mps), 192);
+        assert_eq!(offset_of!(PowertrainConfig, ocv_soc), 200);
+        assert_eq!(offset_of!(PowertrainConfig, ocv_v_per_cell), 328);
+        assert_eq!(offset_of!(PowertrainConfig, battery_cells), 456);
+        assert_eq!(offset_of!(PowertrainConfig, ocv_points), 460);
+        assert_eq!(offset_of!(PowertrainConfig, parameters_verified), 464);
+        assert_eq!(offset_of!(PowertrainConfig, reserved), 468);
+        // P3b table: curve rpm 472, J table 536, Ct table 3608, Cp table 6680, point counts 9752, count 9784, model 9788.
+        assert_eq!(offset_of!(PowertrainConfig, prop_curve_rpm), 472);
+        assert_eq!(offset_of!(PowertrainConfig, prop_j), 536);
+        assert_eq!(offset_of!(PowertrainConfig, prop_ct_table), 3608);
+        assert_eq!(offset_of!(PowertrainConfig, prop_cp_table), 6680);
+        assert_eq!(offset_of!(PowertrainConfig, prop_curve_points), 9752);
+        assert_eq!(offset_of!(PowertrainConfig, prop_curve_count), 9784);
+        assert_eq!(offset_of!(PowertrainConfig, prop_model), 9788);
+        // PowertrainState: five f64 (0..40) then three arrays of four f64 (40, 72, 104); total 136.
+        assert_eq!(std::mem::size_of::<PowertrainState>(), 144);
+        assert_eq!(offset_of!(PowertrainState, soc), 0);
+        assert_eq!(offset_of!(PowertrainState, battery_current_a), 16);
+        assert_eq!(offset_of!(PowertrainState, time_below_cutoff_s), 32);
+        assert_eq!(offset_of!(PowertrainState, motor_winding_c), 40);
+        assert_eq!(offset_of!(PowertrainState, motor_case_c), 72);
+        assert_eq!(offset_of!(PowertrainState, esc_temp_c), 104);
+        assert_eq!(offset_of!(PowertrainState, prop_extrapolated_time_s), 136);
+        // PowertrainTelemetry: eleven arrays of four f64 (0..352), nine f64 (352..424), fourteen i32 (424..480).
+        assert_eq!(std::mem::size_of::<PowertrainTelemetry>(), 576);
+        assert_eq!(offset_of!(PowertrainTelemetry, motor_current_a), 0);
+        assert_eq!(offset_of!(PowertrainTelemetry, motor_rpm), 64);
+        assert_eq!(offset_of!(PowertrainTelemetry, motor_thrust_n), 128);
+        assert_eq!(offset_of!(PowertrainTelemetry, esc_temp_c), 320);
+        assert_eq!(offset_of!(PowertrainTelemetry, battery_voltage_v), 352);
+        assert_eq!(offset_of!(PowertrainTelemetry, battery_soc), 384);
+        assert_eq!(offset_of!(PowertrainTelemetry, time_below_cutoff_s), 416);
+        assert_eq!(offset_of!(PowertrainTelemetry, step_valid), 424);
+        assert_eq!(
+            offset_of!(PowertrainTelemetry, motor_over_current_mask),
+            444
+        );
+        assert_eq!(offset_of!(PowertrainTelemetry, thermal_valid), 460);
+        assert_eq!(offset_of!(PowertrainTelemetry, prop_extrapolated), 464);
+        assert_eq!(offset_of!(PowertrainTelemetry, reserved2), 476);
+        assert_eq!(offset_of!(PowertrainTelemetry, motor_advance_ratio), 480);
+        assert_eq!(offset_of!(PowertrainTelemetry, motor_ct), 512);
+        assert_eq!(offset_of!(PowertrainTelemetry, motor_cp), 544);
+        // PowertrainBenchOut: twelve f64.
+        assert_eq!(std::mem::size_of::<PowertrainBenchOut>(), 128);
+        assert_eq!(offset_of!(PowertrainBenchOut, rpm), 0);
+        assert_eq!(offset_of!(PowertrainBenchOut, battery_current_a), 72);
+        assert_eq!(offset_of!(PowertrainBenchOut, system_efficiency), 88);
+        assert_eq!(offset_of!(PowertrainBenchOut, advance_ratio), 96);
+        assert_eq!(offset_of!(PowertrainBenchOut, ct), 104);
+        assert_eq!(offset_of!(PowertrainBenchOut, cp), 112);
+        assert_eq!(offset_of!(PowertrainBenchOut, extrapolated), 120);
+        assert_eq!(std::mem::size_of::<PropCoefficients>(), 24);
+        assert_eq!(offset_of!(PropCoefficients, cp), 8);
+        assert_eq!(offset_of!(PropCoefficients, extrapolated), 16);
+        assert_eq!(align_of::<PropCoefficients>(), 8);
+        use std::mem::align_of;
+        assert_eq!(align_of::<PowertrainConfig>(), 8);
+        assert_eq!(align_of::<PowertrainState>(), 8);
+        assert_eq!(align_of::<PowertrainTelemetry>(), 8);
+        assert_eq!(align_of::<PowertrainBenchOut>(), 8);
     }
 
     #[test]

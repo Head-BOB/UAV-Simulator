@@ -1,0 +1,75 @@
+{
+  "blades": {
+    "provenance": {
+      "note": "APC Thin Electric are two-blade props; not read from a page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 2
+  },
+  "bore_m": {
+    "provenance": {
+      "note": "1/4 in hub bore with adapters, from memory of APC hubs. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.00635
+  },
+  "bounding_box_m": {
+    "provenance": {
+      "note": "disc diameter x diameter x assumed hub height. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.3048,
+      0.3048,
+      0.015
+    ]
+  },
+  "category": "propeller",
+  "data_basis": "UIUC_MEASURED",
+  "data_file": "offline_pipeline/props/apce_12x6.json",
+  "data_file_sha256": "6c1965034700e50cf8ad25fc04847ddf14c9a20823f29c0166bcaeadc70d8247",
+  "diameter_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; UIUC volume 4, 12 inch nominal x 0.0254 m/in exact",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "a21a14deb553002fa8a837c56c8673d2afa4d2e88cf05ba0e43266bf668b8336",
+      "source_type": "CITED",
+      "source_url": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html"
+    },
+    "value": 0.3048
+  },
+  "id": "apc_12x6e",
+  "manufacturer": "APC",
+  "mass_kg": {
+    "provenance": {
+      "note": "typical 12 inch plastic prop, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.02
+  },
+  "measured_rpm_max": {
+    "provenance": {
+      "note": "maximum RPM of the UIUC static rows in the data file",
+      "source_type": "CALCULATED"
+    },
+    "value": 7546.667
+  },
+  "measured_rpm_min": {
+    "provenance": {
+      "note": "minimum RPM of the UIUC static rows in the data file",
+      "source_type": "CALCULATED"
+    },
+    "value": 1046.667
+  },
+  "model": "Thin Electric 12x6 (12x6E)",
+  "notes": "Ct/Cp from UIUC volume 4 (see the data file for per-file pins). Wind-tunnel runs reach only about 6044 RPM.",
+  "pitch_m": {
+    "provenance": {
+      "note": "6 in nominal pitch from the model name 12x6 x 0.0254 m/in",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.1524
+  },
+  "price_url": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+  "schema_version": "1.0.0"
+}

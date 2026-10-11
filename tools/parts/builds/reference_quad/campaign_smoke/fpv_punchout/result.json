@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "test": "fpv_punchout",
+  "definition_version": "1",
+  "outcome": "COMPLETED",
+  "breaking_point": null,
+  "metrics": [{"name": "peak_tilt_deg", "value": 0}, {"name": "final_climb_rate_mps", "value": 16.1704403862}, {"name": "peak_climb_rate_mps", "value": 16.2359428406}, {"name": "altitude_gain_m", "value": 18.7181273264}, {"name": "time_to_gain_target_s", "value": 0.624}],
+  "notes": ["speed results use the legacy analytic drag, which is known to under-predict forward speed and to sink when pitched (the FPV sprint reaches about 20 of 35 m/s): not a vehicle limit", "a time of -1 means the 5 m gain was never reached", "full throttle in acro mode with the sticks centred: attitude is held only by the rate loop, so a small tilt drift is expected and reported"],
+  "series": [{"file": "timeseries_punchout.csv", "rows": 15}],
+  "steps_simulated": 1751,
+  "turbulence": "Dryden (MIL-HDBK-1797 low-altitude form), UNVERIFIED",
+  "turbulence_height_clamped_steps": 0,
+  "wind_limited_steps": 0,
+  "drag_model": "analytic_legacy"
+}

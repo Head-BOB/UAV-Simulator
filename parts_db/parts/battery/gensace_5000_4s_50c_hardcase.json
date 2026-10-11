@@ -1,0 +1,147 @@
+{
+  "availability_url": "https://genstattu.com/gens-ace-5000mah-14-8v-50c-4s1p-hardcase-lipo-battery14-with-deans-plug.html",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Length x Width x Height (mm) in the spec table",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "9f85c4c20ccdaf4a300469c9f223986103ec8d4a8117b2a315e74a81a94a7394",
+      "source_type": "CITED",
+      "source_url": "https://genstattu.com/gens-ace-5000mah-14-8v-50c-4s1p-hardcase-lipo-battery14-with-deans-plug.html"
+    },
+    "value": [
+      0.138,
+      0.046,
+      0.05
+    ]
+  },
+  "capacity_ah": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Capacity(mAh): 5000",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "9f85c4c20ccdaf4a300469c9f223986103ec8d4a8117b2a315e74a81a94a7394",
+      "source_type": "CITED",
+      "source_url": "https://genstattu.com/gens-ace-5000mah-14-8v-50c-4s1p-hardcase-lipo-battery14-with-deans-plug.html"
+    },
+    "value": 5.0
+  },
+  "category": "battery",
+  "cells": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Configuration 4S",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "9f85c4c20ccdaf4a300469c9f223986103ec8d4a8117b2a315e74a81a94a7394",
+      "source_type": "CITED",
+      "source_url": "https://genstattu.com/gens-ace-5000mah-14-8v-50c-4s1p-hardcase-lipo-battery14-with-deans-plug.html"
+    },
+    "value": 4
+  },
+  "connector": "Deans",
+  "id": "gensace_5000_4s_50c_hardcase",
+  "internal_resistance_ohm": {
+    "provenance": {
+      "note": "pack resistance not published; typical order for this size. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.018
+  },
+  "manufacturer": "Gens ace",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Net Weight(±20g): 589",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "9f85c4c20ccdaf4a300469c9f223986103ec8d4a8117b2a315e74a81a94a7394",
+      "source_type": "CITED",
+      "source_url": "https://genstattu.com/gens-ace-5000mah-14-8v-50c-4s1p-hardcase-lipo-battery14-with-deans-plug.html"
+    },
+    "value": 0.589
+  },
+  "max_continuous_c": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Discharge Rate (C): 50",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "9f85c4c20ccdaf4a300469c9f223986103ec8d4a8117b2a315e74a81a94a7394",
+      "source_type": "CITED",
+      "source_url": "https://genstattu.com/gens-ace-5000mah-14-8v-50c-4s1p-hardcase-lipo-battery14-with-deans-plug.html"
+    },
+    "value": 50.0
+  },
+  "model": "5000mAh 4S 50C hardcase Deans",
+  "notes": "Manufacturer shop page. Internal resistance, thermal values and the OCV curve are NOT on the page: ASSUMED (the curve is a generic LiPo shape).",
+  "ocv_curve": {
+    "provenance": {
+      "note": "generic LiPo open-circuit shape. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      [
+        0.0,
+        3.3
+      ],
+      [
+        0.1,
+        3.62
+      ],
+      [
+        0.2,
+        3.7
+      ],
+      [
+        0.3,
+        3.75
+      ],
+      [
+        0.5,
+        3.82
+      ],
+      [
+        0.7,
+        3.92
+      ],
+      [
+        0.9,
+        4.08
+      ],
+      [
+        1.0,
+        4.2
+      ]
+    ]
+  },
+  "price_url": "https://genstattu.com/gens-ace-5000mah-14-8v-50c-4s1p-hardcase-lipo-battery14-with-deans-plug.html",
+  "schema_version": "1.0.0",
+  "temp_limit_c": {
+    "provenance": {
+      "note": "common LiPo practice. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 60.0
+  },
+  "thermal_resistance_k_per_w": {
+    "provenance": {
+      "note": "placeholder, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 3.0
+  },
+  "voltage_per_cell_cutoff_v": {
+    "provenance": {
+      "note": "common LiPo cutoff practice. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 3.3
+  },
+  "voltage_per_cell_max_v": {
+    "provenance": {
+      "note": "common full-charge LiPo convention. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 4.2
+  },
+  "voltage_per_cell_nominal_v": {
+    "provenance": {
+      "note": "nominal pack voltage on the page (14.8 V for 4S, 22.2 V for 6S) / cells = 3.7 V",
+      "source_type": "CALCULATED"
+    },
+    "value": 3.7
+  }
+}

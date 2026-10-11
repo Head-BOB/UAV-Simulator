@@ -1,0 +1,28 @@
+{
+  "events": [
+    {"name": "motor_over_current", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "esc_over_current", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "battery_over_current", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "motor_over_temp", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "esc_over_temp", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "battery_over_temp", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "battery_cutoff", "first_t_s": 30.2, "last_t_s": 72.32, "active_steps": 628, "activations": 13},
+    {"name": "prop_outside_table", "first_t_s": 0.004, "last_t_s": 71.73, "active_steps": 12174, "activations": 29},
+    {"name": "axis_saturated", "first_t_s": 2.002, "last_t_s": 71.336, "active_steps": 192, "activations": 28},
+    {"name": "collective_limited", "first_t_s": 4.526, "last_t_s": 71.326, "active_steps": 47, "activations": 14},
+    {"name": "tilt_limit_active", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "altitude_hold_lost", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0},
+    {"name": "instability", "first_t_s": null, "last_t_s": null, "active_steps": 0, "activations": 0}
+  ],
+  "peaks": [
+    {"name": "winding_c", "value": 21.1332874378, "t_s": 55.99},
+    {"name": "case_c", "value": 20.7628080336, "t_s": 59.58},
+    {"name": "esc_c", "value": 21.5626055165, "t_s": 72.32},
+    {"name": "battery_c", "value": 20.2522024363, "t_s": 72.32},
+    {"name": "motor_current_a", "value": 20.4555259823, "t_s": 4.526},
+    {"name": "pack_current_a", "value": 23.7871359206, "t_s": 4.526},
+    {"name": "min_pack_v", "value": 12.9400058959, "t_s": 71.322},
+    {"name": "tilt_rad", "value": 0.490099735704, "t_s": 5.02},
+    {"name": "min_thrust_reserve_ratio", "value": 5.13921551631, "t_s": 72.002}
+  ]
+}

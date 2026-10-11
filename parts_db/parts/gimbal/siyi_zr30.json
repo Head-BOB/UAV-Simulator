@@ -1,0 +1,49 @@
+{
+  "availability_url": "https://siyi.biz/en/product/tri-axis-single-camera-gimbal/zr30/spec/",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimension 132*100*180 mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "15426fc7fb58048488ec0484721b0e2a4006b71d22b2b19b238e4ec5c3869ccd",
+      "source_type": "CITED",
+      "source_url": "https://siyi.biz/en/product/tri-axis-single-camera-gimbal/zr30/spec/"
+    },
+    "value": [
+      0.132,
+      0.1,
+      0.18
+    ]
+  },
+  "category": "gimbal",
+  "current_draw_a": {
+    "provenance": {
+      "note": "average power 5.0 W (page: 'Power Consumption Average') / 14.8 V supply",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.337838
+  },
+  "id": "siyi_zr30",
+  "manufacturer": "SIYI",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight 668 g (Quick Release Board Included)",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "15426fc7fb58048488ec0484721b0e2a4006b71d22b2b19b238e4ec5c3869ccd",
+      "source_type": "CITED",
+      "source_url": "https://siyi.biz/en/product/tri-axis-single-camera-gimbal/zr30/spec/"
+    },
+    "value": 0.668
+  },
+  "model": "ZR30 30x zoom gimbal camera",
+  "mount_slot": "belly_mount",
+  "notes": "Current is the AVERAGE; the page also gives a higher 'summit' power (size the supply for it).",
+  "price_url": "https://siyi.biz/en/product/tri-axis-single-camera-gimbal/zr30/spec/",
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "Working Voltage 11 ~ 25.2 V; 4S nominal used. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 14.8
+  }
+}

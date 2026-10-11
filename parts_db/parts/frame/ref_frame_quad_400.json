@@ -1,0 +1,128 @@
+{
+  "arm_allowable_bending_stress_pa": {
+    "provenance": {
+      "note": "conservative laminate allowable, NOT a tested value. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 300000000.0
+  },
+  "arm_count": {
+    "provenance": {
+      "note": "quad. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 4
+  },
+  "arm_length_m": {
+    "provenance": {
+      "note": "centre to motor = spacing * sqrt(2) / 2 for motors at (+-s/2, +-s/2)",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.282843
+  },
+  "body_half_width_m": {
+    "provenance": {
+      "note": "centre plate half width; prop clearance needs body half width < 0.13 m. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.06
+  },
+  "bounding_box_m": {
+    "provenance": {
+      "note": "motor spacing + tube OD in x,y; body box height in z. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.416,
+      0.416,
+      0.1
+    ]
+  },
+  "category": "frame",
+  "central_body_box_m": {
+    "provenance": {
+      "note": "for the inertia estimate only. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.2,
+      0.2,
+      0.1
+    ]
+  },
+  "cg_offset_m": {
+    "provenance": {
+      "note": "frame CG at the geometric centre. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "frame_class": "quad_standard",
+  "id": "ref_frame_quad_400",
+  "manufacturer": "generic",
+  "mass_kg": {
+    "provenance": {
+      "note": "plates plus four arms, no design. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.35
+  },
+  "max_prop_diameter_m": {
+    "provenance": {
+      "note": "zero-gap geometric bound: adjacent motor spacing; the builder applies a clearance margin",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.4
+  },
+  "model": "reference quad frame 400 mm",
+  "motor_mount_pattern": "REF_MN35_MOUNT",
+  "motor_spacing_adjacent_m": {
+    "provenance": {
+      "note": "human decision 2026-10-10 and vehicle_config.json motor_pos_m (+-0.2, +-0.2) [catalog status was CITED, no URL]. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.4
+  },
+  "notes": "Reference-build placeholder, no design. Areas and CG are placeholders until the CFD/assembly work replaces them.",
+  "projected_area_front_m2": {
+    "provenance": {
+      "note": "placeholder, not used by the core yet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.015
+  },
+  "projected_area_side_m2": {
+    "provenance": {
+      "note": "placeholder, not used by the core yet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.015
+  },
+  "projected_area_top_m2": {
+    "provenance": {
+      "note": "placeholder, not used by the core yet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.05
+  },
+  "schema_version": "1.0.0",
+  "tube_id_m": {
+    "provenance": {
+      "note": "tube OD - 2 x wall from the catalog",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.013
+  },
+  "tube_material": "carbon fibre tube",
+  "tube_od_m": {
+    "provenance": {
+      "note": "hollow carbon tube, no design. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.016
+  }
+}

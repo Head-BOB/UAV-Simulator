@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "version": "1.0.0",
+  "provenance": {
+    "source_type": "ASSUMED",
+    "note": "TODO(HUMAN-VERIFY): every number is an engineering starting point for an overnight run on the RTX 4050 6 GB laptop, not a requirement. Time per case is unknown until one case has been run and timed."
+  },
+  "air": {
+    "rho_kgpm3": 1.225,
+    "nu_m2ps": 1.4607e-05,
+    "note": "ISA sea level, 15 C (mu 1.7894e-5 Pa s / rho 1.225)"
+  },
+  "lbm": {
+    "velocity": 0.075,
+    "min_lattice_viscosity": 5e-06,
+    "flow_throughs": 5.0,
+    "avg_fraction": 0.25
+  },
+  "domain": {
+    "spans_xyz": [
+      4.0,
+      2.0,
+      2.0
+    ],
+    "inlet_spans": 1.0,
+    "wall_margin_cells": 8,
+    "max_cells": 27000000,
+    "vram_headroom_fraction": 0.15
+  },
+  "classes": {
+    "quad_standard": {
+      "speeds_mps": [
+        5.0,
+        10.0,
+        15.0,
+        20.0
+      ],
+      "angles_deg": [
+        -20.0,
+        -10.0,
+        0.0,
+        10.0,
+        20.0
+      ],
+      "cells_across_span": 100
+    },
+    "quad_fpv_5in": {
+      "speeds_mps": [
+        10.0,
+        20.0,
+        30.0,
+        40.0
+      ],
+      "angles_deg": [
+        -40.0,
+        -20.0,
+        0.0,
+        20.0,
+        40.0
+      ],
+      "cells_across_span": 100
+    }
+  },
+  "sanity": {
+    "sphere": {
+      "reynolds": 1000.0,
+      "diameter_m": 0.1,
+      "diameter_cells": 28,
+      "domain_diameters_xyz": [
+        16.0,
+        8.0,
+        8.0
+      ],
+      "inlet_diameters": 4.0,
+      "icosphere_subdivisions": 3,
+      "reference": "Schiller-Naumann correlation Cd = 24/Re (1 + 0.15 Re^0.687) [UNVERIFIED]"
+    },
+    "refinement": {
+      "coarse_cells_across_span": 66,
+      "fine_cells_across_span": 100,
+      "speed_index": 1,
+      "alpha_deg": 0.0,
+      "beta_deg": 0.0
+    }
+  }
+}

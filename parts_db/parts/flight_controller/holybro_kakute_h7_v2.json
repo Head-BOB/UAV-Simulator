@@ -1,0 +1,56 @@
+{
+  "availability_url": "https://holybro.com/products/kakute-h7-v2",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "x,y 35x35 mm from the page ('Dimension - 35x35mm'); height 8 mm not published. TODO(HUMAN-VERIFY): measure height",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.035,
+      0.035,
+      0.008
+    ]
+  },
+  "category": "flight_controller",
+  "current_draw_a": {
+    "provenance": {
+      "note": "board current not on the page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.1
+  },
+  "id": "holybro_kakute_h7_v2",
+  "manufacturer": "Holybro",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight - 8g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "91334d96b3b89af07b879aed16dfc7d96e5791b0ab0135f0097830ad4b4e81b5",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/kakute-h7-v2"
+    },
+    "value": 0.008
+  },
+  "model": "Kakute H7 v2",
+  "mount_slot": "stack_30x30",
+  "notes": "Mounting 30.5 x 30.5 mm (page). Includes 5 V 2 A and 9 V 3 A BECs.",
+  "price_url": "https://holybro.com/products/kakute-h7-v2",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Regular price on the product page; prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "91334d96b3b89af07b879aed16dfc7d96e5791b0ab0135f0097830ad4b4e81b5",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/kakute-h7-v2"
+    },
+    "value": 52.0
+  },
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "battery input 3S-8S on the page; 6S nominal assumed. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 22.2
+  }
+}

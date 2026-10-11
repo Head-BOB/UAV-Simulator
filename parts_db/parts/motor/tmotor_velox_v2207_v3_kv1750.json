@@ -1,0 +1,132 @@
+{
+  "bounding_box_m": {
+    "provenance": {
+      "note": "typical 2207 with shaft. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.029,
+      0.029,
+      0.033
+    ]
+  },
+  "category": "motor",
+  "cells_max": {
+    "provenance": {
+      "note": "typical for 1750 KV. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 6
+  },
+  "cells_min": {
+    "provenance": {
+      "note": "typical for 1750 KV. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 4
+  },
+  "id": "tmotor_velox_v2207_v3_kv1750",
+  "kv_rpm_per_v": {
+    "provenance": {
+      "note": "from the product name V2207 V3 KV1750. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 1750.0
+  },
+  "manufacturer": "T-Motor",
+  "mass_kg": {
+    "provenance": {
+      "note": "typical 2207 motor with leads. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.033
+  },
+  "max_current_a": {
+    "provenance": {
+      "note": "typical 2207 6S peak. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 40.0
+  },
+  "max_power_w": {
+    "provenance": {
+      "note": "typical 2207 6S peak. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 900.0
+  },
+  "model": "Velox V2207 V3 KV1750",
+  "mount_pattern": "16x16mm_ASSUMED",
+  "no_load_current_a": {
+    "provenance": {
+      "note": "typical 2207. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 1.0
+  },
+  "no_load_test_voltage_v": {
+    "provenance": {
+      "note": "typical test voltage. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 10.0
+  },
+  "notes": "FPV motor spec table is client-rendered (not in the page HTML) and the product URL redirects to a different T-Motor domain that is not on the allowlist, so NO value could be read or pinned. Every number is ASSUMED typical for a 2207 6S motor. TODO(HUMAN-VERIFY): fill from the T-Motor Velox V2207 V3 spec table.",
+  "prop_diameter_max_m": {
+    "provenance": {
+      "note": "5.5 in. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.1397
+  },
+  "prop_diameter_min_m": {
+    "provenance": {
+      "note": "4.5 in. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.1143
+  },
+  "rating_duration_s": {
+    "provenance": {
+      "note": "typical peak rating. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 10.0
+  },
+  "schema_version": "1.0.0",
+  "shaft_diameter_m": {
+    "provenance": {
+      "note": "typical 2207 shaft. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.005
+  },
+  "thermal_resistance_k_per_w": {
+    "provenance": {
+      "note": "placeholder, small motor. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 1.5
+  },
+  "thermal_time_constant_s": {
+    "provenance": {
+      "note": "placeholder. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 60.0
+  },
+  "winding_resistance_ohm": {
+    "provenance": {
+      "note": "typical 2207, order of magnitude. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.05
+  },
+  "winding_temp_limit_c": {
+    "provenance": {
+      "note": "same placeholder as physics_core thermal::MOTOR_TEMP_LIMIT_C. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 120.0
+  }
+}

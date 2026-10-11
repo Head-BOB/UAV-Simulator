@@ -1,0 +1,59 @@
+{
+  "availability_url": "https://holybro.com/collections/power-modules-pdbs/products/pixhawk-4-power-module-pm07",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimensions:68*50*10 mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "3b93414ee5ae79f939354ff9609dff07a9d2330161d176245424b53725c0ac31",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/collections/power-modules-pdbs/products/pixhawk-4-power-module-pm07"
+    },
+    "value": [
+      0.068,
+      0.05,
+      0.01
+    ]
+  },
+  "category": "pdb",
+  "current_draw_a": {
+    "provenance": {
+      "note": "module quiescent current not on the page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.05
+  },
+  "id": "holybro_pm07",
+  "manufacturer": "Holybro",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight: 43.8g (the quick start guide says 40.3 g)",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "3b93414ee5ae79f939354ff9609dff07a9d2330161d176245424b53725c0ac31",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/collections/power-modules-pdbs/products/pixhawk-4-power-module-pm07"
+    },
+    "value": 0.0438
+  },
+  "model": "PM07 power module + PDB (2S-14S)",
+  "mount_slot": "power_input",
+  "notes": "PCB 90 A continuous, 140 A burst (<60 s); 45 x 45 mm mounting holes.",
+  "price_url": "https://holybro.com/collections/power-modules-pdbs/products/pixhawk-4-power-module-pm07",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Regular price on the product page; prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "3b93414ee5ae79f939354ff9609dff07a9d2330161d176245424b53725c0ac31",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/collections/power-modules-pdbs/products/pixhawk-4-power-module-pm07"
+    },
+    "value": 43.99
+  },
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "input 2S-14S; 4S nominal assumed. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 14.8
+  }
+}

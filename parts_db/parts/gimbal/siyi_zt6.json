@@ -1,0 +1,49 @@
+{
+  "availability_url": "https://siyi.biz/en/product/tri-axis-multi-sensor-gimbal-pod/zt6/spec/",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimension 73.5*75*131.5 mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "2b7d9ffa63e25328c340f7dce7119115035eb97194742f4a5df9a8d0277ef68f",
+      "source_type": "CITED",
+      "source_url": "https://siyi.biz/en/product/tri-axis-multi-sensor-gimbal-pod/zt6/spec/"
+    },
+    "value": [
+      0.0735,
+      0.075,
+      0.1315
+    ]
+  },
+  "category": "gimbal",
+  "current_draw_a": {
+    "provenance": {
+      "note": "average power 6.5 W (page: 'Power Consumption Average') / 14.8 V supply",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.439189
+  },
+  "id": "siyi_zt6",
+  "manufacturer": "SIYI",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Including Anti-Vibration Board: 197 g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "2b7d9ffa63e25328c340f7dce7119115035eb97194742f4a5df9a8d0277ef68f",
+      "source_type": "CITED",
+      "source_url": "https://siyi.biz/en/product/tri-axis-multi-sensor-gimbal-pod/zt6/spec/"
+    },
+    "value": 0.197
+  },
+  "model": "ZT6 multi-sensor gimbal pod",
+  "mount_slot": "belly_mount",
+  "notes": "Current is the AVERAGE; the page also gives a higher 'summit' power (size the supply for it).",
+  "price_url": "https://siyi.biz/en/product/tri-axis-multi-sensor-gimbal-pod/zt6/spec/",
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "Working Voltage 11 ~ 25.2 V; 4S nominal used. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 14.8
+  }
+}

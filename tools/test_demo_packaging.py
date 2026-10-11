@@ -160,7 +160,7 @@ class ConfigTests(unittest.TestCase):
 
     def test_hud_class_is_set_by_the_game_mode(self):
         text = (ROOT / "UE5Project" / "Source" / "UAV_Simulator" / "DroneDemoGameMode.cpp").read_text(encoding="utf-8")
-        self.assertIn("HUDClass = ADroneDemoHUD::StaticClass();", text)
+        self.assertIn("HUDClass = ADroneAppHUD::StaticClass();", text)   # P7: the application HUD replaced the demo HUD
 
     def test_slate_modules_are_declared(self):
         self.assertRegex(BUILD_CS, r'"Slate",\s*"SlateCore"')

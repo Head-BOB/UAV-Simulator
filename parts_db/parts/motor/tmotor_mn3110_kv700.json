@@ -1,0 +1,196 @@
+{
+  "availability_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Motor Dimensions Φ37.7x28.5 mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": [
+      0.0377,
+      0.0377,
+      0.0285
+    ]
+  },
+  "category": "motor",
+  "cells_max": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; No.of Cells(Lipo) 3-6S",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 6
+  },
+  "cells_min": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; No.of Cells(Lipo) 3-6S",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 3
+  },
+  "id": "tmotor_mn3110_kv700",
+  "kv_rpm_per_v": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; model name KV700",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 700.0
+  },
+  "manufacturer": "T-Motor",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight Including Cables 99 g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 0.099
+  },
+  "mass_without_cables_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight Excluding Cables 80 g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 0.08
+  },
+  "max_current_a": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Max Continuous Current 180S 21 A",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 21.0
+  },
+  "max_power_w": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Max Power (180S) 466 W",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 466.0
+  },
+  "model": "MN3110 KV700",
+  "mount_pattern": "TMOTOR_MN3110_DRAWING",
+  "no_load_current_a": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Idle Current@10v 0.3 A",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 0.3
+  },
+  "no_load_test_voltage_v": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Idle Current@10v",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 10.0
+  },
+  "notes": "mount_pattern is a LABEL only (hole pattern is in the drawing image on the page). TODO(HUMAN-VERIFY): read it from the drawing. Thermal fields are placeholders (the page publishes none). Prop range = props in the page's thrust table.",
+  "price_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Relevant Products price list on the T-Motor Air 20A page, one price for all KV of the model; store prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "f35f694537923c2ecc0ccf0a67ce6f52da6ac63532d3b8ae585cfba82f4076ac",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/air-20a-4s-esc.html"
+    },
+    "value": 61.9
+  },
+  "prop_diameter_max_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; KV700 thrust tables (10x3.3 ... 13x4.4). largest tested prop 13 in; TESTED range, not a maker limit",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 0.3302
+  },
+  "prop_diameter_min_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; KV700 thrust tables (10x3.3 ... 13x4.4). smallest tested prop 10 in; TESTED range, not a maker limit",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 0.254
+  },
+  "rating_duration_s": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Max Continuous Current 180S",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 180.0
+  },
+  "schema_version": "1.0.0",
+  "shaft_diameter_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Shaft Diameter 4 mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 0.004
+  },
+  "thermal_resistance_k_per_w": {
+    "provenance": {
+      "note": "placeholder winding-to-ambient resistance, order of magnitude only, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.6
+  },
+  "thermal_time_constant_s": {
+    "provenance": {
+      "note": "placeholder thermal time constant, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 150.0
+  },
+  "winding_resistance_ohm": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Internal Resistance 92 mOhm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5842f51b1d442a12119daa976c80e45b6d73ca37f8e9b31c87b4716a56dcc61c",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/mn3110-motor-navigator-type.html"
+    },
+    "value": 0.092
+  },
+  "winding_temp_limit_c": {
+    "provenance": {
+      "note": "same placeholder as physics_core thermal::MOTOR_TEMP_LIMIT_C. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 120.0
+  }
+}

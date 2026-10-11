@@ -1,0 +1,66 @@
+id,category,item,type,where,effect
+A001,part input,tmotor_mn3508_kv700.winding_temp_limit_c,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A002,part input,tmotor_mn3508_kv700.thermal_resistance_k_per_w,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A003,part input,tmotor_air_40a_2_6s.efficiency,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A004,part input,tmotor_air_40a_2_6s.temp_limit_c,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A005,part input,tmotor_air_40a_2_6s.thermal_resistance_k_per_w,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A006,part input,tmotor_air_40a_2_6s.mass_kg,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A007,part input,ref_battery_generic_4s_5000.capacity_ah,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A008,part input,ref_battery_generic_4s_5000.internal_resistance_ohm,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A009,part input,ref_battery_generic_4s_5000.voltage_per_cell_cutoff_v,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A010,part input,ref_battery_generic_4s_5000.max_continuous_c,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A011,part input,ref_battery_generic_4s_5000.temp_limit_c,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A012,part input,ref_battery_generic_4s_5000.thermal_resistance_k_per_w,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A013,part input,ref_battery_generic_4s_5000.mass_kg,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A014,part input,ref_battery_generic_4s_5000.ocv_curve,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A015,part input,ref_battery_generic_4s_5000.cells,ASSUMED,powertrain_config.json,feeds the electrical / thermal model; replace with a datasheet or measured value
+A016,part input,ref_frame_quad_400.mass_kg,ASSUMED,vehicle_build.json assumed_inputs,"plates plus four arms, no design. TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+A017,part input,ref_frame_quad_400.motor_spacing_adjacent_m,ASSUMED,vehicle_build.json assumed_inputs,"human decision 2026-10-10 and vehicle_config.json motor_pos_m (+-0.2, +-0.2) [catalog status was CITED, no URL]. TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+A018,part input,ref_frame_quad_400.arm_count,ASSUMED,vehicle_build.json assumed_inputs,quad. TODO(HUMAN-VERIFY): replace with a datasheet or measured value
+A019,part input,ref_frame_quad_400.central_body_box_m,ASSUMED,vehicle_build.json assumed_inputs,for the inertia estimate only. TODO(HUMAN-VERIFY): replace with a datasheet or measured value
+A020,part input,ref_frame_quad_400.body_half_width_m,ASSUMED,vehicle_build.json assumed_inputs,centre plate half width; prop clearance needs body half width < 0.13 m. TODO(HUMAN-VERIFY): replace with a datasheet or measured value
+A021,part input,ref_frame_quad_400.tube_od_m,ASSUMED,vehicle_build.json assumed_inputs,"hollow carbon tube, no design. TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+A022,part input,ref_frame_quad_400.arm_allowable_bending_stress_pa,ASSUMED,vehicle_build.json assumed_inputs,"conservative laminate allowable, NOT a tested value. TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+A023,part input,ref_frame_quad_400.projected_area_top_m2,ASSUMED,vehicle_build.json assumed_inputs,"placeholder, not used by the core yet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+A024,part input,ref_frame_quad_400.projected_area_front_m2,ASSUMED,vehicle_build.json assumed_inputs,"placeholder, not used by the core yet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+A025,part input,ref_frame_quad_400.projected_area_side_m2,ASSUMED,vehicle_build.json assumed_inputs,"placeholder, not used by the core yet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+A026,part input,ref_frame_quad_400.cg_offset_m,ASSUMED,vehicle_build.json assumed_inputs,frame CG at the geometric centre. TODO(HUMAN-VERIFY): replace with a datasheet or measured value
+A027,part input,tmotor_air_40a_2_6s.bounding_box_m,ASSUMED,vehicle_build.json assumed_inputs,not on the manufacturer page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value
+A028,part input,apc_12x6e.mass_kg,ASSUMED,vehicle_build.json assumed_inputs,"typical 12 inch plastic prop, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+A029,part input,apc_12x6e.bounding_box_m,ASSUMED,vehicle_build.json assumed_inputs,disc diameter x diameter x assumed hub height. TODO(HUMAN-VERIFY): replace with a datasheet or measured value
+A030,part input,apc_12x6e.bore_m,ASSUMED,vehicle_build.json assumed_inputs,"1/4 in hub bore with adapters, from memory of APC hubs. TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+A031,part input,ref_battery_generic_4s_5000.bounding_box_m,ASSUMED,vehicle_build.json assumed_inputs,"typical 4S 5000 mAh pack size, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+A032,part input,ref_battery_generic_4s_5000.voltage_per_cell_nominal_v,ASSUMED,vehicle_build.json assumed_inputs,nominal_voltage_v / cells from the catalog (3.7 V per cell convention). TODO(HUMAN-VERIFY): replace with a datasheet or measured value
+A033,part input,ref_avionics_wiring_lump.mass_kg,ASSUMED,vehicle_build.json assumed_inputs,"flight controller, wiring, receiver, no list. TODO(HUMAN-VERIFY): replace with a datasheet or measured value"
+A034,builder,layout slots and offsets (layout.py),ASSUMED,tools/parts/build_vehicle.py,builder constant or layout rule used to derive the vehicle config
+A035,builder,arm mass from CFRP density 1600.0 kg/m3,ASSUMED,tools/parts/build_vehicle.py,builder constant or layout rule used to derive the vehicle config
+A036,builder,"nominal pack voltage, no sag, no ESC drop",ASSUMED,tools/parts/build_vehicle.py,builder constant or layout rule used to derive the vehicle config
+A037,builder,"static propeller coefficients, sea-level ISA density",ASSUMED,tools/parts/build_vehicle.py,builder constant or layout rule used to derive the vehicle config
+A038,builder,rule thresholds in compat.py,ASSUMED,tools/parts/build_vehicle.py,builder constant or layout rule used to derive the vehicle config
+A039,powertrain,powertrain parameters are not all verified (parameters_verified = 0),ASSUMED,powertrain_config.json,"electrical, thermal and battery numbers behind every result are partly assumed"
+A040,controller,controller class values (quad_standard) and derived gains,ASSUMED,parts_db/controller_classes.json,"limits, bandwidths and gains shape every closed-loop result (tracking errors, break points)"
+A041,test definition,climb v1 (set 1.1.0-smoke),ASSUMED,campaign/test_definitions.json,"limits, durations, tolerances and criteria are engineering starting points, not requirements"
+A042,test definition,endurance v1 (set 1.1.0-smoke),ASSUMED,campaign/test_definitions.json,"limits, durations, tolerances and criteria are engineering starting points, not requirements"
+A043,test definition,fpv_punchout v1 (set 1.1.0-smoke),ASSUMED,campaign/test_definitions.json,"limits, durations, tolerances and criteria are engineering starting points, not requirements"
+A044,test definition,fpv_sprint v1 (set 1.1.0-smoke),ASSUMED,campaign/test_definitions.json,"limits, durations, tolerances and criteria are engineering starting points, not requirements"
+A045,test definition,hover_payload v1 (set 1.1.0-smoke),ASSUMED,campaign/test_definitions.json,"limits, durations, tolerances and criteria are engineering starting points, not requirements"
+A046,test definition,max_speed v1 (set 1.1.0-smoke),ASSUMED,campaign/test_definitions.json,"limits, durations, tolerances and criteria are engineering starting points, not requirements"
+A047,test definition,thermal_soak v1 (set 1.1.0-smoke),ASSUMED,campaign/test_definitions.json,"limits, durations, tolerances and criteria are engineering starting points, not requirements"
+A048,test definition,wind_gust v1 (set 1.1.0-smoke),ASSUMED,campaign/test_definitions.json,"limits, durations, tolerances and criteria are engineering starting points, not requirements"
+A049,conditions,"condition set smoke: ambient 20 C, site 0 m, wind 0 m/s, SOC 0.05, payload 0 kg",USER_INPUT,conditions file,chosen by the person running the study; results hold for these conditions only
+A050,model,"turbulence: Dryden (MIL-HDBK-1797 low-altitude form), UNVERIFIED",UNVERIFIED,physics_core/src/turbulence.rs,every equation awaits a human check against the handbook (HUMAN-TODO); wind-test break points depend on it
+A051,model,body drag: legacy analytic model (no CFD),ASSUMED,physics_core/src/aero.rs,drag of the built vehicle is not computed from its shape
+A052,test note,battery discharge curve and thermal inputs are ASSUMED: the endurance number is indicative,ASSUMED,endurance/result.json,stated by the test itself
+A053,report,thrust reserve alert threshold 1.5 (max thrust / weight),ASSUMED,tools/report/assumptions.py,only decides which time the event timeline marks as 'reserve fell below'; no result changes
+A054,part verification,apc_12x6e: Unverified,UNVERIFIED,parts_db/human_verification.json,key fields have not been ticked by a human against the datasheet
+A055,part verification,ref_avionics_wiring_lump: Unverified,UNVERIFIED,parts_db/human_verification.json,key fields have not been ticked by a human against the datasheet
+A056,part verification,ref_battery_generic_4s_5000: Unverified,UNVERIFIED,parts_db/human_verification.json,key fields have not been ticked by a human against the datasheet
+A057,part verification,ref_frame_quad_400: Unverified,UNVERIFIED,parts_db/human_verification.json,key fields have not been ticked by a human against the datasheet
+A058,part verification,tmotor_air_40a_2_6s: Unverified,UNVERIFIED,parts_db/human_verification.json,key fields have not been ticked by a human against the datasheet
+A059,part verification,tmotor_mn3508_kv700: Unverified,UNVERIFIED,parts_db/human_verification.json,key fields have not been ticked by a human against the datasheet
+A060,validation,motor_electrical kv700_11.1v_12x4cf_100pct:voltage: error -11.02 %,MEASURED_DEVIATION,validation_report.json,model differs from the reference by more than 10 %
+A061,validation,motor_electrical kv700_11.1v_13x4.4cf_100pct:voltage: error -12.42 %,MEASURED_DEVIATION,validation_report.json,model differs from the reference by more than 10 %
+A062,validation,motor_electrical kv700_14.8v_11x3.7cf_100pct:voltage: error -11.78 %,MEASURED_DEVIATION,validation_report.json,model differs from the reference by more than 10 %
+A063,validation,motor_electrical kv700_14.8v_12x4cf_100pct:voltage: error -13.98 %,MEASURED_DEVIATION,validation_report.json,model differs from the reference by more than 10 %
+A064,validation,uiuc_propeller static@1046.667rpm:ct: error +27.84 %,MEASURED_DEVIATION,validation_report.json,model differs from the reference by more than 10 %
+A065,validation,uiuc_propeller static@1520rpm:ct: error +10.34 %,MEASURED_DEVIATION,validation_report.json,model differs from the reference by more than 10 %

@@ -1,0 +1,51 @@
+{
+  "availability_url": "https://shop.runcam.com/runcam-phoenix-2/",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimensions 19*19*19mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "6ddc4657bfe7a90bafbea6e5709ea747a07518fa276ff2fac73b8d063b3e0576",
+      "source_type": "CITED",
+      "source_url": "https://shop.runcam.com/runcam-phoenix-2/"
+    },
+    "value": [
+      0.019,
+      0.019,
+      0.019
+    ]
+  },
+  "category": "camera",
+  "current_draw_a": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Current 200mA@5V",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "6ddc4657bfe7a90bafbea6e5709ea747a07518fa276ff2fac73b8d063b3e0576",
+      "source_type": "CITED",
+      "source_url": "https://shop.runcam.com/runcam-phoenix-2/"
+    },
+    "value": 0.2
+  },
+  "id": "runcam_phoenix_2",
+  "manufacturer": "RunCam",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Net Weight 9.0g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "6ddc4657bfe7a90bafbea6e5709ea747a07518fa276ff2fac73b8d063b3e0576",
+      "source_type": "CITED",
+      "source_url": "https://shop.runcam.com/runcam-phoenix-2/"
+    },
+    "value": 0.009
+  },
+  "model": "Phoenix 2 analog FPV camera",
+  "mount_slot": "front_mount",
+  "price_url": "https://shop.runcam.com/runcam-phoenix-2/",
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "page: DC 5-36V; the current below is quoted at 5 V so 5 V is used. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 5.0
+  }
+}

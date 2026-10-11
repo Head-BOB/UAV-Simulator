@@ -1,0 +1,13 @@
+{
+  "name": "reference_quad",
+  "vehicle_class": "quad_standard",
+  "notes": "Reference parts of the Monday demo, but with the T-Motor AIR 40A ESC: the demo's generic 20 A ESC is below the MN3508 KV700 23 A rating and is refused (see reference_quad_demo_esc.build.json).",
+  "parts": {
+    "frame": "ref_frame_quad_400",
+    "motor": "tmotor_mn3508_kv700",
+    "esc": "tmotor_air_40a_2_6s",
+    "propeller": "apc_12x6e",
+    "battery": "ref_battery_generic_4s_5000",
+    "wiring": "ref_avionics_wiring_lump"
+  }
+}

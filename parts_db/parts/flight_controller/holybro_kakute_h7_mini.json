@@ -1,0 +1,59 @@
+{
+  "availability_url": "https://holybro.com/products/kakute-h7-mini",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimension - 31x30x6mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "3678d11f8a4069edeb514ab0add6eaaa7e169c2cb05512dfb4dd7b5351f11564",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/kakute-h7-mini"
+    },
+    "value": [
+      0.031,
+      0.03,
+      0.006
+    ]
+  },
+  "category": "flight_controller",
+  "current_draw_a": {
+    "provenance": {
+      "note": "board current not on the page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.1
+  },
+  "id": "holybro_kakute_h7_mini",
+  "manufacturer": "Holybro",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight - 5.5g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "3678d11f8a4069edeb514ab0add6eaaa7e169c2cb05512dfb4dd7b5351f11564",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/kakute-h7-mini"
+    },
+    "value": 0.0055
+  },
+  "model": "Kakute H7 Mini",
+  "mount_slot": "stack_20x20",
+  "notes": "Mounting 20 x 20 mm (page).",
+  "price_url": "https://holybro.com/products/kakute-h7-mini",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Regular price on the product page; prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "3678d11f8a4069edeb514ab0add6eaaa7e169c2cb05512dfb4dd7b5351f11564",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/kakute-h7-mini"
+    },
+    "value": 58.99
+  },
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "battery input 2S-6S on the page; 6S nominal assumed. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 22.2
+  }
+}

@@ -3,7 +3,7 @@
 
 Completion Plan WP-2 "Done when": no mass or inertia literal remains in the source. Mass and inertia
 come from the hashed VehicleConfig only. The search covers `physics_core/src/**/*.rs`, up to the
-`#[cfg(test)]` line, which must introduce `mod tests` (otherwise the file is rejected, because the
+`#[cfg(test)]` line, which must introduce `mod tests` (optionally `pub` / `pub(crate)`; otherwise the file is rejected, because the
 cut point would be unclear). Comments and string literals are removed first.
 Flagged: an identifier containing `mass` or `inertia` (any case), optionally with a type (`: f64 =`), followed by
 `:`, `=`, `==`, `<`, `>`, `<=` or `>=` and then a number, optionally after `[`, `(` or `-`.
@@ -21,7 +21,8 @@ PATTERN = re.compile(
     re.IGNORECASE,
 )
 CFG_TEST = re.compile(r"#\[cfg\(test\)\]")
-MOD_TESTS = re.compile(r"#\[cfg\(test\)\]\s*mod\s+tests\b")
+# `pub(crate) mod tests` is allowed: other test modules import shared test helpers from it. The once-only rule and the cut point do not change.
+MOD_TESTS = re.compile(r"#\[cfg\(test\)\]\s*(?:pub(?:\([a-z]+\))?\s+)?mod\s+tests\b")
 
 
 def strip_comments_and_strings(text: str) -> str:

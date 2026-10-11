@@ -1,0 +1,61 @@
+{
+  "availability_url": "https://radiomasterrc.com/products/rp1-expresslrs-2-4ghz-nano-receiver",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimension: 13mm*11mm*3mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "74aff9f0244d47db30d128f27e99147f00c577e66988c96a6b461a9097453b12",
+      "source_type": "CITED",
+      "source_url": "https://radiomasterrc.com/products/rp1-expresslrs-2-4ghz-nano-receiver"
+    },
+    "value": [
+      0.013,
+      0.011,
+      0.003
+    ]
+  },
+  "category": "receiver",
+  "current_draw_a": {
+    "provenance": {
+      "note": "receiver current is not on the page; ExpressLRS nano receivers are low-power but the number is ASSUMED. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.1
+  },
+  "id": "radiomaster_rp1_v2",
+  "manufacturer": "RadioMaster",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight: 2.2g (Including antenna)",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "74aff9f0244d47db30d128f27e99147f00c577e66988c96a6b461a9097453b12",
+      "source_type": "CITED",
+      "source_url": "https://radiomasterrc.com/products/rp1-expresslrs-2-4ghz-nano-receiver"
+    },
+    "value": 0.0022
+  },
+  "model": "RP1 V2 ExpressLRS 2.4GHz nano",
+  "mount_slot": "frame_plate",
+  "price_url": "https://radiomasterrc.com/products/rp1-expresslrs-2-4ghz-nano-receiver",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Regular price on the product page; prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "74aff9f0244d47db30d128f27e99147f00c577e66988c96a6b461a9097453b12",
+      "source_type": "CITED",
+      "source_url": "https://radiomasterrc.com/products/rp1-expresslrs-2-4ghz-nano-receiver"
+    },
+    "value": 18.99
+  },
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Working voltage: 5v",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "74aff9f0244d47db30d128f27e99147f00c577e66988c96a6b461a9097453b12",
+      "source_type": "CITED",
+      "source_url": "https://radiomasterrc.com/products/rp1-expresslrs-2-4ghz-nano-receiver"
+    },
+    "value": 5.0
+  }
+}

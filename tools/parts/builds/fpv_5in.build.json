@@ -1,0 +1,13 @@
+{
+  "name": "fpv_5in",
+  "vehicle_class": "quad_fpv_5in",
+  "notes": "5-inch FPV class build from the seed catalogue. The T-Motor T5143S propeller has no UIUC data of its own: its Ct/Cp table is the APC 12x6E table used as a SCALED stand-in (ASSUMED, flagged in the sidecar), and 5 in props spin faster than that table covers, so the propeller runs on the held edge value for most of the envelope.",
+  "parts": {
+    "frame": "holybro_kopis2_220_frame",
+    "motor": "tmotor_velox_v2207_v3_kv1750",
+    "esc": "holybro_tekko32_f4_4in1_50a",
+    "propeller": "tmotor_t5143s_prop",
+    "battery": "tattu_rline_v6_1300_6s_160c",
+    "flight_controller": "holybro_kakute_h7_v2"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "availability_url": "https://store.tmotor.com/product/polish-carbon-fiber-13x4_4-prop.html",
+  "blades": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; T-MOTOR Series 2blades-integrated",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5c4eefc906255ba8df0948c0c6fcb626caf218c65e24d728150aad4829791dbf",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/polish-carbon-fiber-13x4_4-prop.html"
+    },
+    "value": 2
+  },
+  "bore_m": {
+    "provenance": {
+      "note": "hub bore not on the page; T-Motor props bolt to a motor prop mount. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.006
+  },
+  "bounding_box_m": {
+    "provenance": {
+      "note": "disc diameter from the page; hub height assumed. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.3302,
+      0.3302,
+      0.012
+    ]
+  },
+  "category": "propeller",
+  "ct_cp_scaling_assumed": {
+    "provenance": {
+      "note": "diameter ratio 13 in / 12 in used to reuse the APC 12x6E table. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 1.083333
+  },
+  "data_basis": "SCALED",
+  "diameter_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Model No. Polished CF 13*4.4 (330.2*111.8 mm)",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5c4eefc906255ba8df0948c0c6fcb626caf218c65e24d728150aad4829791dbf",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/polish-carbon-fiber-13x4_4-prop.html"
+    },
+    "value": 0.3302
+  },
+  "id": "tmotor_cf_13x4_4",
+  "manufacturer": "T-Motor",
+  "mass_kg": {
+    "provenance": {
+      "note": "2 x 'Weight (Single Blade)' 14.2 g; reading of that label for an integrated 2-blade prop is ambiguous. TODO(HUMAN-VERIFY)",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.0284
+  },
+  "model": "Polished CF 13*4.4",
+  "notes": "No measured Ct/Cp table: the APC 12x6E table is used as a stand-in, scaled by diameter. Pitch/diameter is 0.34 here vs 0.50 for the 12x6E, so this is a POOR stand-in. Page: optimum 5000-8000 RPM.",
+  "pitch_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Model No. Polished CF 13*4.4 (330.2*111.8 mm)",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5c4eefc906255ba8df0948c0c6fcb626caf218c65e24d728150aad4829791dbf",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/polish-carbon-fiber-13x4_4-prop.html"
+    },
+    "value": 0.1118
+  },
+  "price_url": "https://store.tmotor.com/product/polish-carbon-fiber-13x4_4-prop.html",
+  "scaled_from": "apc_12x6e",
+  "schema_version": "1.0.0"
+}

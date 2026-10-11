@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "test": "endurance",
+  "definition_version": "1",
+  "outcome": "COMPLETED",
+  "breaking_point": null,
+  "metrics": [{"name": "duration_s", "value": 70.32}, {"name": "energy_used_wh", "value": 2.37132597528}, {"name": "mean_power_w", "value": 121.398940714}, {"name": "final_soc", "value": 0.013744645937}, {"name": "loops_completed", "value": 6}, {"name": "distance_flown_m", "value": 248.222384877}, {"name": "final_cutoff_run_s", "value": 1}],
+  "notes": ["ended by battery cutoff (pack voltage below cells x cutoff, confirmed)", "battery discharge curve and thermal inputs are ASSUMED: the endurance number is indicative"],
+  "series": [{"file": "timeseries_endurance.csv", "rows": 37}],
+  "steps_simulated": 36160,
+  "turbulence": "Dryden (MIL-HDBK-1797 low-altitude form), UNVERIFIED",
+  "turbulence_height_clamped_steps": 0,
+  "wind_limited_steps": 0,
+  "drag_model": "analytic_legacy"
+}

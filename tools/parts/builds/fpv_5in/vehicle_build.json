@@ -1,0 +1,478 @@
+{
+  "arm": {
+    "max_bending_stress_pa_at_full_throttle": 14154480.767019227,
+    "section": {
+      "area_m2": 0.000125,
+      "half_thickness_m": 0.0025,
+      "kind": "plate",
+      "second_moment_m4": 2.604166666666667e-10,
+      "section_modulus_m3": 1.0416666666666669e-07,
+      "thickness_m": 0.005,
+      "width_m": 0.025
+    }
+  },
+  "assumed_inputs": [
+    {
+      "field": "mass_kg",
+      "note": "frame-only mass not published; whole PNF is 325 g without battery and props. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "holybro_kopis2_220_frame"
+    },
+    {
+      "field": "arm_count",
+      "note": "quadcopter frame. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "holybro_kopis2_220_frame"
+    },
+    {
+      "field": "central_body_box_m",
+      "note": "not published. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "holybro_kopis2_220_frame"
+    },
+    {
+      "field": "body_half_width_m",
+      "note": "not published. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "holybro_kopis2_220_frame"
+    },
+    {
+      "field": "arm_plate_width_m",
+      "note": "arm width not published. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "holybro_kopis2_220_frame"
+    },
+    {
+      "field": "projected_area_top_m2",
+      "note": "rough. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "holybro_kopis2_220_frame"
+    },
+    {
+      "field": "projected_area_front_m2",
+      "note": "rough. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "holybro_kopis2_220_frame"
+    },
+    {
+      "field": "projected_area_side_m2",
+      "note": "rough. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "holybro_kopis2_220_frame"
+    },
+    {
+      "field": "max_prop_diameter_m",
+      "note": "the page lists 4x T5143S props supplied with this kit, so at least 5.1 in (0.12954 m, read from the prop NAME) fits; the product name '5 in' is a size class, not a limit. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "holybro_kopis2_220_frame"
+    },
+    {
+      "field": "cg_offset_m",
+      "note": "frame CG at the geometric centre. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "holybro_kopis2_220_frame"
+    },
+    {
+      "field": "mass_kg",
+      "note": "typical 2207 motor with leads. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_velox_v2207_v3_kv1750"
+    },
+    {
+      "field": "bounding_box_m",
+      "note": "typical 2207 with shaft. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_velox_v2207_v3_kv1750"
+    },
+    {
+      "field": "kv_rpm_per_v",
+      "note": "from the product name V2207 V3 KV1750. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_velox_v2207_v3_kv1750"
+    },
+    {
+      "field": "winding_resistance_ohm",
+      "note": "typical 2207, order of magnitude. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_velox_v2207_v3_kv1750"
+    },
+    {
+      "field": "no_load_current_a",
+      "note": "typical 2207. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_velox_v2207_v3_kv1750"
+    },
+    {
+      "field": "max_current_a",
+      "note": "typical 2207 6S peak. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_velox_v2207_v3_kv1750"
+    },
+    {
+      "field": "shaft_diameter_m",
+      "note": "typical 2207 shaft. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_velox_v2207_v3_kv1750"
+    },
+    {
+      "field": "cells_min",
+      "note": "typical for 1750 KV. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_velox_v2207_v3_kv1750"
+    },
+    {
+      "field": "cells_max",
+      "note": "typical for 1750 KV. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_velox_v2207_v3_kv1750"
+    },
+    {
+      "field": "prop_diameter_min_m",
+      "note": "4.5 in. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_velox_v2207_v3_kv1750"
+    },
+    {
+      "field": "prop_diameter_max_m",
+      "note": "5.5 in. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_velox_v2207_v3_kv1750"
+    },
+    {
+      "field": "efficiency",
+      "note": "typical, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "holybro_tekko32_f4_4in1_50a"
+    },
+    {
+      "field": "mass_kg",
+      "note": "typical 5 in plastic prop. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_t5143s_prop"
+    },
+    {
+      "field": "bounding_box_m",
+      "note": "5.1 in disc. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_t5143s_prop"
+    },
+    {
+      "field": "diameter_m",
+      "note": "5.1 in from the name T5143S. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_t5143s_prop"
+    },
+    {
+      "field": "bore_m",
+      "note": "typical 5 mm shaft. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_t5143s_prop"
+    },
+    {
+      "field": "bounding_box_m",
+      "note": "x,y 35x35 mm from the page ('Dimension - 35x35mm'); height 8 mm not published. TODO(HUMAN-VERIFY): measure height",
+      "part_id": "holybro_kakute_h7_v2"
+    },
+    {
+      "field": "current_draw_a",
+      "note": "board current not on the page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "holybro_kakute_h7_v2"
+    },
+    {
+      "field": "supply_voltage_v",
+      "note": "battery input 3S-8S on the page; 6S nominal assumed. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "holybro_kakute_h7_v2"
+    },
+    {
+      "field": "ct_cp_scaling_assumed",
+      "note": "diameter ratio 5.1 in / 12 in used to reuse the APC 12x6E table. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "part_id": "tmotor_t5143s_prop"
+    }
+  ],
+  "build_name": "fpv_5in",
+  "builder_assumptions": [
+    "layout slots and offsets (layout.py)",
+    "arm mass from CFRP density 1600.0 kg/m3",
+    "nominal pack voltage, no sag, no ESC drop",
+    "static propeller coefficients, sea-level ISA density",
+    "rule thresholds in compat.py"
+  ],
+  "config_provenance": {
+    "inertia_kgm2": {
+      "formula": "diagonal of the combined tensor about the CG; parallel axis; shapes: box, cylinder (motor), thin disc (prop), thin rod (arm)",
+      "source_type": "CALCULATED"
+    },
+    "mass_kg": {
+      "formula": "sum of part mass_kg (with cables) x counts",
+      "source_type": "CALCULATED"
+    },
+    "max_rpm": {
+      "formula": "full-throttle motor/prop torque balance at nominal pack voltage 22.200 V; design-time estimate (tools/parts/estimates.py); P3's electrical model supersedes it",
+      "source_type": "CALCULATED"
+    },
+    "motor_pos_m": {
+      "formula": "(+-s/2, +-s/2) from motor_spacing_adjacent_m; z = propeller plane z minus CG z; order FR, FL, RR, RL",
+      "source_type": "CALCULATED"
+    },
+    "motor_spin": {
+      "formula": "same convention as the shipped vehicle_config.json (open point B-3 TODO(HUMAN-VERIFY))",
+      "source_type": "ASSUMED"
+    },
+    "prop_diameter_m": {
+      "formula": "propeller record diameter_m",
+      "source_type": "CITED/ASSUMED"
+    },
+    "thrust_coeff": {
+      "formula": "static Ct fit, SCALED_FROM:apc_12x6e, file offline_pipeline/props/apce_12x6.json, band [3000.0, 4500.0] rpm",
+      "source_type": "CALCULATED"
+    },
+    "torque_coeff": {
+      "formula": "kappa = Cp D / (2 pi Ct)",
+      "source_type": "CALCULATED"
+    }
+  },
+  "database": {
+    "db_version": "0.1.0",
+    "schema_version": "1.0.0"
+  },
+  "estimates": {
+    "ct_cp_basis": "SCALED_FROM:apc_12x6e",
+    "full_throttle": {
+      "current_a": 17.101116562026945,
+      "electrical_w": 379.64478767699825,
+      "iterations": 200,
+      "rpm": 37353.65230082266,
+      "shaft_w": 343.6774341216981,
+      "thrust_n": 13.403864362707605,
+      "torque_nm": 0.08785962137641276
+    },
+    "hover_point": {
+      "current_a": 2.392400343394008,
+      "electrical_w": 15.303170753988208,
+      "rpm": 10984.673068734188,
+      "terminal_voltage_v": 6.39657605644638,
+      "thrust_n": 1.1591460299999998,
+      "torque_nm": 0.007597967911337449
+    },
+    "hover_throttle": 0.2940722655105902,
+    "note": "design-time estimate (tools/parts/estimates.py); P3's electrical model supersedes it",
+    "pack_full_a": 72.10470131379766,
+    "pack_hover_a": 3.0024505934543777,
+    "pack_limit_a": 208.0,
+    "pack_voltage_nominal_v": 22.200000000000003,
+    "rho_kgpm3": 1.2250122659906946,
+    "thrust_to_weight": 11.563568364813886
+  },
+  "findings": [
+    {
+      "message": "tmotor_velox_v2207_v3_kv1750: thermal_time_constant_s 60.0 s (record) vs R x C 22.3 s (mass-based) differ by a factor 2.7; the mass-based capacity is used",
+      "parts": [
+        "tmotor_velox_v2207_v3_kv1750"
+      ],
+      "rule": "W-THERMAL-TAU",
+      "severity": "warning"
+    },
+    {
+      "message": "30 ASSUMED input values influence this result (listed in the sidecar)",
+      "parts": [],
+      "rule": "I-ASSUMED-COUNT",
+      "severity": "info"
+    }
+  ],
+  "generated_by": "tools/parts/build_vehicle.py",
+  "hover_duty_estimate": 0.28813405659668373,
+  "inertia_cross_check_old_lumped": {
+    "asserted_equal": false,
+    "new_minus_old_percent": [
+      9.582610783226585,
+      48.545852426713175,
+      3.3806719548389212
+    ],
+    "old_kgm2": [
+      0.0013095143378530003,
+      0.0010171943378530003,
+      0.0022779886757060006
+    ],
+    "old_method": "point masses at motors + remaining mass as one central box (build_ref_config.py)"
+  },
+  "mass_properties": {
+    "cg_from_frame_centre_m": [
+      0.00010469543147208124,
+      0.0,
+      0.006036590524534688
+    ],
+    "core_limitation": "the core takes only the diagonal; the off-diagonal products above are dropped",
+    "frame_split": {
+      "arm_mass_each_kg": 0.022000000000000002,
+      "body_mass_kg": 0.011999999999999997,
+      "density_kgpm3": 1600.0
+    },
+    "inertia_tensor_about_cg_kgm2": [
+      [
+        0.0014353233456035923,
+        -6.776263578034403e-21,
+        9.978112309644777e-07
+      ],
+      [
+        -6.776263578034403e-21,
+        0.001510954434013068,
+        5.082197683525802e-21
+      ],
+      [
+        9.978112309644777e-07,
+        5.082197683525802e-21,
+        0.0023551613123154757
+      ]
+    ]
+  },
+  "parts": [
+    {
+      "manufacturer": "Tattu",
+      "model": "R-Line V6 1300mAh 6S 160C",
+      "part_id": "tattu_rline_v6_1300_6s_160c",
+      "role": "battery"
+    },
+    {
+      "manufacturer": "Holybro",
+      "model": "Tekko32 F4 4in1 50A ESC",
+      "part_id": "holybro_tekko32_f4_4in1_50a",
+      "role": "esc"
+    },
+    {
+      "manufacturer": "Holybro",
+      "model": "Kakute H7 v2",
+      "part_id": "holybro_kakute_h7_v2",
+      "role": "flight_controller"
+    },
+    {
+      "manufacturer": "Holybro",
+      "model": "Kopis2 6S V2 5in frame (220 mm)",
+      "part_id": "holybro_kopis2_220_frame",
+      "role": "frame"
+    },
+    {
+      "manufacturer": "T-Motor",
+      "model": "Velox V2207 V3 KV1750",
+      "part_id": "tmotor_velox_v2207_v3_kv1750",
+      "role": "motor"
+    },
+    {
+      "manufacturer": "T-Motor",
+      "model": "T5143S 3-blade 5in (name only)",
+      "part_id": "tmotor_t5143s_prop",
+      "role": "propeller"
+    }
+  ],
+  "powertrain": {
+    "assumed_part_inputs": [
+      {
+        "field": "kv_rpm_per_v",
+        "part_id": "tmotor_velox_v2207_v3_kv1750"
+      },
+      {
+        "field": "winding_resistance_ohm",
+        "part_id": "tmotor_velox_v2207_v3_kv1750"
+      },
+      {
+        "field": "no_load_current_a",
+        "part_id": "tmotor_velox_v2207_v3_kv1750"
+      },
+      {
+        "field": "max_current_a",
+        "part_id": "tmotor_velox_v2207_v3_kv1750"
+      },
+      {
+        "field": "winding_temp_limit_c",
+        "part_id": "tmotor_velox_v2207_v3_kv1750"
+      },
+      {
+        "field": "thermal_resistance_k_per_w",
+        "part_id": "tmotor_velox_v2207_v3_kv1750"
+      },
+      {
+        "field": "mass_kg",
+        "part_id": "tmotor_velox_v2207_v3_kv1750"
+      },
+      {
+        "field": "efficiency",
+        "part_id": "holybro_tekko32_f4_4in1_50a"
+      },
+      {
+        "field": "temp_limit_c",
+        "part_id": "holybro_tekko32_f4_4in1_50a"
+      },
+      {
+        "field": "thermal_resistance_k_per_w",
+        "part_id": "holybro_tekko32_f4_4in1_50a"
+      },
+      {
+        "field": "internal_resistance_ohm",
+        "part_id": "tattu_rline_v6_1300_6s_160c"
+      },
+      {
+        "field": "voltage_per_cell_cutoff_v",
+        "part_id": "tattu_rline_v6_1300_6s_160c"
+      },
+      {
+        "field": "temp_limit_c",
+        "part_id": "tattu_rline_v6_1300_6s_160c"
+      },
+      {
+        "field": "thermal_resistance_k_per_w",
+        "part_id": "tattu_rline_v6_1300_6s_160c"
+      },
+      {
+        "field": "ocv_curve",
+        "part_id": "tattu_rline_v6_1300_6s_160c"
+      }
+    ],
+    "builder_assumptions": [
+      "motor R split",
+      "motor C split",
+      "specific heats",
+      "cooling reference air speed",
+      "cooling exponent"
+    ],
+    "derived": {
+      "battery_c_j_per_k": {
+        "formula": "pack mass x 1000.0 J/kg/K",
+        "value": 203.0
+      },
+      "battery_max_continuous_a": {
+        "formula": "max_continuous_c x capacity_ah",
+        "value": 208.0
+      },
+      "esc_c_j_per_k": {
+        "formula": "ESC mass x 900.0 J/kg/K",
+        "value": 12.42
+      },
+      "motor_c_total_j_per_k": {
+        "formula": "motor mass x 450.0 J/kg/K",
+        "value": 14.850000000000001
+      },
+      "motor_c_winding": "0.25 x motor heat capacity",
+      "motor_r_winding_case": "0.3 x the record's thermal_resistance_k_per_w",
+      "motor_tau_from_rc_s": 22.275000000000002,
+      "motor_tau_record_s": 60.0
+    },
+    "parameters_verified_rule": "1 only if no part input and no builder constant is ASSUMED",
+    "propeller_model": "table",
+    "propeller_table": {
+      "basis": "SCALED_FROM:apc_12x6e",
+      "curves": 4,
+      "grouping_tolerance": 0.02,
+      "hover_cp_table": 0.03268736022208466,
+      "hover_ct_table": 0.10206424546566582,
+      "hover_ct_table_minus_static_percent": 1.8036281775313452,
+      "hover_outside_data": true,
+      "hover_rpm_estimate": 10984.673068734188,
+      "measured_j_end_per_curve": [
+        0.630072,
+        0.593284,
+        0.617992,
+        0.653931
+      ],
+      "measured_rpm_range": [
+        3040.0,
+        6018.5
+      ],
+      "method": "runs within 2 % of rpm merged with a linear blend over the J overlap; static Ct/Cp added as the J = 0 point; nominal rpm from the file names",
+      "note": "the core uses the table; estimates.py (max_rpm, hover point) still use the static constants, so hover thrust and duty in the core differ slightly",
+      "points_per_curve": [
+        15,
+        18,
+        28,
+        35
+      ],
+      "source_file": "offline_pipeline/props/apce_12x6.json",
+      "source_sha256": "6c1965034700e50cf8ad25fc04847ddf14c9a20823f29c0166bcaeadc70d8247",
+      "stand_in": true,
+      "static_cp": 0.03187466666666666,
+      "static_ct": 0.100256
+    },
+    "source": "tools/parts/powertrain_export.py"
+  },
+  "projected_areas_m2": {
+    "note": "frame record areas + bounding-box faces of motors, battery and other parts; props excluded; overlap ignored (conservative)",
+    "values": {
+      "front": 0.0096335,
+      "side": 0.01297,
+      "top": 0.021446
+    }
+  },
+  "vehicle_class": "quad_fpv_5in"
+}

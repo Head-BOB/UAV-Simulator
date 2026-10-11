@@ -1,0 +1,61 @@
+{
+  "availability_url": "https://holybro.com/products/m10-gps",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimension φ50 x14.4 mm, square bbox",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "be9c3b0bc278bb4a55c797627bde61a56ce2513ba4757edba2fa33c2451f372b",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/m10-gps"
+    },
+    "value": [
+      0.05,
+      0.05,
+      0.0144
+    ]
+  },
+  "category": "gps",
+  "current_draw_a": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Less than 200mA @ 5V (page); an upper bound, not a typical draw",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "be9c3b0bc278bb4a55c797627bde61a56ce2513ba4757edba2fa33c2451f372b",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/m10-gps"
+    },
+    "value": 0.2
+  },
+  "id": "holybro_m10_gps",
+  "manufacturer": "Holybro",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight 32g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "be9c3b0bc278bb4a55c797627bde61a56ce2513ba4757edba2fa33c2451f372b",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/m10-gps"
+    },
+    "value": 0.032
+  },
+  "model": "M10 GPS",
+  "mount_slot": "mast",
+  "price_url": "https://holybro.com/products/m10-gps",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Regular price on the product page; prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "be9c3b0bc278bb4a55c797627bde61a56ce2513ba4757edba2fa33c2451f372b",
+      "source_type": "CITED",
+      "source_url": "https://holybro.com/products/m10-gps"
+    },
+    "value": 43.99
+  },
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "input 4.7-5.2 V on the page; 5.0 V nominal. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 5.0
+  }
+}

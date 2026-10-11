@@ -1,0 +1,2829 @@
+{
+  "categories": [
+    "battery",
+    "camera",
+    "esc",
+    "flight_controller",
+    "frame",
+    "gimbal",
+    "gps",
+    "motor",
+    "payload",
+    "pdb",
+    "propeller",
+    "receiver",
+    "wiring"
+  ],
+  "db_version": "0.1.0",
+  "parts": [
+    {
+      "category": "battery",
+      "frame_class": null,
+      "id": "gensace_5000_4s_45c_ec5",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.468
+        },
+        {
+          "name": "cells",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 4
+        },
+        {
+          "name": "capacity_ah",
+          "source_type": "CITED",
+          "unit": "Ah",
+          "value": 5.0
+        },
+        {
+          "name": "max_continuous_c",
+          "source_type": "CITED",
+          "unit": "C rate",
+          "value": 45.0
+        },
+        {
+          "name": "internal_resistance_ohm",
+          "source_type": "ASSUMED",
+          "unit": "ohm",
+          "value": 0.02
+        },
+        {
+          "name": "voltage_per_cell_nominal_v",
+          "source_type": "CALCULATED",
+          "unit": "V",
+          "value": 3.7
+        },
+        {
+          "name": "voltage_per_cell_cutoff_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 3.3
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.156,
+            0.047,
+            0.03
+          ]
+        }
+      ],
+      "manufacturer": "Gens ace",
+      "model": "G-Tech 5000mAh 4S 45C EC5",
+      "notes": "Manufacturer shop page. Internal resistance, thermal values and the OCV curve are NOT on the page: ASSUMED (the curve is a generic LiPo shape).",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "battery",
+      "frame_class": null,
+      "id": "gensace_5000_4s_50c_hardcase",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.589
+        },
+        {
+          "name": "cells",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 4
+        },
+        {
+          "name": "capacity_ah",
+          "source_type": "CITED",
+          "unit": "Ah",
+          "value": 5.0
+        },
+        {
+          "name": "max_continuous_c",
+          "source_type": "CITED",
+          "unit": "C rate",
+          "value": 50.0
+        },
+        {
+          "name": "internal_resistance_ohm",
+          "source_type": "ASSUMED",
+          "unit": "ohm",
+          "value": 0.018
+        },
+        {
+          "name": "voltage_per_cell_nominal_v",
+          "source_type": "CALCULATED",
+          "unit": "V",
+          "value": 3.7
+        },
+        {
+          "name": "voltage_per_cell_cutoff_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 3.3
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.138,
+            0.046,
+            0.05
+          ]
+        }
+      ],
+      "manufacturer": "Gens ace",
+      "model": "5000mAh 4S 50C hardcase Deans",
+      "notes": "Manufacturer shop page. Internal resistance, thermal values and the OCV curve are NOT on the page: ASSUMED (the curve is a generic LiPo shape).",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "battery",
+      "frame_class": null,
+      "id": "ref_battery_generic_4s_5000",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.45
+        },
+        {
+          "name": "cells",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 4
+        },
+        {
+          "name": "capacity_ah",
+          "source_type": "ASSUMED",
+          "unit": "Ah",
+          "value": 5.0
+        },
+        {
+          "name": "max_continuous_c",
+          "source_type": "ASSUMED",
+          "unit": "C rate",
+          "value": 25
+        },
+        {
+          "name": "internal_resistance_ohm",
+          "source_type": "ASSUMED",
+          "unit": "ohm",
+          "value": 0.02
+        },
+        {
+          "name": "voltage_per_cell_nominal_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 3.7
+        },
+        {
+          "name": "voltage_per_cell_cutoff_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 3.3
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.138,
+            0.043,
+            0.034
+          ]
+        }
+      ],
+      "manufacturer": "generic",
+      "model": "4S LiPo 5000 mAh",
+      "notes": "Reference-build placeholder. The OCV curve is a generic LiPo shape, NOT a datasheet curve.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "battery",
+      "frame_class": null,
+      "id": "tattu_gtech_5200_4s_35c",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.4365
+        },
+        {
+          "name": "cells",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 4
+        },
+        {
+          "name": "capacity_ah",
+          "source_type": "CITED",
+          "unit": "Ah",
+          "value": 5.2
+        },
+        {
+          "name": "max_continuous_c",
+          "source_type": "CITED",
+          "unit": "C rate",
+          "value": 35.0
+        },
+        {
+          "name": "internal_resistance_ohm",
+          "source_type": "ASSUMED",
+          "unit": "ohm",
+          "value": 0.02
+        },
+        {
+          "name": "voltage_per_cell_nominal_v",
+          "source_type": "CALCULATED",
+          "unit": "V",
+          "value": 3.7
+        },
+        {
+          "name": "voltage_per_cell_cutoff_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 3.3
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.133,
+            0.045,
+            0.0335
+          ]
+        }
+      ],
+      "manufacturer": "Tattu",
+      "model": "G-Tech 5200mAh 4S 35C",
+      "notes": "Manufacturer shop page. Internal resistance, thermal values and the OCV curve are NOT on the page: ASSUMED (the curve is a generic LiPo shape).",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "battery",
+      "frame_class": null,
+      "id": "tattu_rline_v3_1300_6s_120c",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.208
+        },
+        {
+          "name": "cells",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 6
+        },
+        {
+          "name": "capacity_ah",
+          "source_type": "CITED",
+          "unit": "Ah",
+          "value": 1.3
+        },
+        {
+          "name": "max_continuous_c",
+          "source_type": "CITED",
+          "unit": "C rate",
+          "value": 120.0
+        },
+        {
+          "name": "internal_resistance_ohm",
+          "source_type": "ASSUMED",
+          "unit": "ohm",
+          "value": 0.014
+        },
+        {
+          "name": "voltage_per_cell_nominal_v",
+          "source_type": "CALCULATED",
+          "unit": "V",
+          "value": 3.7
+        },
+        {
+          "name": "voltage_per_cell_cutoff_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 3.3
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.075,
+            0.038,
+            0.038
+          ]
+        }
+      ],
+      "manufacturer": "Tattu",
+      "model": "R-Line V3 1300mAh 6S 120C",
+      "notes": "Manufacturer shop page. The 120C rating is a marketing burst-style figure. Internal resistance, thermal values and the OCV curve are NOT on the page: ASSUMED (the curve is a generic LiPo shape).",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "battery",
+      "frame_class": null,
+      "id": "tattu_rline_v6_1300_6s_160c",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.203
+        },
+        {
+          "name": "cells",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 6
+        },
+        {
+          "name": "capacity_ah",
+          "source_type": "CITED",
+          "unit": "Ah",
+          "value": 1.3
+        },
+        {
+          "name": "max_continuous_c",
+          "source_type": "CITED",
+          "unit": "C rate",
+          "value": 160.0
+        },
+        {
+          "name": "internal_resistance_ohm",
+          "source_type": "ASSUMED",
+          "unit": "ohm",
+          "value": 0.012
+        },
+        {
+          "name": "voltage_per_cell_nominal_v",
+          "source_type": "CALCULATED",
+          "unit": "V",
+          "value": 3.7
+        },
+        {
+          "name": "voltage_per_cell_cutoff_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 3.3
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.078,
+            0.0395,
+            0.033
+          ]
+        }
+      ],
+      "manufacturer": "Tattu",
+      "model": "R-Line V6 1300mAh 6S 160C",
+      "notes": "Manufacturer shop page. The 160C rating is a marketing burst-style figure. Internal resistance, thermal values and the OCV curve are NOT on the page: ASSUMED (the curve is a generic LiPo shape).",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "camera",
+      "frame_class": null,
+      "id": "caddx_ratel_pro",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.0095
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "ASSUMED",
+          "unit": "A",
+          "value": 0.15
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 12.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.019,
+            0.019,
+            0.027
+          ]
+        }
+      ],
+      "manufacturer": "Caddx",
+      "model": "Ratel Pro analog FPV camera",
+      "notes": "Other Caddx pages (Ratel 2, Baby Ratel 2) were pinned but their spec text is not in the page HTML, so they are not seeded.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "camera",
+      "frame_class": null,
+      "id": "runcam_phoenix_2",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.009
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 0.2
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 5.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.019,
+            0.019,
+            0.019
+          ]
+        }
+      ],
+      "manufacturer": "RunCam",
+      "model": "Phoenix 2 analog FPV camera",
+      "notes": "",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "camera",
+      "frame_class": null,
+      "id": "runcam_phoenix_2_pro",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.0075
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 0.22
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 5.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.019,
+            0.019,
+            0.027
+          ]
+        }
+      ],
+      "manufacturer": "RunCam",
+      "model": "Phoenix 2 Pro analog FPV camera",
+      "notes": "",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "camera",
+      "frame_class": null,
+      "id": "runcam_phoenix_2_sp",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.0075
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 0.12
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 5.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.019,
+            0.019,
+            0.021
+          ]
+        }
+      ],
+      "manufacturer": "RunCam",
+      "model": "Phoenix 2 SP analog FPV camera",
+      "notes": "",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "esc",
+      "frame_class": null,
+      "id": "holybro_tekko32_f4_4in1_50a",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.0138
+        },
+        {
+          "name": "max_continuous_current_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 50.0
+        },
+        {
+          "name": "cells_max",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 6
+        },
+        {
+          "name": "cells_min",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 4
+        },
+        {
+          "name": "channels",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 4
+        },
+        {
+          "name": "efficiency",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 0.95
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.048,
+            0.037,
+            0.006
+          ]
+        },
+        {
+          "name": "temp_limit_c",
+          "source_type": "ASSUMED",
+          "unit": "C",
+          "value": 100.0
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "Tekko32 F4 4in1 50A ESC",
+      "notes": "Mounting M4 30.5 x 30.5 mm (page). Efficiency and thermal values are NOT on the page: ASSUMED.",
+      "price_source_type": "CITED",
+      "price_usd": 62.99,
+      "verification": "Unverified"
+    },
+    {
+      "category": "esc",
+      "frame_class": null,
+      "id": "holybro_tekko32_f4_4in1_mini_50a",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.0156
+        },
+        {
+          "name": "max_continuous_current_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 50.0
+        },
+        {
+          "name": "cells_max",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 6
+        },
+        {
+          "name": "cells_min",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 4
+        },
+        {
+          "name": "channels",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 4
+        },
+        {
+          "name": "efficiency",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 0.95
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.0466,
+            0.038,
+            0.006
+          ]
+        },
+        {
+          "name": "temp_limit_c",
+          "source_type": "ASSUMED",
+          "unit": "C",
+          "value": 100.0
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "Tekko32 F4 4in1 Mini 50A ESC (AM32)",
+      "notes": "Mounting 20 x 20 mm (page). Efficiency and thermal values are NOT on the page: ASSUMED.",
+      "price_source_type": "CITED",
+      "price_usd": 69.99,
+      "verification": "Unverified"
+    },
+    {
+      "category": "esc",
+      "frame_class": null,
+      "id": "ref_esc_generic_20a",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.025
+        },
+        {
+          "name": "max_continuous_current_a",
+          "source_type": "ASSUMED",
+          "unit": "A",
+          "value": 20
+        },
+        {
+          "name": "cells_max",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 4
+        },
+        {
+          "name": "cells_min",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 3
+        },
+        {
+          "name": "channels",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 1
+        },
+        {
+          "name": "efficiency",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 0.95
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.03,
+            0.015,
+            0.006
+          ]
+        },
+        {
+          "name": "temp_limit_c",
+          "source_type": "ASSUMED",
+          "unit": "C",
+          "value": 100.0
+        }
+      ],
+      "manufacturer": "generic",
+      "model": "20 A class ESC",
+      "notes": "Reference-build placeholder (human decision 2026-10-10: class only, no datasheet). Its 20 A is BELOW the MN3508 KV700 23 A (180 s) rating: the compatibility rule flags the pair.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "esc",
+      "frame_class": null,
+      "id": "tmotor_air_20a_3_4s",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.014
+        },
+        {
+          "name": "max_continuous_current_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 20.0
+        },
+        {
+          "name": "cells_max",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 4
+        },
+        {
+          "name": "cells_min",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 3
+        },
+        {
+          "name": "channels",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 1
+        },
+        {
+          "name": "efficiency",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 0.95
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.05,
+            0.021,
+            0.008
+          ]
+        },
+        {
+          "name": "temp_limit_c",
+          "source_type": "ASSUMED",
+          "unit": "C",
+          "value": 100.0
+        }
+      ],
+      "manufacturer": "T-Motor",
+      "model": "AIR 20A 3-4S ESC",
+      "notes": "The product page states only the model name (current, cells) and marketing text; mass, size, efficiency and thermal values are NOT on it. A retailer (not the maker) quotes 14 g and 50x21x8 mm for this ESC.",
+      "price_source_type": "CITED",
+      "price_usd": 19.99,
+      "verification": "Unverified"
+    },
+    {
+      "category": "esc",
+      "frame_class": null,
+      "id": "tmotor_air_40a_2_6s",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.03
+        },
+        {
+          "name": "max_continuous_current_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 40.0
+        },
+        {
+          "name": "cells_max",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 6
+        },
+        {
+          "name": "cells_min",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 2
+        },
+        {
+          "name": "channels",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 1
+        },
+        {
+          "name": "efficiency",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 0.95
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.06,
+            0.025,
+            0.01
+          ]
+        },
+        {
+          "name": "temp_limit_c",
+          "source_type": "ASSUMED",
+          "unit": "C",
+          "value": 100.0
+        }
+      ],
+      "manufacturer": "T-Motor",
+      "model": "AIR 40A 2-6S NO BEC ESC",
+      "notes": "The product page states only the model name (current, cells) and marketing text; mass, size, efficiency and thermal values are NOT on it. No mass or size source found for the 40 A.",
+      "price_source_type": "CITED",
+      "price_usd": 39.99,
+      "verification": "Unverified"
+    },
+    {
+      "category": "flight_controller",
+      "frame_class": null,
+      "id": "holybro_kakute_h7_mini",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.0055
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "ASSUMED",
+          "unit": "A",
+          "value": 0.1
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 22.2
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.031,
+            0.03,
+            0.006
+          ]
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "Kakute H7 Mini",
+      "notes": "Mounting 20 x 20 mm (page).",
+      "price_source_type": "CITED",
+      "price_usd": 58.99,
+      "verification": "Unverified"
+    },
+    {
+      "category": "flight_controller",
+      "frame_class": null,
+      "id": "holybro_kakute_h7_v2",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.008
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "ASSUMED",
+          "unit": "A",
+          "value": 0.1
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 22.2
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.035,
+            0.035,
+            0.008
+          ]
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "Kakute H7 v2",
+      "notes": "Mounting 30.5 x 30.5 mm (page). Includes 5 V 2 A and 9 V 3 A BECs.",
+      "price_source_type": "CITED",
+      "price_usd": 52.0,
+      "verification": "Unverified"
+    },
+    {
+      "category": "flight_controller",
+      "frame_class": null,
+      "id": "holybro_pixhawk_4",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.0333
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "ASSUMED",
+          "unit": "A",
+          "value": 0.3
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 5.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.044,
+            0.084,
+            0.012
+          ]
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "Pixhawk 4",
+      "notes": "",
+      "price_source_type": "CITED",
+      "price_usd": 143.98,
+      "verification": "Unverified"
+    },
+    {
+      "category": "flight_controller",
+      "frame_class": null,
+      "id": "holybro_pixhawk_6c",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.0593
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "ASSUMED",
+          "unit": "A",
+          "value": 0.3
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 5.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.0848,
+            0.044,
+            0.0124
+          ]
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "Pixhawk 6C",
+      "notes": "Mass is the aluminium-case figure (plastic case 34.6 g).",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "frame",
+      "frame_class": "quad_fpv_5in",
+      "id": "holybro_kopis2_220_frame",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.1
+        },
+        {
+          "name": "motor_spacing_adjacent_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.155563
+        },
+        {
+          "name": "arm_length_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.11
+        },
+        {
+          "name": "max_prop_diameter_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.12954
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.2,
+            0.2,
+            0.04
+          ]
+        },
+        {
+          "name": "arm_count",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 4
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "Kopis2 6S V2 5in frame (220 mm)",
+      "notes": "The page sells a complete PNF quad: wheelbase and arm thickness are about the frame, but the 325 g is the whole aircraft without battery and props, so the frame mass is ASSUMED. Frame-only data is not published on the page.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "frame",
+      "frame_class": "quad_standard",
+      "id": "holybro_x500_v2_frame",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.61
+        },
+        {
+          "name": "motor_spacing_adjacent_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": 0.353553
+        },
+        {
+          "name": "arm_length_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": 0.25
+        },
+        {
+          "name": "max_prop_diameter_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": 0.353553
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": [
+            0.369553,
+            0.369553,
+            0.215
+          ]
+        },
+        {
+          "name": "tube_od_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.016
+        },
+        {
+          "name": "tube_id_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.014
+        },
+        {
+          "name": "arm_count",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 4
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "X500 V2 frame kit",
+      "notes": "Spec block on the page (wheelbase, plates, tube, mount pattern, weight 610 g). Unclear whether 610 g is the frame kit alone (the same page sells an ARF kit): TODO(HUMAN-VERIFY). Areas and tube wall are placeholders.",
+      "price_source_type": "CITED",
+      "price_usd": 135.0,
+      "verification": "Unverified"
+    },
+    {
+      "category": "frame",
+      "frame_class": "quad_standard",
+      "id": "ref_frame_quad_400",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.35
+        },
+        {
+          "name": "motor_spacing_adjacent_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.4
+        },
+        {
+          "name": "arm_length_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": 0.282843
+        },
+        {
+          "name": "max_prop_diameter_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": 0.4
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.416,
+            0.416,
+            0.1
+          ]
+        },
+        {
+          "name": "tube_od_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.016
+        },
+        {
+          "name": "tube_id_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": 0.013
+        },
+        {
+          "name": "arm_count",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 4
+        }
+      ],
+      "manufacturer": "generic",
+      "model": "reference quad frame 400 mm",
+      "notes": "Reference-build placeholder, no design. Areas and CG are placeholders until the CFD/assembly work replaces them.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "frame",
+      "frame_class": "quad_standard",
+      "id": "tarot_tl680a_frame",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.88
+        },
+        {
+          "name": "motor_spacing_adjacent_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": 0.480833
+        },
+        {
+          "name": "arm_length_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": 0.34
+        },
+        {
+          "name": "max_prop_diameter_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": 0.480833
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": [
+            0.510833,
+            0.510833,
+            0.324
+          ]
+        },
+        {
+          "name": "tube_od_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.03
+        },
+        {
+          "name": "tube_id_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.027
+        },
+        {
+          "name": "arm_count",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 4
+        }
+      ],
+      "manufacturer": "Tarot",
+      "model": "TL680A non-folding quadcopter frame (metal joints)",
+      "notes": "Page gives wheelbase, centre plate and frame height. Its 'empty aircraft weight' is a CONFIGURED aircraft (motors, ESC, FC) and is NOT the frame mass. A search snippet quoted 880 g for the frame alone but that text is not in the pinned copy: mass is ASSUMED. Recommended on the page: 18 in props, 6S.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "frame",
+      "frame_class": "quad_standard",
+      "id": "tarot_tl680b_frame",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.845
+        },
+        {
+          "name": "motor_spacing_adjacent_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": 0.521138
+        },
+        {
+          "name": "arm_length_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": 0.3685
+        },
+        {
+          "name": "max_prop_diameter_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": 0.521138
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": [
+            0.551138,
+            0.551138,
+            0.332
+          ]
+        },
+        {
+          "name": "tube_od_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.03
+        },
+        {
+          "name": "tube_id_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.027
+        },
+        {
+          "name": "arm_count",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 4
+        }
+      ],
+      "manufacturer": "Tarot",
+      "model": "TL680B non-folding quadcopter frame (plastic joints)",
+      "notes": "Page gives wheelbase, centre plate and frame height. Its 'empty aircraft weight' is a CONFIGURED aircraft (motors, ESC, FC) and is NOT the frame mass. A search snippet quoted 845 g for the frame alone but that text is not in the pinned copy: mass is ASSUMED. Recommended on the page: 18 in props, 6S.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "gimbal",
+      "frame_class": null,
+      "id": "siyi_a2_mini",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.085
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CALCULATED",
+          "unit": "A",
+          "value": 0.166667
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "CITED",
+          "unit": "V",
+          "value": 12.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.065,
+            0.043,
+            0.05
+          ]
+        }
+      ],
+      "manufacturer": "SIYI",
+      "model": "A2 mini single-axis camera",
+      "notes": "Current is the AVERAGE; the page also gives a higher 'summit' power (size the supply for it).",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "gimbal",
+      "frame_class": null,
+      "id": "siyi_a8_mini",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.095
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CALCULATED",
+          "unit": "A",
+          "value": 0.337838
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 14.8
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.055,
+            0.055,
+            0.07
+          ]
+        }
+      ],
+      "manufacturer": "SIYI",
+      "model": "A8 mini 3-axis gimbal camera",
+      "notes": "Current is the AVERAGE; the page also gives a higher 'summit' power (size the supply for it).",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "gimbal",
+      "frame_class": null,
+      "id": "siyi_zr30",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.668
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CALCULATED",
+          "unit": "A",
+          "value": 0.337838
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 14.8
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.132,
+            0.1,
+            0.18
+          ]
+        }
+      ],
+      "manufacturer": "SIYI",
+      "model": "ZR30 30x zoom gimbal camera",
+      "notes": "Current is the AVERAGE; the page also gives a higher 'summit' power (size the supply for it).",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "gimbal",
+      "frame_class": null,
+      "id": "siyi_zt6",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.197
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CALCULATED",
+          "unit": "A",
+          "value": 0.439189
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 14.8
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.0735,
+            0.075,
+            0.1315
+          ]
+        }
+      ],
+      "manufacturer": "SIYI",
+      "model": "ZT6 multi-sensor gimbal pod",
+      "notes": "Current is the AVERAGE; the page also gives a higher 'summit' power (size the supply for it).",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "gps",
+      "frame_class": null,
+      "id": "holybro_m10_gps",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.032
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 0.2
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 5.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.05,
+            0.05,
+            0.0144
+          ]
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "M10 GPS",
+      "notes": "",
+      "price_source_type": "CITED",
+      "price_usd": 43.99,
+      "verification": "Unverified"
+    },
+    {
+      "category": "gps",
+      "frame_class": null,
+      "id": "holybro_m9n_gps_v1",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.032
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 0.2
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 5.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.05,
+            0.05,
+            0.0144
+          ]
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "M9N GPS (V1)",
+      "notes": "",
+      "price_source_type": "CITED",
+      "price_usd": 54.99,
+      "verification": "Unverified"
+    },
+    {
+      "category": "gps",
+      "frame_class": null,
+      "id": "holybro_micro_m10_gps",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.014
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 0.2
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 5.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.032,
+            0.026,
+            0.009
+          ]
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "Micro M10 GPS",
+      "notes": "",
+      "price_source_type": "CITED",
+      "price_usd": 27.99,
+      "verification": "Unverified"
+    },
+    {
+      "category": "motor",
+      "frame_class": null,
+      "id": "tmotor_mn3110_kv700",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.099
+        },
+        {
+          "name": "kv_rpm_per_v",
+          "source_type": "CITED",
+          "unit": "rpm/V",
+          "value": 700.0
+        },
+        {
+          "name": "winding_resistance_ohm",
+          "source_type": "CITED",
+          "unit": "ohm",
+          "value": 0.092
+        },
+        {
+          "name": "max_current_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 21.0
+        },
+        {
+          "name": "max_power_w",
+          "source_type": "CITED",
+          "unit": "W",
+          "value": 466.0
+        },
+        {
+          "name": "cells_max",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 6
+        },
+        {
+          "name": "shaft_diameter_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.004
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.0377,
+            0.0377,
+            0.0285
+          ]
+        }
+      ],
+      "manufacturer": "T-Motor",
+      "model": "MN3110 KV700",
+      "notes": "mount_pattern is a LABEL only (hole pattern is in the drawing image on the page). TODO(HUMAN-VERIFY): read it from the drawing. Thermal fields are placeholders (the page publishes none). Prop range = props in the page's thrust table.",
+      "price_source_type": "CITED",
+      "price_usd": 61.9,
+      "verification": "Unverified"
+    },
+    {
+      "category": "motor",
+      "frame_class": null,
+      "id": "tmotor_mn3508_kv380",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.103
+        },
+        {
+          "name": "kv_rpm_per_v",
+          "source_type": "CITED",
+          "unit": "rpm/V",
+          "value": 380.0
+        },
+        {
+          "name": "winding_resistance_ohm",
+          "source_type": "CITED",
+          "unit": "ohm",
+          "value": 0.205
+        },
+        {
+          "name": "max_current_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 14.0
+        },
+        {
+          "name": "max_power_w",
+          "source_type": "CITED",
+          "unit": "W",
+          "value": 310.0
+        },
+        {
+          "name": "cells_max",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 6
+        },
+        {
+          "name": "shaft_diameter_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.004
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.0418,
+            0.0418,
+            0.0265
+          ]
+        }
+      ],
+      "manufacturer": "T-Motor",
+      "model": "MN3508 KV380",
+      "notes": "mount_pattern is a LABEL only (hole pattern is in the drawing image on the page). TODO(HUMAN-VERIFY): read it from the drawing. Thermal fields are placeholders (the page publishes none). Prop range = props in the page's thrust table.",
+      "price_source_type": "CITED",
+      "price_usd": 69.9,
+      "verification": "Unverified"
+    },
+    {
+      "category": "motor",
+      "frame_class": null,
+      "id": "tmotor_mn3508_kv580",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.103
+        },
+        {
+          "name": "kv_rpm_per_v",
+          "source_type": "CITED",
+          "unit": "rpm/V",
+          "value": 580.0
+        },
+        {
+          "name": "winding_resistance_ohm",
+          "source_type": "CITED",
+          "unit": "ohm",
+          "value": 0.11
+        },
+        {
+          "name": "max_current_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 18.0
+        },
+        {
+          "name": "max_power_w",
+          "source_type": "CITED",
+          "unit": "W",
+          "value": 400.0
+        },
+        {
+          "name": "cells_max",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 4
+        },
+        {
+          "name": "shaft_diameter_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.004
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.0418,
+            0.0418,
+            0.0265
+          ]
+        }
+      ],
+      "manufacturer": "T-Motor",
+      "model": "MN3508 KV580",
+      "notes": "mount_pattern is a LABEL only (hole pattern is in the drawing image on the page). TODO(HUMAN-VERIFY): read it from the drawing. Thermal fields are placeholders (the page publishes none). Prop range = props in the page's thrust table.",
+      "price_source_type": "CITED",
+      "price_usd": 69.9,
+      "verification": "Unverified"
+    },
+    {
+      "category": "motor",
+      "frame_class": null,
+      "id": "tmotor_mn3508_kv700",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.104
+        },
+        {
+          "name": "kv_rpm_per_v",
+          "source_type": "CITED",
+          "unit": "rpm/V",
+          "value": 700
+        },
+        {
+          "name": "winding_resistance_ohm",
+          "source_type": "CITED",
+          "unit": "ohm",
+          "value": 0.072
+        },
+        {
+          "name": "max_current_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 23
+        },
+        {
+          "name": "max_power_w",
+          "source_type": "CITED",
+          "unit": "W",
+          "value": 510
+        },
+        {
+          "name": "cells_max",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 4
+        },
+        {
+          "name": "shaft_diameter_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.004
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.0418,
+            0.0418,
+            0.0265
+          ]
+        }
+      ],
+      "manufacturer": "T-Motor",
+      "model": "MN3508 KV700",
+      "notes": "mount_pattern is a LABEL only; the real hole pattern is in the technical drawing image on the product page. TODO(HUMAN-VERIFY): read the hole pattern from the drawing. Thermal fields are placeholders: the page publishes no winding limit or thermal resistance.",
+      "price_source_type": "CITED",
+      "price_usd": 69.9,
+      "verification": "Unverified"
+    },
+    {
+      "category": "motor",
+      "frame_class": null,
+      "id": "tmotor_mn3510_kv360",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.117
+        },
+        {
+          "name": "kv_rpm_per_v",
+          "source_type": "CITED",
+          "unit": "rpm/V",
+          "value": 360.0
+        },
+        {
+          "name": "winding_resistance_ohm",
+          "source_type": "CITED",
+          "unit": "ohm",
+          "value": 0.188
+        },
+        {
+          "name": "max_current_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 15.0
+        },
+        {
+          "name": "max_power_w",
+          "source_type": "CITED",
+          "unit": "W",
+          "value": 330.0
+        },
+        {
+          "name": "cells_max",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 6
+        },
+        {
+          "name": "shaft_diameter_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.004
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.0418,
+            0.0418,
+            0.0285
+          ]
+        }
+      ],
+      "manufacturer": "T-Motor",
+      "model": "MN3510 KV360",
+      "notes": "mount_pattern is a LABEL only (hole pattern is in the drawing image on the page). TODO(HUMAN-VERIFY): read it from the drawing. Thermal fields are placeholders (the page publishes none). Prop range = props in the page's thrust table.",
+      "price_source_type": "CITED",
+      "price_usd": 79.9,
+      "verification": "Unverified"
+    },
+    {
+      "category": "motor",
+      "frame_class": null,
+      "id": "tmotor_mn3510_kv630",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.119
+        },
+        {
+          "name": "kv_rpm_per_v",
+          "source_type": "CITED",
+          "unit": "rpm/V",
+          "value": 630.0
+        },
+        {
+          "name": "winding_resistance_ohm",
+          "source_type": "CITED",
+          "unit": "ohm",
+          "value": 0.065
+        },
+        {
+          "name": "max_current_a",
+          "source_type": "CITED",
+          "unit": "A",
+          "value": 22.0
+        },
+        {
+          "name": "max_power_w",
+          "source_type": "CITED",
+          "unit": "W",
+          "value": 495.0
+        },
+        {
+          "name": "cells_max",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 4
+        },
+        {
+          "name": "shaft_diameter_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.004
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.0418,
+            0.0418,
+            0.0285
+          ]
+        }
+      ],
+      "manufacturer": "T-Motor",
+      "model": "MN3510 KV630",
+      "notes": "mount_pattern is a LABEL only (hole pattern is in the drawing image on the page). TODO(HUMAN-VERIFY): read it from the drawing. Thermal fields are placeholders (the page publishes none). Prop range = props in the page's thrust table.",
+      "price_source_type": "CITED",
+      "price_usd": 79.9,
+      "verification": "Unverified"
+    },
+    {
+      "category": "motor",
+      "frame_class": null,
+      "id": "tmotor_velox_v2207_v3_kv1750",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.033
+        },
+        {
+          "name": "kv_rpm_per_v",
+          "source_type": "ASSUMED",
+          "unit": "rpm/V",
+          "value": 1750.0
+        },
+        {
+          "name": "winding_resistance_ohm",
+          "source_type": "ASSUMED",
+          "unit": "ohm",
+          "value": 0.05
+        },
+        {
+          "name": "max_current_a",
+          "source_type": "ASSUMED",
+          "unit": "A",
+          "value": 40.0
+        },
+        {
+          "name": "max_power_w",
+          "source_type": "ASSUMED",
+          "unit": "W",
+          "value": 900.0
+        },
+        {
+          "name": "cells_max",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 6
+        },
+        {
+          "name": "shaft_diameter_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.005
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.029,
+            0.029,
+            0.033
+          ]
+        }
+      ],
+      "manufacturer": "T-Motor",
+      "model": "Velox V2207 V3 KV1750",
+      "notes": "FPV motor spec table is client-rendered (not in the page HTML) and the product URL redirects to a different T-Motor domain that is not on the allowlist, so NO value could be read or pinned. Every number is ASSUMED typical for a 2207 6S motor. TODO(HUMAN-VERIFY): fill from the T-Motor Velox V2207 V3 spec table.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "payload",
+      "frame_class": null,
+      "id": "payload_test_mass_1000g",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 1.0
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CALCULATED",
+          "unit": "A",
+          "value": 0.0
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "CALCULATED",
+          "unit": "V",
+          "value": 0.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": [
+            0.1,
+            0.1,
+            0.1
+          ]
+        }
+      ],
+      "manufacturer": "n/a",
+      "model": "1000 g dummy test mass",
+      "notes": "A defined test mass for payload-limit tests (not a product). Weigh the real payload and replace the mass.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "payload",
+      "frame_class": null,
+      "id": "payload_test_mass_250g",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.25
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CALCULATED",
+          "unit": "A",
+          "value": 0.0
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "CALCULATED",
+          "unit": "V",
+          "value": 0.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": [
+            0.063,
+            0.063,
+            0.063
+          ]
+        }
+      ],
+      "manufacturer": "n/a",
+      "model": "250 g dummy test mass",
+      "notes": "A defined test mass for payload-limit tests (not a product). Weigh the real payload and replace the mass.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "payload",
+      "frame_class": null,
+      "id": "payload_test_mass_500g",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.5
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CALCULATED",
+          "unit": "A",
+          "value": 0.0
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "CALCULATED",
+          "unit": "V",
+          "value": 0.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": [
+            0.07937,
+            0.07937,
+            0.07937
+          ]
+        }
+      ],
+      "manufacturer": "n/a",
+      "model": "500 g dummy test mass",
+      "notes": "A defined test mass for payload-limit tests (not a product). Weigh the real payload and replace the mass.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "pdb",
+      "frame_class": null,
+      "id": "holybro_pdb_60a",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.02
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "CALCULATED",
+          "unit": "A",
+          "value": 0.0
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 14.8
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.045,
+            0.045,
+            0.005
+          ]
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "Power Distribution Board 60A",
+      "notes": "Rated 60 A, max 120 A (<60 s); pre-soldered XT60.",
+      "price_source_type": "CITED",
+      "price_usd": 4.59,
+      "verification": "Unverified"
+    },
+    {
+      "category": "pdb",
+      "frame_class": null,
+      "id": "holybro_pm02d",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.02
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "ASSUMED",
+          "unit": "A",
+          "value": 0.05
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 14.8
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.03,
+            0.03,
+            0.01
+          ]
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "PM02D power module (2S-12S)",
+      "notes": "Outputs 5.2 V / 3 A max; PCB 60 A continuous, 100 A burst (<60 s); sensing max 327 A.",
+      "price_source_type": "CITED",
+      "price_usd": 24.99,
+      "verification": "Unverified"
+    },
+    {
+      "category": "pdb",
+      "frame_class": null,
+      "id": "holybro_pm07",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.0438
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "ASSUMED",
+          "unit": "A",
+          "value": 0.05
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "ASSUMED",
+          "unit": "V",
+          "value": 14.8
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.068,
+            0.05,
+            0.01
+          ]
+        }
+      ],
+      "manufacturer": "Holybro",
+      "model": "PM07 power module + PDB (2S-14S)",
+      "notes": "PCB 90 A continuous, 140 A burst (<60 s); 45 x 45 mm mounting holes.",
+      "price_source_type": "CITED",
+      "price_usd": 43.99,
+      "verification": "Unverified"
+    },
+    {
+      "category": "propeller",
+      "frame_class": null,
+      "id": "apc_12x6e",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.02
+        },
+        {
+          "name": "diameter_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.3048
+        },
+        {
+          "name": "pitch_m",
+          "source_type": "CALCULATED",
+          "unit": "m",
+          "value": 0.1524
+        },
+        {
+          "name": "bore_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.00635
+        },
+        {
+          "name": "blades",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 2
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.3048,
+            0.3048,
+            0.015
+          ]
+        }
+      ],
+      "manufacturer": "APC",
+      "model": "Thin Electric 12x6 (12x6E)",
+      "notes": "Ct/Cp from UIUC volume 4 (see the data file for per-file pins). Wind-tunnel runs reach only about 6044 RPM.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "propeller",
+      "frame_class": null,
+      "id": "tmotor_cf_13x4_4",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CALCULATED",
+          "unit": "kg",
+          "value": 0.0284
+        },
+        {
+          "name": "diameter_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.3302
+        },
+        {
+          "name": "pitch_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.1118
+        },
+        {
+          "name": "bore_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.006
+        },
+        {
+          "name": "blades",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 2
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.3302,
+            0.3302,
+            0.012
+          ]
+        }
+      ],
+      "manufacturer": "T-Motor",
+      "model": "Polished CF 13*4.4",
+      "notes": "No measured Ct/Cp table: the APC 12x6E table is used as a stand-in, scaled by diameter. Pitch/diameter is 0.34 here vs 0.50 for the 12x6E, so this is a POOR stand-in. Page: optimum 5000-8000 RPM.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "propeller",
+      "frame_class": null,
+      "id": "tmotor_cf_14x4_8",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CALCULATED",
+          "unit": "kg",
+          "value": 0.03
+        },
+        {
+          "name": "diameter_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.3556
+        },
+        {
+          "name": "pitch_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.1219
+        },
+        {
+          "name": "bore_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.006
+        },
+        {
+          "name": "blades",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 2
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.3556,
+            0.3556,
+            0.012
+          ]
+        }
+      ],
+      "manufacturer": "T-Motor",
+      "model": "Polished CF 14*4.8",
+      "notes": "No measured Ct/Cp table: the APC 12x6E table is used as a stand-in, scaled by diameter. Pitch/diameter is 0.34 here vs 0.50 for the 12x6E, so this is a POOR stand-in. Page: optimum 4500-7500 RPM.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "propeller",
+      "frame_class": null,
+      "id": "tmotor_cf_15x5",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CALCULATED",
+          "unit": "kg",
+          "value": 0.042
+        },
+        {
+          "name": "diameter_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.381
+        },
+        {
+          "name": "pitch_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": 0.127
+        },
+        {
+          "name": "bore_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.006
+        },
+        {
+          "name": "blades",
+          "source_type": "CITED",
+          "unit": "",
+          "value": 2
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.381,
+            0.381,
+            0.012
+          ]
+        }
+      ],
+      "manufacturer": "T-Motor",
+      "model": "Polished CF 15*5",
+      "notes": "No measured Ct/Cp table: the APC 12x6E table is used as a stand-in, scaled by diameter. Pitch/diameter is 0.33 here vs 0.50 for the 12x6E, so this is a POOR stand-in. Page: optimum 5200-7000 RPM.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "propeller",
+      "frame_class": null,
+      "id": "tmotor_t5143s_prop",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.004
+        },
+        {
+          "name": "diameter_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.12954
+        },
+        {
+          "name": "pitch_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.10922
+        },
+        {
+          "name": "bore_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": 0.005
+        },
+        {
+          "name": "blades",
+          "source_type": "ASSUMED",
+          "unit": "",
+          "value": 3
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "ASSUMED",
+          "unit": "m",
+          "value": [
+            0.12954,
+            0.12954,
+            0.008
+          ]
+        }
+      ],
+      "manufacturer": "T-Motor",
+      "model": "T5143S 3-blade 5in (name only)",
+      "notes": "The Kopis2 page lists \"4x T5143S Propeller\"; no dimensions are published there. 5.1 x 4.3 in is read from the NAME (convention), so it is ASSUMED. No Ct/Cp table: APC 12x6E is used as a stand-in (poor: different size, pitch and blade count).",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "receiver",
+      "frame_class": null,
+      "id": "radiomaster_rp1_v2",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.0022
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "ASSUMED",
+          "unit": "A",
+          "value": 0.1
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "CITED",
+          "unit": "V",
+          "value": 5.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.013,
+            0.011,
+            0.003
+          ]
+        }
+      ],
+      "manufacturer": "RadioMaster",
+      "model": "RP1 V2 ExpressLRS 2.4GHz nano",
+      "notes": "",
+      "price_source_type": "CITED",
+      "price_usd": 18.99,
+      "verification": "Unverified"
+    },
+    {
+      "category": "receiver",
+      "frame_class": null,
+      "id": "radiomaster_rp3_v2",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.0046
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "ASSUMED",
+          "unit": "A",
+          "value": 0.1
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "CITED",
+          "unit": "V",
+          "value": 5.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.022,
+            0.013,
+            0.004
+          ]
+        }
+      ],
+      "manufacturer": "RadioMaster",
+      "model": "RP3 V2 ExpressLRS 2.4GHz nano diversity",
+      "notes": "",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "receiver",
+      "frame_class": null,
+      "id": "radiomaster_xr1_nano",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "CITED",
+          "unit": "kg",
+          "value": 0.001
+        },
+        {
+          "name": "current_draw_a",
+          "source_type": "ASSUMED",
+          "unit": "A",
+          "value": 0.1
+        },
+        {
+          "name": "supply_voltage_v",
+          "source_type": "CITED",
+          "unit": "V",
+          "value": 5.0
+        },
+        {
+          "name": "bounding_box_m",
+          "source_type": "CITED",
+          "unit": "m",
+          "value": [
+            0.02,
+            0.013,
+            0.003
+          ]
+        }
+      ],
+      "manufacturer": "RadioMaster",
+      "model": "XR1 Nano multi-frequency ExpressLRS",
+      "notes": "",
+      "price_source_type": "CITED",
+      "price_usd": 11.99,
+      "verification": "Unverified"
+    },
+    {
+      "category": "wiring",
+      "frame_class": null,
+      "id": "ref_avionics_wiring_lump",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.12
+        }
+      ],
+      "manufacturer": "generic",
+      "model": "reference avionics and wiring allowance (lump)",
+      "notes": "Stands in for flight controller, receiver and wiring of the reference build.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "wiring",
+      "frame_class": null,
+      "id": "wiring_allowance_heavy",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.2
+        }
+      ],
+      "manufacturer": "n/a",
+      "model": "heavy wiring and connector allowance",
+      "notes": "Mass allowance for cables, connectors, zip ties and hardware. Not a product.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "wiring",
+      "frame_class": null,
+      "id": "wiring_allowance_light",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.05
+        }
+      ],
+      "manufacturer": "n/a",
+      "model": "light wiring and connector allowance",
+      "notes": "Mass allowance for cables, connectors, zip ties and hardware. Not a product.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    },
+    {
+      "category": "wiring",
+      "frame_class": null,
+      "id": "wiring_allowance_standard",
+      "key_fields": [
+        {
+          "name": "mass_kg",
+          "source_type": "ASSUMED",
+          "unit": "kg",
+          "value": 0.12
+        }
+      ],
+      "manufacturer": "n/a",
+      "model": "standard wiring and connector allowance",
+      "notes": "Mass allowance for cables, connectors, zip ties and hardware. Not a product.",
+      "price_source_type": null,
+      "price_usd": null,
+      "verification": "Unverified"
+    }
+  ],
+  "schema_version": 1
+}

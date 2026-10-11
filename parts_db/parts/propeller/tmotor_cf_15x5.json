@@ -1,0 +1,74 @@
+{
+  "availability_url": "https://store.tmotor.com/product/polish-carbon-fiber-15x5-prop.html",
+  "blades": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; T-MOTOR Series 2blades-integrated",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "f81a409812eb8d8656476d34fb19fe49b3d27c544193a27dd84fe0c80a83a08b",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/polish-carbon-fiber-15x5-prop.html"
+    },
+    "value": 2
+  },
+  "bore_m": {
+    "provenance": {
+      "note": "hub bore not on the page; T-Motor props bolt to a motor prop mount. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.006
+  },
+  "bounding_box_m": {
+    "provenance": {
+      "note": "disc diameter from the page; hub height assumed. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.381,
+      0.381,
+      0.012
+    ]
+  },
+  "category": "propeller",
+  "ct_cp_scaling_assumed": {
+    "provenance": {
+      "note": "diameter ratio 15 in / 12 in used to reuse the APC 12x6E table. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 1.25
+  },
+  "data_basis": "SCALED",
+  "diameter_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Model No. Polished CF 15*5 (381.0*127.0 mm)",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "f81a409812eb8d8656476d34fb19fe49b3d27c544193a27dd84fe0c80a83a08b",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/polish-carbon-fiber-15x5-prop.html"
+    },
+    "value": 0.381
+  },
+  "id": "tmotor_cf_15x5",
+  "manufacturer": "T-Motor",
+  "mass_kg": {
+    "provenance": {
+      "note": "2 x 'Weight (Single Blade)' 21 +-1.5 g; reading of that label for an integrated 2-blade prop is ambiguous. TODO(HUMAN-VERIFY)",
+      "source_type": "CALCULATED"
+    },
+    "value": 0.042
+  },
+  "model": "Polished CF 15*5",
+  "notes": "No measured Ct/Cp table: the APC 12x6E table is used as a stand-in, scaled by diameter. Pitch/diameter is 0.33 here vs 0.50 for the 12x6E, so this is a POOR stand-in. Page: optimum 5200-7000 RPM.",
+  "pitch_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Model No. Polished CF 15*5 (381.0*127.0 mm)",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "f81a409812eb8d8656476d34fb19fe49b3d27c544193a27dd84fe0c80a83a08b",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/polish-carbon-fiber-15x5-prop.html"
+    },
+    "value": 0.127
+  },
+  "price_url": "https://store.tmotor.com/product/polish-carbon-fiber-15x5-prop.html",
+  "scaled_from": "apc_12x6e",
+  "schema_version": "1.0.0"
+}

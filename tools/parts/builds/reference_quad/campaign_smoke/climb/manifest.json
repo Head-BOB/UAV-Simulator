@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "test": "climb",
+  "definition_version": "1",
+  "definitions_set_version": "1.1.0-smoke",
+  "definition": {"version":"1","start_altitude_m":20.0,"preroll_s":2.0,"command_climb_mps":8.0,"accel_limit_mps2":8.0,"target_height_m":15.0,"time_limit_s":15.0,"output_interval_s":0.5},
+  "build": "reference_quad",
+  "parts": [{"role": "battery", "part_id": "ref_battery_generic_4s_5000"}, {"role": "esc", "part_id": "tmotor_air_40a_2_6s"}, {"role": "frame", "part_id": "ref_frame_quad_400"}, {"role": "motor", "part_id": "tmotor_mn3508_kv700"}, {"role": "propeller", "part_id": "apc_12x6e"}, {"role": "wiring", "part_id": "ref_avionics_wiring_lump"}],
+  "parts_db_version": "0.1.0",
+  "git_hash": "golden",
+  "core_interface_version": 14,
+  "controller_config_version": 1,
+  "step_s": 0.002,
+  "drag_model": "analytic_legacy",
+  "turbulence": "Dryden (MIL-HDBK-1797 low-altitude form), UNVERIFIED",
+  "conditions": {"condition_set": "smoke", "ambient_c": 20, "site_altitude_m": 0, "temp_offset_c": 5, "wind_speed_mps": 0, "wind_from_deg": 270, "turbulence": "dryden", "gust_level": 0, "seed": 1, "payload_kg": 0, "payload_position_m": [0, 0, 0], "battery_soc": 0.05, "battery_temp_c": null}
+}

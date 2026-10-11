@@ -1,0 +1,15 @@
+{
+  "category": "wiring",
+  "id": "wiring_allowance_heavy",
+  "manufacturer": "n/a",
+  "mass_kg": {
+    "provenance": {
+      "note": "heavy allowance guess; weigh the real harness. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.2
+  },
+  "model": "heavy wiring and connector allowance",
+  "notes": "Mass allowance for cables, connectors, zip ties and hardware. Not a product.",
+  "schema_version": "1.0.0"
+}

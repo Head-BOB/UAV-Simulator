@@ -1,0 +1,99 @@
+{
+  "availability_url": "https://store.tmotor.com/product/air-20a-4s-esc.html",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "not on the manufacturer page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.05,
+      0.021,
+      0.008
+    ]
+  },
+  "category": "esc",
+  "cells_max": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; product name AIR 20A 3-4S ESC",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "f35f694537923c2ecc0ccf0a67ce6f52da6ac63532d3b8ae585cfba82f4076ac",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/air-20a-4s-esc.html"
+    },
+    "value": 4
+  },
+  "cells_min": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; product name AIR 20A 3-4S ESC",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "f35f694537923c2ecc0ccf0a67ce6f52da6ac63532d3b8ae585cfba82f4076ac",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/air-20a-4s-esc.html"
+    },
+    "value": 3
+  },
+  "channels": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; single-motor ESC",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "f35f694537923c2ecc0ccf0a67ce6f52da6ac63532d3b8ae585cfba82f4076ac",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/air-20a-4s-esc.html"
+    },
+    "value": 1
+  },
+  "efficiency": {
+    "provenance": {
+      "note": "typical, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.95
+  },
+  "id": "tmotor_air_20a_3_4s",
+  "manufacturer": "T-Motor",
+  "mass_kg": {
+    "provenance": {
+      "note": "not on the manufacturer page; A retailer (not the maker) quotes 14 g and 50x21x8 mm for this ESC.. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.014
+  },
+  "max_continuous_current_a": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; product name AIR 20A 3-4S ESC",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "f35f694537923c2ecc0ccf0a67ce6f52da6ac63532d3b8ae585cfba82f4076ac",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/air-20a-4s-esc.html"
+    },
+    "value": 20.0
+  },
+  "model": "AIR 20A 3-4S ESC",
+  "notes": "The product page states only the model name (current, cells) and marketing text; mass, size, efficiency and thermal values are NOT on it. A retailer (not the maker) quotes 14 g and 50x21x8 mm for this ESC.",
+  "price_url": "https://store.tmotor.com/product/air-20a-4s-esc.html",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; price shown on the product page; store prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "f35f694537923c2ecc0ccf0a67ce6f52da6ac63532d3b8ae585cfba82f4076ac",
+      "source_type": "CITED",
+      "source_url": "https://store.tmotor.com/product/air-20a-4s-esc.html"
+    },
+    "value": 19.99
+  },
+  "schema_version": "1.0.0",
+  "temp_limit_c": {
+    "provenance": {
+      "note": "placeholder, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 100.0
+  },
+  "thermal_resistance_k_per_w": {
+    "provenance": {
+      "note": "placeholder, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 2.0
+  }
+}

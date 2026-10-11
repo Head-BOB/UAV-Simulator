@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "name": "smoke",
+  "ambient_c": 20.0,
+  "site_altitude_m": 0.0,
+  "wind_speed_mps": 0.0,
+  "wind_from_deg": 270.0,
+  "turbulence": "dryden",
+  "gust_level": 0.0,
+  "seed": 1,
+  "payload_kg": 0.0,
+  "payload_position_m": [0.0, 0.0, 0.0],
+  "battery_soc": 0.05,
+  "battery_temp_c": null
+}

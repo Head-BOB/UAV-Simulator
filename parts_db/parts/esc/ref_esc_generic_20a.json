@@ -1,0 +1,75 @@
+{
+  "bounding_box_m": {
+    "provenance": {
+      "note": "typical small ESC size, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.03,
+      0.015,
+      0.006
+    ]
+  },
+  "category": "esc",
+  "cells_max": {
+    "provenance": {
+      "note": "must cover the 4S reference pack; no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 4
+  },
+  "cells_min": {
+    "provenance": {
+      "note": "must cover the 4S reference pack; no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 3
+  },
+  "channels": {
+    "provenance": {
+      "note": "one ESC per motor in the reference build. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 1
+  },
+  "efficiency": {
+    "provenance": {
+      "note": "typical, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.95
+  },
+  "id": "ref_esc_generic_20a",
+  "manufacturer": "generic",
+  "mass_kg": {
+    "provenance": {
+      "note": "typical small ESC, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.025
+  },
+  "max_continuous_current_a": {
+    "provenance": {
+      "note": "human decision 2026-10-10: class only, no datasheet URL [catalog status was CITED, no URL]. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 20
+  },
+  "model": "20 A class ESC",
+  "notes": "Reference-build placeholder (human decision 2026-10-10: class only, no datasheet). Its 20 A is BELOW the MN3508 KV700 23 A (180 s) rating: the compatibility rule flags the pair.",
+  "schema_version": "1.0.0",
+  "temp_limit_c": {
+    "provenance": {
+      "note": "placeholder, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 100.0
+  },
+  "thermal_resistance_k_per_w": {
+    "provenance": {
+      "note": "placeholder, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 2.0
+  }
+}

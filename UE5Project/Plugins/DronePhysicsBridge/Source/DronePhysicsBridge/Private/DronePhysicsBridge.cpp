@@ -13,7 +13,7 @@ void FDronePhysicsBridgeModule::StartupModule()
 
     if (RustVersion != ExpectedVersion)
     {
-        UE_LOG(LogTemp, Fatal, TEXT("Rust FFI Version Mismatch! Expected %d, got %d"), ExpectedVersion, RustVersion);
+        UE_LOG(LogTemp, Fatal, TEXT("Rust FFI Version Mismatch! Expected %d, got %d. physics_core.dll is stale or is a different copy: close the editor, run `cargo build --release` in physics_core/, delete any old physics_core.dll in <Project>/Binaries/Win64 and in the engine Binaries/Win64 folder, then build again."), ExpectedVersion, RustVersion);
     }
 
     int32 ExpectedSize = sizeof(DroneState);

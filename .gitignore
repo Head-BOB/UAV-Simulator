@@ -33,3 +33,10 @@ dev-docs/
 __pycache__/
 *.pyc
 full_codebase_context.txt
+
+# Parts database: generated index and the local copies of fetched source pages (pins are committed, files are not)
+parts_db/parts_index.sqlite
+parts_db/source_cache/
+
+# CFD cases and results generated on the GPU laptop (large; send back only the CSV, manifest, geometry.json, slices and the sanity report)
+offline_pipeline/cfd/generated/

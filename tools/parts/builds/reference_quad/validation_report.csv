@@ -1,0 +1,319 @@
+section,status,id,quantity,unit,reference,model,abs_error,percent_error,outside_data,band_percent,outside_band,source
+motor_electrical,OK,kv700_11.1v_12x4cf_50pct:voltage,motor_voltage,V,5.55,5.59417142857,0.0441714285714,0.795881595882,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_12x4cf_50pct:power,motor_power_self_consistency,W,25.53,25.53,-0.0000000000000035527136788,-0.0000000000000139158389299,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_12x4cf_65pct:voltage,motor_voltage,V,7.215,7.324,0.109,1.51074151074,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_12x4cf_65pct:power,motor_power_self_consistency,W,49.95,49.95,-0.0000000000000071054273576,-0.000000000000014225079795,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_12x4cf_75pct:voltage,motor_voltage,V,8.325,8.02502857143,-0.299971428571,-3.60326040326,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_12x4cf_75pct:power,motor_power_self_consistency,W,69.93,69.93,-0.0000000000000142108547152,-0.0000000000000203215425643,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_12x4cf_85pct:voltage,motor_voltage,V,9.435,9.17622857143,-0.258771428571,-2.74267544856,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_12x4cf_85pct:power,motor_power_self_consistency,W,93.24,93.24,0,0,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_12x4cf_100pct:voltage,motor_voltage,V,11.1,9.87725714286,-1.22274285714,-11.0157014157,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_12x4cf_100pct:power,motor_power_self_consistency,W,113.22,113.22,-0.0000000000000142108547152,-0.0000000000000125515409956,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_13x4.4cf_50pct:voltage,motor_voltage,V,5.55,5.33005714286,-0.219942857143,-3.96293436293,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_13x4.4cf_50pct:power,motor_power_self_consistency,W,28.86,28.86,0,0,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_13x4.4cf_65pct:voltage,motor_voltage,V,7.215,6.94582857143,-0.269171428571,-3.73071973072,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_13x4.4cf_65pct:power,motor_power_self_consistency,W,57.72,57.72,0,0,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_13x4.4cf_75pct:voltage,motor_voltage,V,8.325,8.10422857143,-0.220771428571,-2.65190905191,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_13x4.4cf_75pct:power,motor_power_self_consistency,W,82.14,82.14,0,0,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_13x4.4cf_85pct:voltage,motor_voltage,V,9.435,8.99131428571,-0.443685714286,-4.70255129079,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_13x4.4cf_85pct:power,motor_power_self_consistency,W,108.78,108.78,0,0,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_13x4.4cf_100pct:voltage,motor_voltage,V,11.1,9.72114285714,-1.37885714286,-12.4221364221,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_13x4.4cf_100pct:power,motor_power_self_consistency,W,133.2,133.2,0,0,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_11x3.7cf_50pct:voltage,motor_voltage,V,7.4,7.79462857143,0.394628571429,5.33281853282,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_11x3.7cf_50pct:power,motor_power_self_consistency,W,45.88,45.88,0,0,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_11x3.7cf_65pct:voltage,motor_voltage,V,9.62,9.68891428571,0.0689142857143,0.716364716365,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_11x3.7cf_65pct:power,motor_power_self_consistency,W,82.88,82.88,0,0,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_11x3.7cf_75pct:voltage,motor_voltage,V,11.1,10.8545142857,-0.245485714286,-2.21158301158,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_11x3.7cf_75pct:power,motor_power_self_consistency,W,116.92,116.92,0.0000000000000142108547152,0.0000000000000121543403312,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_11x3.7cf_85pct:voltage,motor_voltage,V,12.58,12.1845714286,-0.395428571429,-3.14331137861,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_11x3.7cf_85pct:power,motor_power_self_consistency,W,155.4,155.4,0,0,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_11x3.7cf_100pct:voltage,motor_voltage,V,14.8,13.0572571429,-1.74274285714,-11.7752895753,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_11x3.7cf_100pct:power,motor_power_self_consistency,W,187.96,187.96,0,0,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_12x4cf_50pct:voltage,motor_voltage,V,7.4,6.98788571429,-0.412114285714,-5.56911196911,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_12x4cf_50pct:power,motor_power_self_consistency,W,56.24,56.24,0,0,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_12x4cf_65pct:voltage,motor_voltage,V,9.62,9.5328,-0.0872,-0.906444906445,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_12x4cf_65pct:power,motor_power_self_consistency,W,109.52,109.52,0.0000000000000142108547152,0.0000000000000129755795427,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_12x4cf_75pct:voltage,motor_voltage,V,11.1,10.5771428571,-0.522857142857,-4.71042471042,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_12x4cf_75pct:power,motor_power_self_consistency,W,148,148,0,0,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_12x4cf_85pct:voltage,motor_voltage,V,12.58,11.6862857143,-0.893714285714,-7.10424710425,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_12x4cf_85pct:power,motor_power_self_consistency,W,199.8,199.8,0,0,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_12x4cf_100pct:voltage,motor_voltage,V,14.8,12.7306285714,-2.06937142857,-13.9822393822,false,20,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_14.8v_12x4cf_100pct:power,motor_power_self_consistency,W,238.28,238.28,0.0000000000000284217094304,0.0000000000000119278619399,false,1,false,"T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+motor_electrical,OK,kv700_11.1v_12x4cf_50pct,derived_torque,N m,,0.024555334077,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_50pct,derived_ct,1,,0.064746116817,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_50pct,derived_cp,1,,0.0119356416803,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_65pct,derived_torque,N m,,0.0545674090601,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_65pct,derived_ct,1,,0.0639717984091,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_65pct,derived_cp,1,,0.0159517484255,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_75pct,derived_torque,N m,,0.0791227431371,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_75pct,derived_ct,1,,0.0736992110358,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_75pct,derived_cp,1,,0.0197704573001,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_85pct,derived_torque,N m,,0.107770632894,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_85pct,derived_ct,1,,0.0732735914882,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_85pct,derived_cp,1,,0.0210118867333,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_100pct,derived_torque,N m,,0.132325966971,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_100pct,derived_ct,1,,0.0701070013497,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_12x4cf_100pct,derived_cp,1,,0.0226752585025,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_50pct,derived_torque,N m,,0.0286478897565,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_50pct,derived_ct,1,,0.0617281699533,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_50pct,derived_cp,1,,0.010397866147,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_65pct,derived_torque,N m,,0.0641167056456,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_65pct,derived_ct,1,,0.0641574105306,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_65pct,derived_cp,1,,0.0142531916183,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_75pct,derived_torque,N m,,0.0941287806286,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_75pct,derived_ct,1,,0.0621377066645,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_75pct,derived_cp,1,,0.0157625791645,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_85pct,derived_torque,N m,,0.126869226065,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_85pct,derived_ct,1,,0.0634163363135,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_85pct,derived_cp,1,,0.0177401337831,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_100pct,derived_torque,N m,,0.156881301048,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_100pct,derived_ct,1,,0.0643266975882,,,,,,informational (no reference)
+motor_electrical,OK,kv700_11.1v_13x4.4cf_100pct,derived_cp,1,,0.0191974873712,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_50pct,derived_torque,N m,,0.0354688158891,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_50pct,derived_ct,1,,0.0639748077333,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_50pct,derived_cp,1,,0.0136931975503,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_65pct,derived_torque,N m,,0.0695734465516,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_65pct,derived_ct,1,,0.0705165356596,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_65pct,derived_cp,1,,0.0178577495481,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_75pct,derived_torque,N m,,0.100949706761,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_75pct,derived_ct,1,,0.0711552160696,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_75pct,derived_cp,1,,0.021117864153,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_85pct,derived_torque,N m,,0.13641852265,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_85pct,derived_ct,1,,0.0709362769433,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_85pct,derived_cp,1,,0.0231154999512,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_100pct,derived_torque,N m,,0.166430597633,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_100pct,derived_ct,1,,0.0726544566616,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_11x3.7cf_100pct,derived_cp,1,,0.0249807368331,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_50pct,derived_torque,N m,,0.0450181124746,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_50pct,derived_ct,1,,0.0695320452605,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_50pct,derived_cp,1,,0.0143040389656,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_65pct,derived_torque,N m,,0.0941287806286,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_65pct,derived_ct,1,,0.0673025898454,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_65pct,derived_cp,1,,0.0166459448847,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_75pct,derived_torque,N m,,0.129597596518,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_75pct,derived_ct,1,,0.070133369853,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_75pct,derived_cp,1,,0.0191058289073,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_85pct,derived_torque,N m,,0.177344079445,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_85pct,derived_ct,1,,0.0712330610923,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_85pct,derived_cp,1,,0.0221289743824,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_100pct,derived_torque,N m,,0.212812895334,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_100pct,derived_ct,1,,0.0692136510385,,,,,,informational (no reference)
+motor_electrical,OK,kv700_14.8v_12x4cf_100pct,derived_cp,1,,0.0227664345498,,,,,,informational (no reference)
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#0:ct,uiuc_ct,1,0.080788,0.080788,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#0:cp,uiuc_cp,1,0.032338,0.032338,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#1:ct,uiuc_ct,1,0.073512,0.073512,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#1:cp,uiuc_cp,1,0.031502,0.031502,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#2:ct,uiuc_ct,1,0.065819,0.065819,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#2:cp,uiuc_cp,1,0.029895,0.029895,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#3:ct,uiuc_ct,1,0.057809,0.057809,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#3:cp,uiuc_cp,1,0.027921,0.027921,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#4:ct,uiuc_ct,1,0.050904,0.050904,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#4:cp,uiuc_cp,1,0.026055,0.026055,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#5:ct,uiuc_ct,1,0.043995,0.043995,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#5:cp,uiuc_cp,1,0.024092,0.024092,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#6:ct,uiuc_ct,1,0.038552,0.038552,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#6:cp,uiuc_cp,1,0.022531,0.022531,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#7:ct,uiuc_ct,1,0.031906,0.031906,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#7:cp,uiuc_cp,1,0.020363,0.020363,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#8:ct,uiuc_ct,1,0.025301,0.025301,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#8:cp,uiuc_cp,1,0.018264,0.018264,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#9:ct,uiuc_ct,1,0.015565,0.015565,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#9:cp,uiuc_cp,1,0.014908,0.014908,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#10:ct,uiuc_ct,1,0.009785,0.009785,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#10:cp,uiuc_cp,1,0.012824,0.012824,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#11:ct,uiuc_ct,1,-0.000401,-0.000401,-0.000000000000000000325260651746,,true,10,,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#11:cp,uiuc_cp,1,0.009052,0.009052,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#12:ct,uiuc_ct,1,-0.007085,-0.007085,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#12:cp,uiuc_cp,1,0.006255,0.006255,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#13:ct,uiuc_ct,1,-0.007148,-0.007148,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0630od_3040.txt#13:cp,uiuc_cp,1,0.006297,0.006297,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#0:ct,uiuc_ct,1,0.094848,0.094848,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#0:cp,uiuc_cp,1,0.033717,0.033717,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#1:ct,uiuc_ct,1,0.091298,0.091298,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#1:cp,uiuc_cp,1,0.034028,0.034028,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#2:ct,uiuc_ct,1,0.085856,0.085856,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#2:cp,uiuc_cp,1,0.033796,0.033796,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#3:ct,uiuc_ct,1,0.080034,0.080034,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#3:cp,uiuc_cp,1,0.033159,0.033159,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#4:ct,uiuc_ct,1,0.07338,0.07338,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#4:cp,uiuc_cp,1,0.032065,0.032065,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#5:ct,uiuc_ct,1,0.06634,0.06634,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#5:cp,uiuc_cp,1,0.030603,0.030603,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#6:ct,uiuc_ct,1,0.059225,0.059225,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#6:cp,uiuc_cp,1,0.028794,0.028794,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#7:ct,uiuc_ct,1,0.054125,0.054125,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#7:cp,uiuc_cp,1,0.027521,0.027521,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#8:ct,uiuc_ct,1,0.048336,0.048336,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#8:cp,uiuc_cp,1,0.025778,0.025778,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#9:ct,uiuc_ct,1,0.04236,0.04236,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#9:cp,uiuc_cp,1,0.023878,0.023878,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#10:ct,uiuc_ct,1,0.036611,0.036611,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#10:cp,uiuc_cp,1,0.022032,0.022032,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#11:ct,uiuc_ct,1,0.031168,0.031168,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#11:cp,uiuc_cp,1,0.02019,0.02019,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#12:ct,uiuc_ct,1,0.026371,0.026371,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#12:cp,uiuc_cp,1,0.018549,0.018549,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#13:ct,uiuc_ct,1,0.020152,0.020152,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#13:cp,uiuc_cp,1,0.016488,0.016488,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#14:ct,uiuc_ct,1,0.015063,0.015063,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#14:cp,uiuc_cp,1,0.014621,0.014621,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#15:ct,uiuc_ct,1,0.008429,0.008429,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#15:cp,uiuc_cp,1,0.012206,0.012206,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#16:ct,uiuc_ct,1,0.002396,0.002396,0.000000000000000000433680868994,,false,10,,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0631od_4030.txt#16:cp,uiuc_cp,1,0.009808,0.009808,0,0,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#0:ct,uiuc_ct,1,0.097582,0.0975350313863,-0.0000469686136597,-0.0481324564568,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#0:cp,uiuc_cp,1,0.033852,0.0338491849079,-0.00000281509212534,-0.00831588126355,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#1:ct,uiuc_ct,1,0.095204,0.0951504148314,-0.0000535851686491,-0.0562845769601,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#1:cp,uiuc_cp,1,0.034134,0.0341308077029,-0.00000319229706516,-0.00935225014694,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#2:ct,uiuc_ct,1,0.092652,0.0925638753869,-0.0000881246130625,-0.0951135572492,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#2:cp,uiuc_cp,1,0.034687,0.0346726625833,-0.000014337416656,-0.0413336888634,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#3:ct,uiuc_ct,1,0.08916,0.08905544096,-0.000104559039977,-0.117271242684,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#3:cp,uiuc_cp,1,0.034638,0.0346181046574,-0.0000198953426029,-0.0574379080863,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#4:ct,uiuc_ct,1,0.083813,0.0837045039147,-0.000108496085259,-0.129450187034,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#4:cp,uiuc_cp,1,0.03419,0.0341649527517,-0.0000250472483433,-0.0732589890122,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#5:ct,uiuc_ct,1,0.079471,0.07934940847,-0.000121591529994,-0.153001132481,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#5:cp,uiuc_cp,1,0.033758,0.0337252162141,-0.0000327837858733,-0.0971141236842,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#6:ct,uiuc_ct,1,0.074531,0.0743997164982,-0.00013128350177,-0.176146169741,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#6:cp,uiuc_cp,1,0.032994,0.0329545950206,-0.0000394049793681,-0.119430743069,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#7:ct,uiuc_ct,1,0.068357,0.0682352345577,-0.0001217654423,-0.178131635823,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#7:cp,uiuc_cp,1,0.031691,0.0316499197222,-0.0000410802777683,-0.129627584388,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#8:ct,uiuc_ct,1,0.063388,0.0632761949433,-0.000111805056678,-0.176382054455,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#8:cp,uiuc_cp,1,0.030607,0.0305654747382,-0.0000415252617921,-0.135672433731,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#9:ct,uiuc_ct,1,0.05769,0.0576093139856,-0.0000806860143573,-0.139861352673,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#9:cp,uiuc_cp,1,0.029017,0.0289852696298,-0.0000317303702143,-0.109350967413,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#10:ct,uiuc_ct,1,0.052765,0.052683592497,-0.0000814075030099,-0.154283147939,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#10:cp,uiuc_cp,1,0.027621,0.0275874654533,-0.0000335345466519,-0.12140960375,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#11:ct,uiuc_ct,1,0.04766,0.047589636323,-0.0000703636769586,-0.147636754005,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#11:cp,uiuc_cp,1,0.026051,0.0260200427495,-0.0000309572504526,-0.118833251901,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#12:ct,uiuc_ct,1,0.042722,0.0426579621951,-0.0000640378049031,-0.149894211186,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#12:cp,uiuc_cp,1,0.024486,0.0244567840746,-0.0000292159253731,-0.119316856053,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#13:ct,uiuc_ct,1,0.0377,0.0377572173935,0.0000572173935275,0.151770274609,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#13:cp,uiuc_cp,1,0.022793,0.0228111813121,0.0000181813120677,0.0797670866831,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#14:ct,uiuc_ct,1,0.03272,0.0328526387016,0.000132638701557,0.405375004757,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#14:cp,uiuc_cp,1,0.021055,0.0210963984867,0.000041398486703,0.196620692012,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#15:ct,uiuc_ct,1,0.028048,0.0281776198986,0.000129619898637,0.462135976316,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0632od_5007.txt#15:cp,uiuc_cp,1,0.01943,0.0194920570808,0.000062057080843,0.319387961107,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#0:ct,uiuc_ct,1,0.042568,0.0428267048557,0.00025870485571,0.607744915687,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#0:cp,uiuc_cp,1,0.024386,0.0245434796171,0.000157479617071,0.6457787955,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#1:ct,uiuc_ct,1,0.03773,0.0376859294177,-0.0000440705822658,-0.116805147802,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#1:cp,uiuc_cp,1,0.022826,0.0228174171243,-0.00000858287566313,-0.0376013128149,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#2:ct,uiuc_ct,1,0.032808,0.032910341808,0.000102341807985,0.31194162395,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#2:cp,uiuc_cp,1,0.021086,0.0211443503816,0.0000583503815906,0.276725702317,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#3:ct,uiuc_ct,1,0.028085,0.028246013841,0.00016101384104,0.573309029873,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#3:cp,uiuc_cp,1,0.019466,0.0195433842492,0.0000773842491733,0.397535442173,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#4:ct,uiuc_ct,1,0.023384,0.0235298535172,0.000145853517178,0.623732112462,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#4:cp,uiuc_cp,1,0.017835,0.0179059327046,0.0000709327045615,0.397716313773,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#5:ct,uiuc_ct,1,0.018124,0.0182609675347,0.000136967534663,0.755724645019,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#5:cp,uiuc_cp,1,0.015862,0.0159296576438,0.000067657643795,0.426539174095,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#6:ct,uiuc_ct,1,0.013907,0.0140182254054,0.000111225405424,0.799780005925,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#6:cp,uiuc_cp,1,0.01434,0.0143952529743,0.0000552529742558,0.385306654503,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#7:ct,uiuc_ct,1,0.008894,0.00899172001784,0.0000977200178436,1.09871843764,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#7:cp,uiuc_cp,1,0.012347,0.0123955314046,0.0000485314045543,0.393062319222,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#8:ct,uiuc_ct,1,0.004079,0.00417198216523,0.0000929821652296,,false,10,,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#8:cp,uiuc_cp,1,0.010381,0.0104254434375,0.000044443437455,0.428122892351,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#9:ct,uiuc_ct,1,-0.00135,-0.00124976592818,0.000100234071819,,false,10,,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#9:cp,uiuc_cp,1,0.008116,0.00816078368628,0.0000447836862765,0.551795050228,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#10:ct,uiuc_ct,1,-0.001295,-0.00120258945611,0.0000924105438949,,false,10,,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0633od_5042.txt#10:cp,uiuc_cp,1,0.008183,0.00822352902615,0.0000405290261476,0.495283223116,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#0:ct,uiuc_ct,1,0.107658,0.107419984338,-0.000238015662222,-0.221084974848,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#0:cp,uiuc_cp,1,0.036818,0.0367357058464,-0.0000822941535564,-0.223516088751,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#1:ct,uiuc_ct,1,0.107235,0.106986995834,-0.00024800416586,-0.231271661174,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#1:cp,uiuc_cp,1,0.037762,0.0376617366617,-0.000100263338346,-0.265513845523,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#2:ct,uiuc_ct,1,0.105982,0.105714849977,-0.000267150023349,-0.252071128445,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#2:cp,uiuc_cp,1,0.038164,0.0380595061406,-0.000104493859395,-0.273802167998,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#3:ct,uiuc_ct,1,0.104213,0.103940271544,-0.000272728456152,-0.261702912451,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#3:cp,uiuc_cp,1,0.038485,0.0383823968552,-0.000102603144835,-0.266605547187,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#4:ct,uiuc_ct,1,0.102224,0.101931018848,-0.00029298115174,-0.286607011798,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#4:cp,uiuc_cp,1,0.038792,0.0386860252178,-0.000105974782249,-0.273187209345,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#5:ct,uiuc_ct,1,0.099654,0.0993415782603,-0.000312421739726,-0.31350647212,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#5:cp,uiuc_cp,1,0.038915,0.0388016578509,-0.000113342149072,-0.291255683083,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#6:ct,uiuc_ct,1,0.096686,0.0963476204486,-0.000338379551374,-0.349977816203,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#6:cp,uiuc_cp,1,0.038934,0.03881148825,-0.000122511750002,-0.314665202655,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#7:ct,uiuc_ct,1,0.093226,0.092876599372,-0.000349400628004,-0.374788822864,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#7:cp,uiuc_cp,1,0.03867,0.0385443330789,-0.000125666921119,-0.324972643183,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#8:ct,uiuc_ct,1,0.089202,0.0888508458572,-0.000351154142837,-0.393661737222,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#8:cp,uiuc_cp,1,0.038083,0.0379563467643,-0.000126653235717,-0.332571582379,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#9:ct,uiuc_ct,1,0.084642,0.0842762428249,-0.00036575717509,-0.432122557466,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#9:cp,uiuc_cp,1,0.037356,0.0372216485134,-0.000134351486641,-0.359651693545,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#10:ct,uiuc_ct,1,0.08081,0.0804289590912,-0.000381040908835,-0.471526925919,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#10:cp,uiuc_cp,1,0.036804,0.0366593992697,-0.000144600730284,-0.392894061199,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#11:ct,uiuc_ct,1,0.076384,0.0759945135706,-0.000389486429363,-0.509905777863,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#11:cp,uiuc_cp,1,0.035782,0.0356335898432,-0.000148410156826,-0.414762050265,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#12:ct,uiuc_ct,1,0.071337,0.0709524771191,-0.000384522880895,-0.539023060817,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#12:cp,uiuc_cp,1,0.034683,0.0345251753494,-0.000157824650646,-0.455049017229,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#13:ct,uiuc_ct,1,0.066685,0.0663080876101,-0.000376912389854,-0.565213151165,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#13:cp,uiuc_cp,1,0.033359,0.0331901828469,-0.000168817153097,-0.506061791712,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#14:ct,uiuc_ct,1,0.061037,0.0613832428303,0.000346242830276,0.567267117119,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#14:cp,uiuc_cp,1,0.031499,0.0317111466862,0.00021214668619,0.673502924506,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#15:ct,uiuc_ct,1,0.056857,0.0558715613226,-0.000985438677385,-1.73318795818,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0634od_5993.txt#15:cp,uiuc_cp,1,0.03042,0.0301025578196,-0.000317442180411,-1.04353116506,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#0:ct,uiuc_ct,1,0.071653,0.0714980875298,-0.000154912470199,-0.216198163648,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#0:cp,uiuc_cp,1,0.03451,0.0347180773123,0.000208077312315,0.602947876889,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#1:ct,uiuc_ct,1,0.06577,0.0655212729432,-0.000248727056789,-0.378177066731,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#1:cp,uiuc_cp,1,0.033095,0.032991743666,-0.000103256334002,-0.311999800581,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#2:ct,uiuc_ct,1,0.061892,0.0615445718404,-0.000347428159575,-0.561345827529,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#2:cp,uiuc_cp,1,0.031991,0.0318072901874,-0.000183709812579,-0.574254673436,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#3:ct,uiuc_ct,1,0.056601,0.056618818663,0.0000178186629926,0.0314811805315,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#3:cp,uiuc_cp,1,0.030368,0.0303721820691,0.00000418206909682,0.0137713023473,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#4:ct,uiuc_ct,1,0.051841,0.051841,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#4:cp,uiuc_cp,1,0.028904,0.028904,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#5:ct,uiuc_ct,1,0.046902,0.046902,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#5:cp,uiuc_cp,1,0.027258,0.027258,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#6:ct,uiuc_ct,1,0.042453,0.042453,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#6:cp,uiuc_cp,1,0.025746,0.025746,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#7:ct,uiuc_ct,1,0.037347,0.037347,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#7:cp,uiuc_cp,1,0.023903,0.023903,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#8:ct,uiuc_ct,1,0.032514,0.032514,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#8:cp,uiuc_cp,1,0.022177,0.022177,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#9:ct,uiuc_ct,1,0.027579,0.027579,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#9:cp,uiuc_cp,1,0.02035,0.02035,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#10:ct,uiuc_ct,1,0.023112,0.023112,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#10:cp,uiuc_cp,1,0.01863,0.01863,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#11:ct,uiuc_ct,1,0.018253,0.018253,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#11:cp,uiuc_cp,1,0.016692,0.016692,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#12:ct,uiuc_ct,1,0.013719,0.013719,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#12:cp,uiuc_cp,1,0.014801,0.014801,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#13:ct,uiuc_ct,1,0.009348,0.009348,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#13:cp,uiuc_cp,1,0.0129,0.0129,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#14:ct,uiuc_ct,1,0.004821,0.004821,0,,true,10,,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#14:cp,uiuc_cp,1,0.010874,0.010874,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#15:ct,uiuc_ct,1,-0.000128,-0.000128,0.000000000000000000352365706058,,true,10,,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#15:cp,uiuc_cp,1,0.008654,0.008654,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#16:ct,uiuc_ct,1,-0.005244,-0.005244,0,,true,10,,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#16:cp,uiuc_cp,1,0.006368,0.006368,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#17:ct,uiuc_ct,1,-0.005268,-0.005268,0,,true,10,,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,apce_12x6_0635od_6044.txt#17:cp,uiuc_cp,1,0.006382,0.006382,0,0,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@1046.667rpm:ct,uiuc_ct,1,0.077004,0.09844325,0.02143925,27.8417354943,true,10,true,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@1046.667rpm:cp,uiuc_cp,1,0.033361,0.0319385,-0.0014225,-4.26396091244,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@1520rpm:ct,uiuc_ct,1,0.089219,0.09844325,0.00922425,10.338885215,true,10,true,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@1520rpm:cp,uiuc_cp,1,0.033981,0.0319385,-0.0020425,-6.0107118684,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@1980rpm:ct,uiuc_ct,1,0.09256,0.09844325,0.00588325,6.35614736387,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@1980rpm:cp,uiuc_cp,1,0.032209,0.0319385,-0.0002705,-0.839827377441,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@2520rpm:ct,uiuc_ct,1,0.096308,0.09844325,0.00213525,2.2171055364,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@2520rpm:cp,uiuc_cp,1,0.032248,0.0319385,-0.0003095,-0.959749441826,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@2980rpm:ct,uiuc_ct,1,0.098294,0.09844325,0.00014925,0.151840397176,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@2980rpm:cp,uiuc_cp,1,0.031959,0.0319385,-0.0000205,-0.0641446853781,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@3460rpm:ct,uiuc_ct,1,0.099488,0.0991330367151,-0.00035496328488,-0.356790049936,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@3460rpm:cp,uiuc_cp,1,0.031795,0.0318397461335,0.0000447461334587,0.140733239373,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@3960rpm:ct,uiuc_ct,1,0.099843,0.099954211376,0.000111211375977,0.111386252393,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@3960rpm:cp,uiuc_cp,1,0.031623,0.0317221820066,0.0000991820066238,0.313638828143,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@4453.333rpm:ct,uiuc_ct,1,0.101437,0.101087830082,-0.000349169917904,-0.344223427254,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@4453.333rpm:cp,uiuc_cp,1,0.032206,0.0319897680858,-0.00021623191423,-0.671402577873,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@4953.333rpm:ct,uiuc_ct,1,0.10246,0.102290965975,-0.000169034025357,-0.164975624983,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@4953.333rpm:cp,uiuc_cp,1,0.032376,0.0323252546376,-0.0000507453623859,-0.156737590764,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@5500rpm:ct,uiuc_ct,1,0.102477,0.102271837244,-0.000205162755526,-0.200203709638,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@5500rpm:cp,uiuc_cp,1,0.032353,0.0325233835843,0.000170383584288,0.526639212092,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@6000rpm:ct,uiuc_ct,1,0.102003,0.102071652308,0.0000686523083041,0.0673042050765,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@6000rpm:cp,uiuc_cp,1,0.032672,0.0326815095609,0.00000950956094824,0.0291061488377,false,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@6473.333rpm:ct,uiuc_ct,1,0.10357,0.102064245466,-0.00150575453433,-1.45385201732,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@6473.333rpm:cp,uiuc_cp,1,0.033065,0.0326873602221,-0.000377639777915,-1.14211334618,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@6966.667rpm:ct,uiuc_ct,1,0.104323,0.102064245466,-0.00225875453433,-2.1651548885,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@6966.667rpm:cp,uiuc_cp,1,0.033306,0.0326873602221,-0.000618639777915,-1.85744243654,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@7546.667rpm:ct,uiuc_ct,1,0.10546,0.102064245466,-0.00339575453433,-3.21994550951,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+uiuc_propeller,OK,static@7546.667rpm:cp,uiuc_cp,1,0.033643,0.0326873602221,-0.000955639777915,-2.84053080259,true,10,false,https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html
+battery_cited_points,OK,ocv_full,battery_ocv,V,16.8,16.8,0,0,false,5,false,battery record ref_battery_generic_4s_5000 (CITED fields)
+battery_cited_points,OK,ocv_mid_vs_nominal,battery_ocv,V,14.8,15.28,0.48,3.24324324324,false,5,false,battery record ref_battery_generic_4s_5000 (CITED fields)
+battery_cited_points,OK,ocv_empty_vs_cutoff,battery_ocv,V,13.2,13.2,0,0,false,5,false,battery record ref_battery_generic_4s_5000 (CITED fields)
+battery_cited_points,OK,sag_at_10a,battery_sag,V,0.2,0.2,-0.000000000000000721644966006,-0.000000000000360822483003,false,5,false,battery record ref_battery_generic_4s_5000 (CITED fields)
+battery_cited_points,OK,soc_after_charge,battery_soc,1,0.799999404734,0.799999404734,-0.00000000000000222044604925,-0.000000000000277555962681,false,1,false,battery record ref_battery_generic_4s_5000 (CITED fields)
+battery_curve,NO_PUBLISHED_DATA,,,,,,,,,,,no published discharge curve is stored; the OCV curve in the database is an ASSUMED generic shape. Supply parts_db/validation/battery_curve_<battery id>.csv

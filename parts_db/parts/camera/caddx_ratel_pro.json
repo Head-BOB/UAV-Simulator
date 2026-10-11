@@ -1,0 +1,49 @@
+{
+  "availability_url": "https://www.caddxfpv.com/products/caddxfpv-ratel-pro-analog-camera",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimensions 19mm*19mm*27mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5b70479a018899ba4f3caee6ecf05a7365729ece45bdb32df80a54a7eca06a32",
+      "source_type": "CITED",
+      "source_url": "https://www.caddxfpv.com/products/caddxfpv-ratel-pro-analog-camera"
+    },
+    "value": [
+      0.019,
+      0.019,
+      0.027
+    ]
+  },
+  "category": "camera",
+  "current_draw_a": {
+    "provenance": {
+      "note": "camera current not read from the page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.15
+  },
+  "id": "caddx_ratel_pro",
+  "manufacturer": "Caddx",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight 9.5g",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "5b70479a018899ba4f3caee6ecf05a7365729ece45bdb32df80a54a7eca06a32",
+      "source_type": "CITED",
+      "source_url": "https://www.caddxfpv.com/products/caddxfpv-ratel-pro-analog-camera"
+    },
+    "value": 0.0095
+  },
+  "model": "Ratel Pro analog FPV camera",
+  "mount_slot": "front_mount",
+  "notes": "Other Caddx pages (Ratel 2, Baby Ratel 2) were pinned but their spec text is not in the page HTML, so they are not seeded.",
+  "price_url": "https://www.caddxfpv.com/products/caddxfpv-ratel-pro-analog-camera",
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "page: wide input DC 4.5-27 V; a 12 V representative value assumed. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 12.0
+  }
+}

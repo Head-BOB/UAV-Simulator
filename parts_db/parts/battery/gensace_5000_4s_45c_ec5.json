@@ -1,0 +1,147 @@
+{
+  "availability_url": "https://genstattu.com/gens-ace-5000mah-4s-45c-14-8v-g-tech-lipo-battery-pack-with-ec5-plug/",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Length x Width x Height (mm) in the spec table",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "fda9fbe6e8cc5dbee247a4508eaa5c6f80efb0d03992177dc2fdb0f8c3180cf2",
+      "source_type": "CITED",
+      "source_url": "https://genstattu.com/gens-ace-5000mah-4s-45c-14-8v-g-tech-lipo-battery-pack-with-ec5-plug/"
+    },
+    "value": [
+      0.156,
+      0.047,
+      0.03
+    ]
+  },
+  "capacity_ah": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Capacity(mAh): 5000",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "fda9fbe6e8cc5dbee247a4508eaa5c6f80efb0d03992177dc2fdb0f8c3180cf2",
+      "source_type": "CITED",
+      "source_url": "https://genstattu.com/gens-ace-5000mah-4s-45c-14-8v-g-tech-lipo-battery-pack-with-ec5-plug/"
+    },
+    "value": 5.0
+  },
+  "category": "battery",
+  "cells": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Configuration 4S",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "fda9fbe6e8cc5dbee247a4508eaa5c6f80efb0d03992177dc2fdb0f8c3180cf2",
+      "source_type": "CITED",
+      "source_url": "https://genstattu.com/gens-ace-5000mah-4s-45c-14-8v-g-tech-lipo-battery-pack-with-ec5-plug/"
+    },
+    "value": 4
+  },
+  "connector": "EC5",
+  "id": "gensace_5000_4s_45c_ec5",
+  "internal_resistance_ohm": {
+    "provenance": {
+      "note": "pack resistance not published; typical order for this size. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.02
+  },
+  "manufacturer": "Gens ace",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Net Weight(±20g): 468",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "fda9fbe6e8cc5dbee247a4508eaa5c6f80efb0d03992177dc2fdb0f8c3180cf2",
+      "source_type": "CITED",
+      "source_url": "https://genstattu.com/gens-ace-5000mah-4s-45c-14-8v-g-tech-lipo-battery-pack-with-ec5-plug/"
+    },
+    "value": 0.468
+  },
+  "max_continuous_c": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Discharge Rate (C): 45",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "fda9fbe6e8cc5dbee247a4508eaa5c6f80efb0d03992177dc2fdb0f8c3180cf2",
+      "source_type": "CITED",
+      "source_url": "https://genstattu.com/gens-ace-5000mah-4s-45c-14-8v-g-tech-lipo-battery-pack-with-ec5-plug/"
+    },
+    "value": 45.0
+  },
+  "model": "G-Tech 5000mAh 4S 45C EC5",
+  "notes": "Manufacturer shop page. Internal resistance, thermal values and the OCV curve are NOT on the page: ASSUMED (the curve is a generic LiPo shape).",
+  "ocv_curve": {
+    "provenance": {
+      "note": "generic LiPo open-circuit shape. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      [
+        0.0,
+        3.3
+      ],
+      [
+        0.1,
+        3.62
+      ],
+      [
+        0.2,
+        3.7
+      ],
+      [
+        0.3,
+        3.75
+      ],
+      [
+        0.5,
+        3.82
+      ],
+      [
+        0.7,
+        3.92
+      ],
+      [
+        0.9,
+        4.08
+      ],
+      [
+        1.0,
+        4.2
+      ]
+    ]
+  },
+  "price_url": "https://genstattu.com/gens-ace-5000mah-4s-45c-14-8v-g-tech-lipo-battery-pack-with-ec5-plug/",
+  "schema_version": "1.0.0",
+  "temp_limit_c": {
+    "provenance": {
+      "note": "common LiPo practice. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 60.0
+  },
+  "thermal_resistance_k_per_w": {
+    "provenance": {
+      "note": "placeholder, no source. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 3.0
+  },
+  "voltage_per_cell_cutoff_v": {
+    "provenance": {
+      "note": "common LiPo cutoff practice. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 3.3
+  },
+  "voltage_per_cell_max_v": {
+    "provenance": {
+      "note": "common full-charge LiPo convention. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 4.2
+  },
+  "voltage_per_cell_nominal_v": {
+    "provenance": {
+      "note": "nominal pack voltage on the page (14.8 V for 4S, 22.2 V for 6S) / cells = 3.7 V",
+      "source_type": "CALCULATED"
+    },
+    "value": 3.7
+  }
+}

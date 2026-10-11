@@ -8,6 +8,10 @@ It searches DIR for the staged `DroneData` folder and, next to it, checks:
     equals the file in the repo (a stale copy fails);
   - Binaries/Win64/physics_core.dll exists (and equals physics_core/target/release/physics_core.dll when that file exists);
   - the optional files are reported but never fail the check.
+  - the staged helper programs (tools/package/stage_package.py): DroneData/helpers/helpers_manifest.json, every file in it present with the
+    same size and SHA-256, no unlisted file, helpers.json pointing at existing files, and for a Windows package the embeddable Python
+    (python.exe, a python*._pth with the site-packages line and `import site`, the locked packages) and the two .exe files, plus the demo session.
+Without --require-helpers the helper checks run only when DroneData/helpers exists (so the old demo-only package still verifies).
 Exit code 0 = everything required is there. Nothing is written.
 """
 import argparse
@@ -56,14 +60,76 @@ def check(package: Path, repo: Path = ROOT, manifest: Path = MANIFEST) -> list[s
     return problems
 
 
+HELPERS_DEMO_FILES = ["repo/tools/parts/builds/reference_quad/vehicle_build.json", "repo/tools/parts/builds/reference_quad/campaign_smoke/campaign_result.json",
+                      "repo/tools/parts/builds/reference_quad/report_smoke/report.html"]
+
+
+def check_helpers(project: Path) -> list[str]:
+    """Problems with DroneData/helpers (the staged helper programs); empty = OK. `project` is the folder that holds DroneData."""
+    helpers = project / "DroneData" / "helpers"
+    manifest_path = helpers / "helpers_manifest.json"
+    if not manifest_path.is_file():
+        return ["missing: DroneData/helpers/helpers_manifest.json (run tools/package/stage_package.py after packaging)"]
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        entries = manifest["files"]
+    except (ValueError, KeyError) as e:
+        return [f"unreadable helpers_manifest.json: {e}"]
+    problems: list[str] = []
+    listed = set()
+    for e in entries:
+        rel = e["path"]
+        listed.add(rel)
+        f = helpers / rel
+        if not f.is_file():
+            problems.append(f"missing: helpers/{rel}")
+        elif f.stat().st_size != e["size"] or sha256(f) != e["sha256"]:
+            problems.append(f"stale or altered (differs from the manifest): helpers/{rel}")
+    for f in sorted(helpers.rglob("*")):
+        rel = f.relative_to(helpers).as_posix()
+        if f.is_file() and rel not in listed and rel != "helpers_manifest.json":
+            problems.append(f"unlisted file (not in the manifest): helpers/{rel}")
+    try:
+        settings = json.loads((helpers / "helpers.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        return problems + [f"unreadable helpers.json: {e}"]
+    windows = manifest.get("mode") == "windows"
+    for key in ("python", "repo_root", "run_campaign_exe", "validate_models_exe"):
+        target = Path(settings.get(key, ""))
+        target = target if target.is_absolute() else helpers / target
+        if not settings.get(key) or not target.exists():
+            problems.append(f"helpers.json {key}: {settings.get(key)!r} does not exist")
+        elif windows and key == "python" and Path(settings[key]).is_absolute():
+            problems.append("helpers.json python is an absolute path in a Windows package (must be relative to helpers/)")
+    if windows:
+        pth = sorted((helpers / "python").glob("python*._pth"))
+        if not pth:
+            problems.append("missing: helpers/python/python*._pth")
+        else:
+            text = pth[0].read_text(encoding="utf-8")
+            if "Lib/site-packages" not in text.splitlines() or "import site" not in text.splitlines():
+                problems.append(f"{pth[0].name} lacks the 'Lib/site-packages' or 'import site' line (the embeddable Python ignores PYTHONPATH)")
+        if not (helpers / "python" / "Lib" / "site-packages" / "jsonschema").is_dir():
+            problems.append("missing: helpers/python/Lib/site-packages/jsonschema (the locked wheels were not unpacked)")
+        for exe in ("run_campaign.exe", "validate_models.exe"):
+            if not (helpers / "bin" / exe).is_file():
+                problems.append(f"missing: helpers/bin/{exe}")
+    for rel in HELPERS_DEMO_FILES:
+        if not (helpers / rel).is_file():
+            problems.append(f"missing demo session file: helpers/{rel}")
+    return problems
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--package", type=Path, required=True)
+    ap.add_argument("--require-helpers", action="store_true", help="the staged helper programs must be there (the README uses this); without it they are checked only if DroneData/helpers exists")
     args = ap.parse_args(argv)
     problems = check(args.package)
     spec = json.loads(MANIFEST.read_text(encoding="utf-8"))
     project = find_project_dir(args.package)
-    if project is not None:
+    if project is not None and (args.require_helpers or (project / "DroneData" / "helpers").exists()):
+        problems += check_helpers(project)
         for rel in spec.get("optional_data_files", []):
             print(f"optional {'present' if (project / 'DroneData' / rel).is_file() else 'absent '}: {rel}")
     for p in problems:

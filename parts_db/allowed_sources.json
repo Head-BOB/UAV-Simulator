@@ -1,0 +1,41 @@
+{
+  "_comment": "Hosts fetch_source.py may download from: manufacturers and authoritative data sets only. NO retailers. Human-reviewed list; add a host only with a reason.",
+  "_reasons": {
+    "store.tmotor.com": "T-Motor, manufacturer store with spec tables",
+    "m-selig.ae.illinois.edu": "UIUC propeller data site, measured Ct/Cp",
+    "apcprop.com": "APC, propeller manufacturer",
+    "holybro.com": "Holybro, manufacturer (frames, flight controllers, GPS, power modules)",
+    "docs.holybro.com": "Holybro, manufacturer documentation",
+    "docs.px4.io": "PX4 project documentation of the Holybro/other autopilot hardware specs",
+    "genstattu.com": "Tattu, battery manufacturer",
+    "iflight-rc.com": "iFlight, FPV manufacturer",
+    "frsky-rc.com": "FrSky, receiver manufacturer",
+    "radiomasterrc.com": "RadioMaster, radio/receiver manufacturer",
+    "team-blacksheep.com": "TBS, receiver/FPV manufacturer",
+    "caddxfpv.com": "Caddx, camera manufacturer",
+    "runcam.com": "RunCam, camera manufacturer",
+    "siyi.biz": "SIYI, gimbal camera manufacturer",
+    "tarotrc.com": "Tarot, frame/gimbal manufacturer",
+    "dji.com": "DJI, frame manufacturer",
+    "shop.tmotor.com": "T-Motor, manufacturer shop (FPV products moved here from store.tmotor.com)"
+  },
+  "hosts": [
+    "apcprop.com",
+    "caddxfpv.com",
+    "dji.com",
+    "docs.holybro.com",
+    "docs.px4.io",
+    "frsky-rc.com",
+    "genstattu.com",
+    "holybro.com",
+    "iflight-rc.com",
+    "m-selig.ae.illinois.edu",
+    "radiomasterrc.com",
+    "runcam.com",
+    "shop.tmotor.com",
+    "siyi.biz",
+    "store.tmotor.com",
+    "tarotrc.com",
+    "team-blacksheep.com"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "availability_url": "https://holybro.com/products/kopis2-6s-v2free-shipping",
+  "blades": {
+    "provenance": {
+      "note": "3-blade from the name convention. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 3
+  },
+  "bore_m": {
+    "provenance": {
+      "note": "typical 5 mm shaft. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.005
+  },
+  "bounding_box_m": {
+    "provenance": {
+      "note": "5.1 in disc. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": [
+      0.12954,
+      0.12954,
+      0.008
+    ]
+  },
+  "category": "propeller",
+  "ct_cp_scaling_assumed": {
+    "provenance": {
+      "note": "diameter ratio 5.1 in / 12 in used to reuse the APC 12x6E table. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.425
+  },
+  "data_basis": "SCALED",
+  "diameter_m": {
+    "provenance": {
+      "note": "5.1 in from the name T5143S. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.12954
+  },
+  "id": "tmotor_t5143s_prop",
+  "manufacturer": "T-Motor",
+  "mass_kg": {
+    "provenance": {
+      "note": "typical 5 in plastic prop. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.004
+  },
+  "model": "T5143S 3-blade 5in (name only)",
+  "notes": "The Kopis2 page lists \"4x T5143S Propeller\"; no dimensions are published there. 5.1 x 4.3 in is read from the NAME (convention), so it is ASSUMED. No Ct/Cp table: APC 12x6E is used as a stand-in (poor: different size, pitch and blade count).",
+  "pitch_m": {
+    "provenance": {
+      "note": "4.3 in from the name T5143S. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.10922
+  },
+  "price_url": "https://holybro.com/products/kopis2-6s-v2free-shipping",
+  "scaled_from": "apc_12x6e",
+  "schema_version": "1.0.0"
+}

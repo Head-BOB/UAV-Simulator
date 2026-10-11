@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "test": "climb",
+  "definition_version": "1",
+  "outcome": "COMPLETED",
+  "breaking_point": null,
+  "metrics": [{"name": "time_to_target_s", "value": 3.842}, {"name": "sustained_climb_rate_mps", "value": 4.52573514109}, {"name": "max_climb_rate_mps", "value": 4.91143751144}, {"name": "climb_saturated_percent", "value": 0}, {"name": "climb_min_thrust_reserve_ratio", "value": 5.37583237924}],
+  "notes": ["class climb / acceleration limits replaced for this test: 8 m/s, 8 m/s^2"],
+  "series": [{"file": "timeseries_climb.csv", "rows": 12}],
+  "steps_simulated": 2921,
+  "turbulence": "Dryden (MIL-HDBK-1797 low-altitude form), UNVERIFIED",
+  "turbulence_height_clamped_steps": 0,
+  "wind_limited_steps": 0,
+  "drag_model": "analytic_legacy"
+}

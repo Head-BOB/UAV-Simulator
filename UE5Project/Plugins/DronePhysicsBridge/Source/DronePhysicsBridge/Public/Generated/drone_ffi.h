@@ -20,6 +20,49 @@
 #define FFI_CODE_LOCK_RECOVERED 98
 
 /**
+ * Largest mean wind accepted, m/s (the core accepts +-30 m/s per component including turbulence).
+ */
+#define MAX_MEAN_WIND_MPS 20.0
+
+/**
+ * Version of the conditions / definitions / output layouts.
+ */
+#define SCHEMA_VERSION 1
+
+/**
+ * Version of the controller config file layout. A file with another version is refused.
+ */
+#define CONTROLLER_CONFIG_VERSION 1
+
+/**
+ * Fixed step of every closed-loop run, s.
+ */
+#define DT_S 0.002
+
+/**
+ * Altitude of the start of every scenario, m.
+ */
+#define START_ALTITUDE_M 20.0
+
+/**
+ * Pre-roll hovering time, s: the battery is full, so the duty that hovers is lower than the build's estimate (nominal voltage);
+ * the velocity integrator takes this time to absorb it. Every scenario starts after it.
+ */
+#define PREROLL_S 8.0
+
+
+
+/**
+ * Largest payload accepted, kg.
+ */
+#define MAX_PAYLOAD_KG 50.0
+
+/**
+ * Largest |coordinate| of the payload position, m.
+ */
+#define MAX_PAYLOAD_POSITION_M 2.0
+
+/**
  * Engineering bound on the model input width, not a physics limit. The widest planned
  * input today is 4 (aero); raise only by a reviewed change.
  */
@@ -56,6 +99,26 @@
 #define MOTOR_TEMP_LIMIT_C 120.0
 
 /**
+ * Floor of the air speed used in the filters, m/s. ASSUMED, `TODO(HUMAN-VERIFY)`.
+ */
+#define V_MIN_MPS 2.0
+
+/**
+ * Metres per foot (exact by definition).
+ */
+#define FOOT_M 0.3048
+
+/**
+ * Time constant of the simple gust, s. ASSUMED, `TODO(HUMAN-VERIFY)`.
+ */
+#define SIMPLE_TAU_S 2.0
+
+/**
+ * Vertical share of the simple gust intensity. ASSUMED, `TODO(HUMAN-VERIFY)`.
+ */
+#define SIMPLE_VERTICAL_FRACTION 0.5
+
+/**
  * Largest accepted |component| of `WindInput::wind_ned_mps`, m/s.
  * TODO(HUMAN-VERIFY: demo value) Chosen by the project owner as a sanity bound for the demo
  * (30 m/s is about gale force); it is not a validated aerodynamic limit of the drag model.
@@ -77,6 +140,21 @@
 #define MAX_TEMP_OFFSET_C 40.0
 
 /**
+ * Number of points the battery open-circuit-voltage table can hold (fixed size: no heap in the FFI).
+ */
+#define MAX_OCV_POINTS 16
+
+/**
+ * Number of propeller speed curves the Ct/Cp table can hold (fixed size: no heap in the FFI).
+ */
+#define MAX_PROP_CURVES 8
+
+/**
+ * Number of (J, Ct, Cp) points per propeller speed curve.
+ */
+#define MAX_PROP_POINTS 48
+
+/**
  * Largest accepted deviation of a state quaternion's norm from 1 at the FFI boundary.
  * f32 storage keeps a unit quaternion within about 2.4e-7 of norm 1 and the integrator
  * re-normalizes every step, so 1e-3 only trips on a caller bug (zero, scaled or garbage
@@ -85,9 +163,19 @@
 #define QUAT_NORM_TOLERANCE 1.0e-3
 
 /**
+ * Rows whose |reference| is below this fraction of the largest |reference| of their quantity get no percent error.
+ */
+#define PERCENT_FLOOR_FRACTION 0.05
+
+/**
  * Handle to an active ONNX surrogate model session.
  */
 typedef struct SurrogateHandle SurrogateHandle;
+
+/**
+ * The tests of this phase, in report order.
+ */
+typedef struct TestId TestId;
 
 /**
  * Represents the drone's current physical condition.
@@ -459,6 +547,464 @@ typedef struct SurrogateQueryResult {
   int32_t in_validated_envelope;
 } SurrogateQueryResult;
 
+/**
+ * Motor, ESC, battery and thermal parameters of the powertrain (interface v13).
+ *
+ * Loaded from `powertrain_config.json` (written by `tools/parts/build_vehicle.py`) with
+ * `ffi_load_powertrain_config`. Separate from `VehicleConfig` on purpose: `vehicle_config.json` is
+ * hashed into every surrogate model, so it must not change when the powertrain model does.
+ * Every value is SI; the unit is in the field name. See `powertrain.rs` for the model.
+ */
+typedef struct PowertrainConfig {
+  /**
+   * Motor velocity constant, rpm per volt (no-load).
+   */
+  double motor_kv_rpm_per_v;
+  /**
+   * Motor phase-to-phase winding resistance, ohm.
+   */
+  double motor_resistance_ohm;
+  /**
+   * Motor no-load current, A (iron + friction loss = this times the back-EMF).
+   */
+  double motor_no_load_current_a;
+  /**
+   * Motor current rating, A (flag only; the model does not limit current).
+   */
+  double motor_max_current_a;
+  /**
+   * Motor winding temperature limit, deg C (flag only).
+   */
+  double motor_winding_temp_limit_c;
+  /**
+   * Propeller diameter, m. Must equal `VehicleConfig::prop_diameter_m`.
+   */
+  double prop_diameter_m;
+  /**
+   * Static thrust coefficient (unitless). Must equal `VehicleConfig::thrust_coeff`.
+   */
+  double prop_ct;
+  /**
+   * Static power coefficient (unitless).
+   */
+  double prop_cp;
+  /**
+   * ESC efficiency, unitless in (0, 1].
+   */
+  double esc_efficiency;
+  /**
+   * ESC continuous current rating, A (flag only).
+   */
+  double esc_max_current_a;
+  /**
+   * ESC temperature limit, deg C (flag only).
+   */
+  double esc_temp_limit_c;
+  /**
+   * Battery capacity, Ah.
+   */
+  double battery_capacity_ah;
+  /**
+   * Battery pack internal resistance, ohm.
+   */
+  double battery_internal_resistance_ohm;
+  /**
+   * Battery cutoff voltage per cell, V.
+   */
+  double battery_cutoff_v_per_cell;
+  /**
+   * Battery continuous current rating (C rating x capacity), A (flag only).
+   */
+  double battery_max_continuous_a;
+  /**
+   * Battery temperature limit, deg C (flag only).
+   */
+  double battery_temp_limit_c;
+  /**
+   * Thermal resistance motor winding to case, K/W.
+   */
+  double motor_r_winding_case_k_per_w;
+  /**
+   * Thermal resistance motor case to ambient in still air, K/W.
+   */
+  double motor_r_case_ambient_k_per_w;
+  /**
+   * Heat capacity of the motor winding, J/K.
+   */
+  double motor_c_winding_j_per_k;
+  /**
+   * Heat capacity of the motor case (stator, bell, magnets), J/K.
+   */
+  double motor_c_case_j_per_k;
+  /**
+   * Thermal resistance ESC to ambient in still air, K/W.
+   */
+  double esc_r_ambient_k_per_w;
+  /**
+   * Heat capacity of the ESC, J/K.
+   */
+  double esc_c_j_per_k;
+  /**
+   * Thermal resistance battery to ambient in still air, K/W.
+   */
+  double battery_r_ambient_k_per_w;
+  /**
+   * Heat capacity of the battery, J/K.
+   */
+  double battery_c_j_per_k;
+  /**
+   * Air speed at which forced convection doubles the cooling (`R_eff = R / (1 + (v/v_ref)^0.8)`), m/s.
+   */
+  double cooling_ref_airspeed_mps;
+  /**
+   * Open-circuit-voltage table: state of charge, strictly increasing from 0 to 1 (first `ocv_points` entries).
+   */
+  double ocv_soc[MAX_OCV_POINTS];
+  /**
+   * Open-circuit voltage per cell at `ocv_soc`, V, non-decreasing.
+   */
+  double ocv_v_per_cell[MAX_OCV_POINTS];
+  /**
+   * Number of cells in series (1..=14).
+   */
+  int32_t battery_cells;
+  /**
+   * Number of used entries in the OCV table (2..=16).
+   */
+  int32_t ocv_points;
+  /**
+   * 1 only if every thermal and electrical input is MEASURED or CITED. The builder writes 0 while any input is ASSUMED.
+   */
+  int32_t parameters_verified;
+  /**
+   * Reserved, must be 0.
+   */
+  int32_t reserved;
+  /**
+   * Speed of each propeller curve, rpm, strictly increasing (first `prop_curve_count` entries). Used when `prop_model` is 1.
+   */
+  double prop_curve_rpm[MAX_PROP_CURVES];
+  /**
+   * Advance ratio `J = V_axial / (n D)` of each curve point, strictly increasing from exactly 0.
+   */
+  double prop_j[MAX_PROP_CURVES][MAX_PROP_POINTS];
+  /**
+   * Thrust coefficient `Ct` at each curve point (may be negative at high J).
+   */
+  double prop_ct_table[MAX_PROP_CURVES][MAX_PROP_POINTS];
+  /**
+   * Power coefficient `Cp` at each curve point, > 0.
+   */
+  double prop_cp_table[MAX_PROP_CURVES][MAX_PROP_POINTS];
+  /**
+   * Number of used points of each curve (2..=48).
+   */
+  int32_t prop_curve_points[MAX_PROP_CURVES];
+  /**
+   * Number of used curves (1..=8 when `prop_model` is 1, else 0).
+   */
+  int32_t prop_curve_count;
+  /**
+   * 0: constant `prop_ct`/`prop_cp` (the static fit). 1: the Ct/Cp(J, rpm) table.
+   */
+  int32_t prop_model;
+} PowertrainConfig;
+
+/**
+ * Evolving powertrain state, owned by the caller and updated by `ffi_step_powertrain` (interface v13).
+ */
+typedef struct PowertrainState {
+  /**
+   * Battery state of charge, unitless in [0, 1].
+   */
+  double soc;
+  /**
+   * Charge drawn from the battery since the start, Ah.
+   */
+  double charge_used_ah;
+  /**
+   * Battery current of the previous step, A (feeds the voltage sag of the next step).
+   */
+  double battery_current_a;
+  /**
+   * Battery temperature, deg C.
+   */
+  double battery_temp_c;
+  /**
+   * Time the loaded pack voltage has been continuously below the cutoff, s.
+   */
+  double time_below_cutoff_s;
+  /**
+   * Motor winding temperatures, deg C.
+   */
+  double motor_winding_c[4];
+  /**
+   * Motor case temperatures, deg C.
+   */
+  double motor_case_c[4];
+  /**
+   * ESC temperatures, deg C.
+   */
+  double esc_temp_c[4];
+  /**
+   * Total time during which at least one propeller was outside the measured Ct/Cp data, s.
+   */
+  double prop_extrapolated_time_s;
+} PowertrainState;
+
+/**
+ * Result of a stateless motor + propeller bench point (`ffi_powertrain_bench_point`), interface v13.
+ */
+typedef struct PowertrainBenchOut {
+  /**
+   * Motor speed, rpm.
+   */
+  double rpm;
+  /**
+   * Motor current, A.
+   */
+  double motor_current_a;
+  /**
+   * Propeller torque, N*m.
+   */
+  double torque_nm;
+  /**
+   * Propeller thrust, N.
+   */
+  double thrust_n;
+  /**
+   * Shaft power, W.
+   */
+  double shaft_w;
+  /**
+   * Motor electrical input power, W.
+   */
+  double motor_electrical_w;
+  /**
+   * Copper loss, W.
+   */
+  double copper_loss_w;
+  /**
+   * No-load loss, W.
+   */
+  double noload_loss_w;
+  /**
+   * ESC loss, W.
+   */
+  double esc_loss_w;
+  /**
+   * Current drawn from the pack, A.
+   */
+  double battery_current_a;
+  /**
+   * Power drawn from the pack, W.
+   */
+  double battery_power_w;
+  /**
+   * Shaft power over pack power, unitless.
+   */
+  double system_efficiency;
+  /**
+   * Advance ratio used.
+   */
+  double advance_ratio;
+  /**
+   * Thrust coefficient used.
+   */
+  double ct;
+  /**
+   * Power coefficient used.
+   */
+  double cp;
+  /**
+   * 1 if the propeller was outside the measured Ct/Cp data.
+   */
+  int32_t extrapolated;
+  /**
+   * Reserved, 0.
+   */
+  int32_t reserved;
+} PowertrainBenchOut;
+
+/**
+ * Propeller coefficients at one operating point (`ffi_propeller_coefficients`), interface v14.
+ */
+typedef struct PropCoefficients {
+  /**
+   * Thrust coefficient.
+   */
+  double ct;
+  /**
+   * Power coefficient.
+   */
+  double cp;
+  /**
+   * 1 if (J, rpm) is outside the measured data and the nearest edge value was used.
+   */
+  int32_t extrapolated;
+  /**
+   * Reserved, 0.
+   */
+  int32_t reserved;
+} PropCoefficients;
+
+/**
+ * Per-step powertrain results (interface v13). All values are for the step just taken.
+ * A rejected step overwrites it with NaN floats and all flags 0 (`step_valid` 0).
+ */
+typedef struct PowertrainTelemetry {
+  /**
+   * Motor current, A.
+   */
+  double motor_current_a[4];
+  /**
+   * Voltage at the motor terminals (duty x pack voltage), V.
+   */
+  double motor_voltage_v[4];
+  /**
+   * Motor speed, rpm.
+   */
+  double motor_rpm[4];
+  /**
+   * Propeller torque, N*m.
+   */
+  double motor_torque_nm[4];
+  /**
+   * Propeller thrust, N.
+   */
+  double motor_thrust_n[4];
+  /**
+   * Copper loss, W.
+   */
+  double motor_copper_loss_w[4];
+  /**
+   * No-load (iron + friction) loss, W.
+   */
+  double motor_noload_loss_w[4];
+  /**
+   * ESC loss, W.
+   */
+  double esc_loss_w[4];
+  /**
+   * Motor winding temperature after the step, deg C.
+   */
+  double motor_winding_c[4];
+  /**
+   * Motor case temperature after the step, deg C.
+   */
+  double motor_case_c[4];
+  /**
+   * ESC temperature after the step, deg C.
+   */
+  double esc_temp_c[4];
+  /**
+   * Loaded pack voltage, V.
+   */
+  double battery_voltage_v;
+  /**
+   * Open-circuit pack voltage, V.
+   */
+  double battery_ocv_v;
+  /**
+   * Pack current, A.
+   */
+  double battery_current_a;
+  /**
+   * Power drawn from the pack, W.
+   */
+  double battery_power_w;
+  /**
+   * State of charge after the step, unitless.
+   */
+  double battery_soc;
+  /**
+   * Battery temperature after the step, deg C.
+   */
+  double battery_temp_c;
+  /**
+   * Battery heating, W.
+   */
+  double battery_heat_w;
+  /**
+   * Charge drawn since the start, Ah.
+   */
+  double charge_used_ah;
+  /**
+   * Time continuously below the cutoff voltage, s.
+   */
+  double time_below_cutoff_s;
+  /**
+   * 1 if this struct holds the results of a successful step.
+   */
+  int32_t step_valid;
+  /**
+   * 1 if the loaded pack voltage is below cells x cutoff voltage (instantaneous; the step keeps running).
+   */
+  int32_t battery_cutoff;
+  /**
+   * 1 if the pack current exceeds its continuous rating.
+   */
+  int32_t battery_over_current;
+  /**
+   * 1 if the battery temperature exceeds its limit.
+   */
+  int32_t battery_over_temp;
+  /**
+   * 1 if the state of charge reached 0 and was held there.
+   */
+  int32_t battery_soc_clamped;
+  /**
+   * Bit i set: motor i current above its rating.
+   */
+  int32_t motor_over_current_mask;
+  /**
+   * Bit i set: motor i winding above its temperature limit.
+   */
+  int32_t motor_over_temp_mask;
+  /**
+   * Bit i set: ESC i input current above its rating.
+   */
+  int32_t esc_over_current_mask;
+  /**
+   * Bit i set: ESC i above its temperature limit.
+   */
+  int32_t esc_over_temp_mask;
+  /**
+   * Copy of `PowertrainConfig::parameters_verified` (0 while any input is ASSUMED).
+   */
+  int32_t thermal_valid;
+  /**
+   * Bit i set: propeller i is outside the measured Ct/Cp data (held at the nearest edge value). Always 0 with `prop_model` 0.
+   */
+  int32_t prop_extrapolated;
+  /**
+   * Reserved, 0.
+   */
+  int32_t reserved0;
+  /**
+   * Reserved, 0.
+   */
+  int32_t reserved1;
+  /**
+   * Reserved, 0.
+   */
+  int32_t reserved2;
+  /**
+   * Advance ratio of each propeller (0 for a rotor at rest).
+   */
+  double motor_advance_ratio[4];
+  /**
+   * Thrust coefficient used for each propeller (0 for a rotor at rest).
+   */
+  double motor_ct[4];
+  /**
+   * Power coefficient used for each propeller (0 for a rotor at rest).
+   */
+  double motor_cp[4];
+} PowertrainTelemetry;
+
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -683,6 +1229,132 @@ int32_t ffi_unload_surrogate_model(struct SurrogateHandle *handle);
  * * `out_config` must be a valid, aligned, mutable pointer to a VehicleConfig.
  */
 int32_t ffi_load_vehicle_config(const char *path, struct VehicleConfig *out_config);
+
+/**
+ * Loads and validates a powertrain configuration file (`powertrain_config.json`).
+ *
+ * # Returns
+ * * `0` - Success
+ * * `1` - Null pointer or invalid UTF-8 path
+ * * `2` - File IO error
+ * * `3` - JSON parse error (malformed, missing or unknown key, OCV table longer than 16 points)
+ * * `4` - A value is out of range or the OCV table is malformed (see `powertrain::validate_powertrain_config`)
+ * * `99` - A panic was caught
+ *
+ * # Safety
+ * * `path` must be a valid, null-terminated C string.
+ * * `out_config` must be a valid, aligned, mutable pointer to a `PowertrainConfig`.
+ */
+int32_t ffi_load_powertrain_config(const char *path,
+                                   struct PowertrainConfig *out_config);
+
+/**
+ * Creates a fresh `PowertrainState`: state of charge `soc`, every thermal node at `ambient_c`, no current history.
+ *
+ * # Returns
+ * * `0` - Success
+ * * `1` - Null pointer
+ * * `4` - `config` fails `validate_powertrain_config`
+ * * `5` - `soc` outside [0, 1], or `ambient_c` not finite / outside -100..=2000 deg C. `out_state` is untouched.
+ * * `99` - A panic was caught
+ *
+ * # Safety
+ * * `config` must be a valid, aligned, immutable pointer to a `PowertrainConfig`.
+ * * `out_state` must be a valid, aligned, mutable pointer to a `PowertrainState`.
+ */
+int32_t ffi_init_powertrain_state(const struct PowertrainConfig *config,
+                                  double ambient_c,
+                                  double soc,
+                                  struct PowertrainState *out_state);
+
+/**
+ * Stateless bench point: one motor + propeller + ESC at a fixed pack voltage and duty, in air of density `rho_kgpm3`, with the
+ * vehicle moving `axial_inflow_mps` along the rotor axis (0 for a static bench; the scenario of a manufacturer's thrust table:
+ * voltage, propeller, throttle -> current, thrust, rpm).
+ *
+ * # Returns
+ * * `0` - Success
+ * * `1` - Null pointer
+ * * `4` - `config` fails `validate_powertrain_config`
+ * * `5` - `duty` outside [0, 1], `v_pack_v` negative, `rho_kgpm3` not positive, or `axial_inflow_mps` not finite
+ * * `6` - The solve produced a non-finite value. `out` is untouched on every nonzero code.
+ * * `99` - A panic was caught
+ *
+ * # Safety
+ * * `config` must be a valid, aligned, immutable pointer to a `PowertrainConfig`.
+ * * `out` must be a valid, aligned, mutable pointer to a `PowertrainBenchOut`.
+ */
+int32_t ffi_powertrain_bench_point(const struct PowertrainConfig *config,
+                                   double duty,
+                                   double v_pack_v,
+                                   double rho_kgpm3,
+                                   double axial_inflow_mps,
+                                   struct PowertrainBenchOut *out);
+
+/**
+ * Propeller coefficients `Ct` and `Cp` at advance ratio `j` and shaft speed `rpm` (the same lookup the step uses).
+ * With `prop_model` 0 they are the constants; with 1 they come from the UIUC table, the nearest edge value is held outside the
+ * measured data and `extrapolated` is set to 1.
+ *
+ * # Returns
+ * * `0` - Success
+ * * `1` - Null pointer
+ * * `4` - `config` fails `validate_powertrain_config`
+ * * `5` - `j` or `rpm` not finite. `out` is untouched on every nonzero code.
+ * * `99` - A panic was caught
+ *
+ * # Safety
+ * * `config` must be a valid, aligned, immutable pointer to a `PowertrainConfig`.
+ * * `out` must be a valid, aligned, mutable pointer to a `PropCoefficients`.
+ */
+int32_t ffi_propeller_coefficients(const struct PowertrainConfig *config,
+                                   double j,
+                                   double rpm,
+                                   struct PropCoefficients *out);
+
+/**
+ * Fixed-timestep RK4 step with the powertrain model (interface v13): the motors' speed, thrust, current and temperatures
+ * come from the motor/propeller torque balance at the voltage the battery can supply, instead of `throttle x max_rpm`.
+ *
+ * Order: aero -> mixer (throttle = ESC duty) -> powertrain (battery, ESC, motors, thermal) -> structural -> forces -> integrator.
+ * `VehicleConfig::max_rpm` and `hover_throttle` are NOT used for the motors here (hover duty differs from `hover_throttle`;
+ * read it from the build sidecar). Cooling uses the AIR-relative speed (ground velocity minus wind).
+ *
+ * # Returns
+ * * `0` - Success
+ * * `1` - Null pointer (`aero_handle` and `fea_handle` may be null)
+ * * `6` - Aero model error, altitude outside the ISA range, or a non-finite powertrain result (16 is used for the latter)
+ * * `7` - Invalid dt (NaN, <= 0 or > 0.01)
+ * * `8` - Divergence or invalid input (as in `ffi_step_physics`); latch set
+ * * `9` / `11` / `12` / `13` / `98` / `99` - as in `ffi_step_physics`
+ * * `14` - `powertrain` is invalid, contradicts `config` (propeller diameter, Ct, kappa), or the thermal network is too
+ *   fast for `dt` (`dt > 0.2 x tau_min`). Nothing is written.
+ * * `15` - `powertrain_state` is invalid (SOC outside [0, 1], non-finite or implausible temperature, negative charge). Nothing is written.
+ * * `16` - A powertrain result was not finite. `out_telemetry` and `out_powertrain` are reset to "no data"; the latch is untouched.
+ *
+ * # Behavior on a failed step
+ * `state` and `powertrain_state` are always unchanged. Codes 1, 7, 9, 11, 12, 13, 14, 15, 98, 99 write nothing. Codes 6, 16
+ * and 8 overwrite both telemetry structs with "no data" (NaN powertrain floats, `step_valid` 0); only 8 sets the latch.
+ *
+ * # Safety
+ * * `state`, `powertrain_state`, `out_telemetry`, `out_powertrain`, `fault_latch` must be valid, aligned, mutable pointers.
+ * * `controls`, `wind`, `environment`, `config`, `powertrain` must be valid, aligned, immutable pointers.
+ * * `aero_handle` and `fea_handle` may be null; if non-null they must be valid `SurrogateHandle`s.
+ * * Pointers must not alias or be subject to concurrent mutation.
+ */
+int32_t ffi_step_powertrain(struct DroneState *state,
+                            struct PowertrainState *powertrain_state,
+                            const struct ControlInputs *controls,
+                            const struct WindInput *wind,
+                            const struct EnvironmentInput *environment,
+                            struct SurrogateHandle *aero_handle,
+                            struct SurrogateHandle *fea_handle,
+                            const struct VehicleConfig *config,
+                            const struct PowertrainConfig *powertrain,
+                            struct DebugTelemetry *out_telemetry,
+                            struct PowertrainTelemetry *out_powertrain,
+                            struct FaultLatch *fault_latch,
+                            double dt);
 
 #ifdef __cplusplus
 }  // extern "C"

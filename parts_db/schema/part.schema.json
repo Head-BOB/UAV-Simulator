@@ -1,0 +1,3230 @@
+{
+  "$defs": {
+    "battery": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "bounding_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "capacity_ah": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "category": {
+          "const": "battery"
+        },
+        "cells": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "connector": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "internal_resistance_ohm": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "manufacturer": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mass_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "mass_without_cables_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "max_continuous_c": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "ocv_curve": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "minItems": 2,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "price_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_usd": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "temp_limit_c": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": -50.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "thermal_resistance_k_per_w": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "usable_fraction": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "maximum": 1.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "voltage_per_cell_cutoff_v": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "voltage_per_cell_max_v": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "voltage_per_cell_nominal_v": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "manufacturer",
+        "model",
+        "schema_version",
+        "connector",
+        "mass_kg",
+        "bounding_box_m",
+        "cells",
+        "capacity_ah",
+        "voltage_per_cell_nominal_v",
+        "voltage_per_cell_max_v",
+        "voltage_per_cell_cutoff_v",
+        "ocv_curve",
+        "internal_resistance_ohm",
+        "max_continuous_c",
+        "thermal_resistance_k_per_w",
+        "temp_limit_c"
+      ],
+      "type": "object"
+    },
+    "camera": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "bounding_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "category": {
+          "const": "camera"
+        },
+        "current_draw_a": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "manufacturer": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mass_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "mass_without_cables_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mount_slot": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_usd": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "supply_voltage_v": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "manufacturer",
+        "model",
+        "schema_version",
+        "mount_slot",
+        "mass_kg",
+        "bounding_box_m",
+        "current_draw_a",
+        "supply_voltage_v"
+      ],
+      "type": "object"
+    },
+    "esc": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "bounding_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "burst_current_a": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "burst_duration_s": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "category": {
+          "const": "esc"
+        },
+        "cells_max": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "cells_min": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "channels": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "efficiency": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "maximum": 1.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "manufacturer": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mass_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "mass_without_cables_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "max_continuous_current_a": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_usd": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "temp_limit_c": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": -50.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "thermal_resistance_k_per_w": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "manufacturer",
+        "model",
+        "schema_version",
+        "mass_kg",
+        "bounding_box_m",
+        "max_continuous_current_a",
+        "channels",
+        "cells_min",
+        "cells_max",
+        "efficiency",
+        "thermal_resistance_k_per_w",
+        "temp_limit_c"
+      ],
+      "type": "object"
+    },
+    "flight_controller": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "bounding_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "category": {
+          "const": "flight_controller"
+        },
+        "current_draw_a": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "manufacturer": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mass_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "mass_without_cables_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mount_slot": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_usd": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "supply_voltage_v": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "manufacturer",
+        "model",
+        "schema_version",
+        "mount_slot",
+        "mass_kg",
+        "bounding_box_m",
+        "current_draw_a",
+        "supply_voltage_v"
+      ],
+      "type": "object"
+    },
+    "frame": {
+      "additionalProperties": false,
+      "properties": {
+        "arm_allowable_bending_stress_pa": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "arm_count": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 3,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "arm_length_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "arm_plate_thickness_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "arm_plate_width_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "availability_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "body_half_width_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "bounding_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "category": {
+          "const": "frame"
+        },
+        "central_body_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "cg_offset_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "frame_class": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "manufacturer": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mass_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "mass_without_cables_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "max_prop_diameter_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "motor_mount_pattern": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "motor_spacing_adjacent_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_usd": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "projected_area_front_m2": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "projected_area_side_m2": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "projected_area_top_m2": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "tube_id_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "tube_material": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "tube_od_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "manufacturer",
+        "model",
+        "schema_version",
+        "frame_class",
+        "motor_mount_pattern",
+        "mass_kg",
+        "bounding_box_m",
+        "motor_spacing_adjacent_m",
+        "arm_count",
+        "arm_length_m",
+        "cg_offset_m",
+        "projected_area_top_m2",
+        "projected_area_front_m2",
+        "projected_area_side_m2",
+        "max_prop_diameter_m"
+      ],
+      "type": "object"
+    },
+    "gimbal": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "bounding_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "category": {
+          "const": "gimbal"
+        },
+        "current_draw_a": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "manufacturer": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mass_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "mass_without_cables_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mount_slot": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_usd": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "supply_voltage_v": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "manufacturer",
+        "model",
+        "schema_version",
+        "mount_slot",
+        "mass_kg",
+        "bounding_box_m",
+        "current_draw_a",
+        "supply_voltage_v"
+      ],
+      "type": "object"
+    },
+    "gps": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "bounding_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "category": {
+          "const": "gps"
+        },
+        "current_draw_a": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "manufacturer": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mass_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "mass_without_cables_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mount_slot": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_usd": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "supply_voltage_v": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "manufacturer",
+        "model",
+        "schema_version",
+        "mount_slot",
+        "mass_kg",
+        "bounding_box_m",
+        "current_draw_a",
+        "supply_voltage_v"
+      ],
+      "type": "object"
+    },
+    "motor": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "bounding_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "category": {
+          "const": "motor"
+        },
+        "cells_max": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "cells_min": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "kv_rpm_per_v": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "manufacturer": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mass_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "mass_without_cables_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "max_current_a": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "max_power_w": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mount_pattern": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "no_load_current_a": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "no_load_test_voltage_v": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_usd": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "prop_diameter_max_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "prop_diameter_min_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "rating_duration_s": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "shaft_diameter_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "thermal_resistance_k_per_w": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "thermal_time_constant_s": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "winding_resistance_ohm": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "winding_temp_limit_c": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": -50.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "manufacturer",
+        "model",
+        "schema_version",
+        "mount_pattern",
+        "mass_kg",
+        "bounding_box_m",
+        "kv_rpm_per_v",
+        "winding_resistance_ohm",
+        "no_load_current_a",
+        "no_load_test_voltage_v",
+        "max_current_a",
+        "rating_duration_s",
+        "max_power_w",
+        "cells_min",
+        "cells_max",
+        "shaft_diameter_m",
+        "prop_diameter_min_m",
+        "prop_diameter_max_m",
+        "thermal_resistance_k_per_w",
+        "thermal_time_constant_s",
+        "winding_temp_limit_c"
+      ],
+      "type": "object"
+    },
+    "payload": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "bounding_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "category": {
+          "const": "payload"
+        },
+        "current_draw_a": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "manufacturer": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mass_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "mass_without_cables_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mount_slot": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_usd": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "supply_voltage_v": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "manufacturer",
+        "model",
+        "schema_version",
+        "mount_slot",
+        "mass_kg",
+        "bounding_box_m",
+        "current_draw_a",
+        "supply_voltage_v"
+      ],
+      "type": "object"
+    },
+    "pdb": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "bounding_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "category": {
+          "const": "pdb"
+        },
+        "current_draw_a": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "manufacturer": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mass_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "mass_without_cables_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mount_slot": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_usd": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "supply_voltage_v": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "manufacturer",
+        "model",
+        "schema_version",
+        "mount_slot",
+        "mass_kg",
+        "bounding_box_m",
+        "current_draw_a",
+        "supply_voltage_v"
+      ],
+      "type": "object"
+    },
+    "propeller": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "blades": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 2,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "bore_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "bounding_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "category": {
+          "const": "propeller"
+        },
+        "ct_cp_scaling_assumed": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "data_basis": {
+          "enum": [
+            "UIUC_MEASURED",
+            "SCALED"
+          ]
+        },
+        "data_file": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "data_file_sha256": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "diameter_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "manufacturer": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mass_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "mass_without_cables_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "measured_rpm_max": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "measured_rpm_min": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "pitch_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "price_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_usd": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "scaled_from": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "manufacturer",
+        "model",
+        "schema_version",
+        "data_basis",
+        "mass_kg",
+        "bounding_box_m",
+        "diameter_m",
+        "pitch_m",
+        "blades",
+        "bore_m"
+      ],
+      "type": "object"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "source_type": {
+                "const": "CITED"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "source_url",
+              "retrieved_on"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "source_type": {
+                "const": "ASSUMED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "note": {
+                "pattern": "TODO\\(HUMAN-VERIFY"
+              }
+            },
+            "required": [
+              "note"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "source_type": {
+                "const": "CALCULATED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "note": {
+                "minLength": 10
+              }
+            },
+            "required": [
+              "note"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "source_type": {
+                "const": "MEASURED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "note": {
+                "minLength": 10
+              }
+            },
+            "required": [
+              "note",
+              "retrieved_on"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "note": {
+          "type": "string"
+        },
+        "retrieved_on": {
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "type": "string"
+        },
+        "sha256_of_file": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "source_type": {
+          "enum": [
+            "MEASURED",
+            "CITED",
+            "CALCULATED",
+            "ASSUMED"
+          ]
+        },
+        "source_url": {
+          "pattern": "^https?://\\S+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_type"
+      ],
+      "type": "object"
+    },
+    "receiver": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "bounding_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "category": {
+          "const": "receiver"
+        },
+        "current_draw_a": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "manufacturer": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mass_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "mass_without_cables_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mount_slot": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_usd": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "supply_voltage_v": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "manufacturer",
+        "model",
+        "schema_version",
+        "mount_slot",
+        "mass_kg",
+        "bounding_box_m",
+        "current_draw_a",
+        "supply_voltage_v"
+      ],
+      "type": "object"
+    },
+    "wiring": {
+      "additionalProperties": false,
+      "properties": {
+        "availability_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "bounding_box_m": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "items": {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "category": {
+          "const": "wiring"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "manufacturer": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "mass_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "mass_without_cables_kg": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_url": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "price_usd": {
+          "additionalProperties": false,
+          "properties": {
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "value": {
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "provenance"
+          ],
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "manufacturer",
+        "model",
+        "schema_version",
+        "mass_kg"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:uav-simulator:parts-db:part:1.0.0",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "category": {
+            "const": "frame"
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/frame"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": {
+            "const": "motor"
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/motor"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": {
+            "const": "esc"
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/esc"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": {
+            "const": "propeller"
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/propeller"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": {
+            "const": "battery"
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/battery"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": {
+            "const": "wiring"
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/wiring"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": {
+            "const": "flight_controller"
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/flight_controller"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": {
+            "const": "pdb"
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/pdb"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": {
+            "const": "receiver"
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/receiver"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": {
+            "const": "camera"
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/camera"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": {
+            "const": "gimbal"
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/gimbal"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": {
+            "const": "gps"
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/gps"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": {
+            "const": "payload"
+          }
+        },
+        "required": [
+          "category"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/payload"
+      }
+    }
+  ],
+  "description": "GENERATED from tools/parts/fields.py. Do not edit by hand.",
+  "properties": {
+    "category": {
+      "enum": [
+        "frame",
+        "motor",
+        "esc",
+        "propeller",
+        "battery",
+        "wiring",
+        "flight_controller",
+        "pdb",
+        "receiver",
+        "camera",
+        "gimbal",
+        "gps",
+        "payload"
+      ]
+    }
+  },
+  "required": [
+    "category"
+  ],
+  "title": "UAV parts database record",
+  "type": "object"
+}

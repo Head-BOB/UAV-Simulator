@@ -33,6 +33,9 @@ public class UAV_Simulator : ModuleRules
 			"offline_pipeline/trained_models/active_model.json",
 			"offline_pipeline/trained_models/aero_stub.onnx",
 			"offline_pipeline/trained_models/fea_stub.onnx",
+			// P7 application: the parts catalogue and the test definitions the Parts and Conditions screens read.
+			"parts_db/parts_catalogue.json",
+			"campaign/test_definitions.json",
 		};
 		foreach (string Rel in DemoDataFiles)
 		{

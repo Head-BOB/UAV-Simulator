@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "description": "Percent bands used to FLAG validation rows (never to fail them). Every value is an engineering starting point.",
+  "provenance": {
+    "source_type": "ASSUMED",
+    "note": "TODO(HUMAN-VERIFY): no source. Chosen as loose first bands; tighten once real bench data exists."
+  },
+  "bands_percent": {
+    "motor_voltage_percent": 20.0,
+    "motor_power_self_consistency_percent": 1.0,
+    "uiuc_ct_percent": 10.0,
+    "uiuc_cp_percent": 10.0,
+    "battery_ocv_percent": 5.0,
+    "battery_sag_percent": 5.0,
+    "battery_soc_percent": 1.0,
+    "battery_curve_percent": 5.0
+  }
+}

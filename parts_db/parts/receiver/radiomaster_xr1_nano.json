@@ -1,0 +1,61 @@
+{
+  "availability_url": "https://radiomasterrc.com/products/xr1-nano-multi-frequency-expresslrs-receiver",
+  "bounding_box_m": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Dimension: 20mm * 13mm * 3mm",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "1eb86a51828c20465f8711b59587f144f1e6e460b9e2eed8ad17809462b696ec",
+      "source_type": "CITED",
+      "source_url": "https://radiomasterrc.com/products/xr1-nano-multi-frequency-expresslrs-receiver"
+    },
+    "value": [
+      0.02,
+      0.013,
+      0.003
+    ]
+  },
+  "category": "receiver",
+  "current_draw_a": {
+    "provenance": {
+      "note": "receiver current is not on the page; ExpressLRS nano receivers are low-power but the number is ASSUMED. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "source_type": "ASSUMED"
+    },
+    "value": 0.1
+  },
+  "id": "radiomaster_xr1_nano",
+  "manufacturer": "RadioMaster",
+  "mass_kg": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Weight: 1.0g (without antenna)",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "1eb86a51828c20465f8711b59587f144f1e6e460b9e2eed8ad17809462b696ec",
+      "source_type": "CITED",
+      "source_url": "https://radiomasterrc.com/products/xr1-nano-multi-frequency-expresslrs-receiver"
+    },
+    "value": 0.001
+  },
+  "model": "XR1 Nano multi-frequency ExpressLRS",
+  "mount_slot": "frame_plate",
+  "price_url": "https://radiomasterrc.com/products/xr1-nano-multi-frequency-expresslrs-receiver",
+  "price_usd": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Regular price on the product page; prices change",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "1eb86a51828c20465f8711b59587f144f1e6e460b9e2eed8ad17809462b696ec",
+      "source_type": "CITED",
+      "source_url": "https://radiomasterrc.com/products/xr1-nano-multi-frequency-expresslrs-receiver"
+    },
+    "value": 11.99
+  },
+  "schema_version": "1.0.0",
+  "supply_voltage_v": {
+    "provenance": {
+      "note": "value transcribed by an AI reader from the pinned page; Working voltage: 5V",
+      "retrieved_on": "2026-10-10",
+      "sha256_of_file": "1eb86a51828c20465f8711b59587f144f1e6e460b9e2eed8ad17809462b696ec",
+      "source_type": "CITED",
+      "source_url": "https://radiomasterrc.com/products/xr1-nano-multi-frequency-expresslrs-receiver"
+    },
+    "value": 5.0
+  }
+}

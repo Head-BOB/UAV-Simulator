@@ -1,0 +1,5325 @@
+{
+  "assumptions": [
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A001",
+      "item": "tmotor_mn3508_kv700.winding_temp_limit_c",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A002",
+      "item": "tmotor_mn3508_kv700.thermal_resistance_k_per_w",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A003",
+      "item": "tmotor_air_40a_2_6s.efficiency",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A004",
+      "item": "tmotor_air_40a_2_6s.temp_limit_c",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A005",
+      "item": "tmotor_air_40a_2_6s.thermal_resistance_k_per_w",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A006",
+      "item": "tmotor_air_40a_2_6s.mass_kg",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A007",
+      "item": "ref_battery_generic_4s_5000.capacity_ah",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A008",
+      "item": "ref_battery_generic_4s_5000.internal_resistance_ohm",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A009",
+      "item": "ref_battery_generic_4s_5000.voltage_per_cell_cutoff_v",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A010",
+      "item": "ref_battery_generic_4s_5000.max_continuous_c",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A011",
+      "item": "ref_battery_generic_4s_5000.temp_limit_c",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A012",
+      "item": "ref_battery_generic_4s_5000.thermal_resistance_k_per_w",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A013",
+      "item": "ref_battery_generic_4s_5000.mass_kg",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A014",
+      "item": "ref_battery_generic_4s_5000.ocv_curve",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "feeds the electrical / thermal model; replace with a datasheet or measured value",
+      "id": "A015",
+      "item": "ref_battery_generic_4s_5000.cells",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "part input",
+      "effect": "plates plus four arms, no design. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A016",
+      "item": "ref_frame_quad_400.mass_kg",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "human decision 2026-10-10 and vehicle_config.json motor_pos_m (+-0.2, +-0.2) [catalog status was CITED, no URL]. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A017",
+      "item": "ref_frame_quad_400.motor_spacing_adjacent_m",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "quad. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A018",
+      "item": "ref_frame_quad_400.arm_count",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "for the inertia estimate only. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A019",
+      "item": "ref_frame_quad_400.central_body_box_m",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "centre plate half width; prop clearance needs body half width < 0.13 m. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A020",
+      "item": "ref_frame_quad_400.body_half_width_m",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "hollow carbon tube, no design. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A021",
+      "item": "ref_frame_quad_400.tube_od_m",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "conservative laminate allowable, NOT a tested value. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A022",
+      "item": "ref_frame_quad_400.arm_allowable_bending_stress_pa",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "placeholder, not used by the core yet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A023",
+      "item": "ref_frame_quad_400.projected_area_top_m2",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "placeholder, not used by the core yet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A024",
+      "item": "ref_frame_quad_400.projected_area_front_m2",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "placeholder, not used by the core yet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A025",
+      "item": "ref_frame_quad_400.projected_area_side_m2",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "frame CG at the geometric centre. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A026",
+      "item": "ref_frame_quad_400.cg_offset_m",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "not on the manufacturer page. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A027",
+      "item": "tmotor_air_40a_2_6s.bounding_box_m",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "typical 12 inch plastic prop, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A028",
+      "item": "apc_12x6e.mass_kg",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "disc diameter x diameter x assumed hub height. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A029",
+      "item": "apc_12x6e.bounding_box_m",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "1/4 in hub bore with adapters, from memory of APC hubs. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A030",
+      "item": "apc_12x6e.bore_m",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "typical 4S 5000 mAh pack size, no datasheet. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A031",
+      "item": "ref_battery_generic_4s_5000.bounding_box_m",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "nominal_voltage_v / cells from the catalog (3.7 V per cell convention). TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A032",
+      "item": "ref_battery_generic_4s_5000.voltage_per_cell_nominal_v",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "part input",
+      "effect": "flight controller, wiring, receiver, no list. TODO(HUMAN-VERIFY): replace with a datasheet or measured value",
+      "id": "A033",
+      "item": "ref_avionics_wiring_lump.mass_kg",
+      "source_type": "ASSUMED",
+      "where": "vehicle_build.json assumed_inputs"
+    },
+    {
+      "category": "builder",
+      "effect": "builder constant or layout rule used to derive the vehicle config",
+      "id": "A034",
+      "item": "layout slots and offsets (layout.py)",
+      "source_type": "ASSUMED",
+      "where": "tools/parts/build_vehicle.py"
+    },
+    {
+      "category": "builder",
+      "effect": "builder constant or layout rule used to derive the vehicle config",
+      "id": "A035",
+      "item": "arm mass from CFRP density 1600.0 kg/m3",
+      "source_type": "ASSUMED",
+      "where": "tools/parts/build_vehicle.py"
+    },
+    {
+      "category": "builder",
+      "effect": "builder constant or layout rule used to derive the vehicle config",
+      "id": "A036",
+      "item": "nominal pack voltage, no sag, no ESC drop",
+      "source_type": "ASSUMED",
+      "where": "tools/parts/build_vehicle.py"
+    },
+    {
+      "category": "builder",
+      "effect": "builder constant or layout rule used to derive the vehicle config",
+      "id": "A037",
+      "item": "static propeller coefficients, sea-level ISA density",
+      "source_type": "ASSUMED",
+      "where": "tools/parts/build_vehicle.py"
+    },
+    {
+      "category": "builder",
+      "effect": "builder constant or layout rule used to derive the vehicle config",
+      "id": "A038",
+      "item": "rule thresholds in compat.py",
+      "source_type": "ASSUMED",
+      "where": "tools/parts/build_vehicle.py"
+    },
+    {
+      "category": "powertrain",
+      "effect": "electrical, thermal and battery numbers behind every result are partly assumed",
+      "id": "A039",
+      "item": "powertrain parameters are not all verified (parameters_verified = 0)",
+      "source_type": "ASSUMED",
+      "where": "powertrain_config.json"
+    },
+    {
+      "category": "controller",
+      "effect": "limits, bandwidths and gains shape every closed-loop result (tracking errors, break points)",
+      "id": "A040",
+      "item": "controller class values (quad_standard) and derived gains",
+      "source_type": "ASSUMED",
+      "where": "parts_db/controller_classes.json"
+    },
+    {
+      "category": "test definition",
+      "effect": "limits, durations, tolerances and criteria are engineering starting points, not requirements",
+      "id": "A041",
+      "item": "climb v1 (set 1.1.0-smoke)",
+      "source_type": "ASSUMED",
+      "where": "campaign/test_definitions.json"
+    },
+    {
+      "category": "test definition",
+      "effect": "limits, durations, tolerances and criteria are engineering starting points, not requirements",
+      "id": "A042",
+      "item": "endurance v1 (set 1.1.0-smoke)",
+      "source_type": "ASSUMED",
+      "where": "campaign/test_definitions.json"
+    },
+    {
+      "category": "test definition",
+      "effect": "limits, durations, tolerances and criteria are engineering starting points, not requirements",
+      "id": "A043",
+      "item": "fpv_punchout v1 (set 1.1.0-smoke)",
+      "source_type": "ASSUMED",
+      "where": "campaign/test_definitions.json"
+    },
+    {
+      "category": "test definition",
+      "effect": "limits, durations, tolerances and criteria are engineering starting points, not requirements",
+      "id": "A044",
+      "item": "fpv_sprint v1 (set 1.1.0-smoke)",
+      "source_type": "ASSUMED",
+      "where": "campaign/test_definitions.json"
+    },
+    {
+      "category": "test definition",
+      "effect": "limits, durations, tolerances and criteria are engineering starting points, not requirements",
+      "id": "A045",
+      "item": "hover_payload v1 (set 1.1.0-smoke)",
+      "source_type": "ASSUMED",
+      "where": "campaign/test_definitions.json"
+    },
+    {
+      "category": "test definition",
+      "effect": "limits, durations, tolerances and criteria are engineering starting points, not requirements",
+      "id": "A046",
+      "item": "max_speed v1 (set 1.1.0-smoke)",
+      "source_type": "ASSUMED",
+      "where": "campaign/test_definitions.json"
+    },
+    {
+      "category": "test definition",
+      "effect": "limits, durations, tolerances and criteria are engineering starting points, not requirements",
+      "id": "A047",
+      "item": "thermal_soak v1 (set 1.1.0-smoke)",
+      "source_type": "ASSUMED",
+      "where": "campaign/test_definitions.json"
+    },
+    {
+      "category": "test definition",
+      "effect": "limits, durations, tolerances and criteria are engineering starting points, not requirements",
+      "id": "A048",
+      "item": "wind_gust v1 (set 1.1.0-smoke)",
+      "source_type": "ASSUMED",
+      "where": "campaign/test_definitions.json"
+    },
+    {
+      "category": "conditions",
+      "effect": "chosen by the person running the study; results hold for these conditions only",
+      "id": "A049",
+      "item": "condition set smoke: ambient 20 C, site 0 m, wind 0 m/s, SOC 0.05, payload 0 kg",
+      "source_type": "USER_INPUT",
+      "where": "conditions file"
+    },
+    {
+      "category": "model",
+      "effect": "every equation awaits a human check against the handbook (HUMAN-TODO); wind-test break points depend on it",
+      "id": "A050",
+      "item": "turbulence: Dryden (MIL-HDBK-1797 low-altitude form), UNVERIFIED",
+      "source_type": "UNVERIFIED",
+      "where": "physics_core/src/turbulence.rs"
+    },
+    {
+      "category": "model",
+      "effect": "drag of the built vehicle is not computed from its shape",
+      "id": "A051",
+      "item": "body drag: legacy analytic model (no CFD)",
+      "source_type": "ASSUMED",
+      "where": "physics_core/src/aero.rs"
+    },
+    {
+      "category": "test note",
+      "effect": "stated by the test itself",
+      "id": "A052",
+      "item": "battery discharge curve and thermal inputs are ASSUMED: the endurance number is indicative",
+      "source_type": "ASSUMED",
+      "where": "endurance/result.json"
+    },
+    {
+      "category": "report",
+      "effect": "only decides which time the event timeline marks as 'reserve fell below'; no result changes",
+      "id": "A053",
+      "item": "thrust reserve alert threshold 1.5 (max thrust / weight)",
+      "source_type": "ASSUMED",
+      "where": "tools/report/assumptions.py"
+    },
+    {
+      "category": "part verification",
+      "effect": "key fields have not been ticked by a human against the datasheet",
+      "id": "A054",
+      "item": "apc_12x6e: Unverified",
+      "source_type": "UNVERIFIED",
+      "where": "parts_db/human_verification.json"
+    },
+    {
+      "category": "part verification",
+      "effect": "key fields have not been ticked by a human against the datasheet",
+      "id": "A055",
+      "item": "ref_avionics_wiring_lump: Unverified",
+      "source_type": "UNVERIFIED",
+      "where": "parts_db/human_verification.json"
+    },
+    {
+      "category": "part verification",
+      "effect": "key fields have not been ticked by a human against the datasheet",
+      "id": "A056",
+      "item": "ref_battery_generic_4s_5000: Unverified",
+      "source_type": "UNVERIFIED",
+      "where": "parts_db/human_verification.json"
+    },
+    {
+      "category": "part verification",
+      "effect": "key fields have not been ticked by a human against the datasheet",
+      "id": "A057",
+      "item": "ref_frame_quad_400: Unverified",
+      "source_type": "UNVERIFIED",
+      "where": "parts_db/human_verification.json"
+    },
+    {
+      "category": "part verification",
+      "effect": "key fields have not been ticked by a human against the datasheet",
+      "id": "A058",
+      "item": "tmotor_air_40a_2_6s: Unverified",
+      "source_type": "UNVERIFIED",
+      "where": "parts_db/human_verification.json"
+    },
+    {
+      "category": "part verification",
+      "effect": "key fields have not been ticked by a human against the datasheet",
+      "id": "A059",
+      "item": "tmotor_mn3508_kv700: Unverified",
+      "source_type": "UNVERIFIED",
+      "where": "parts_db/human_verification.json"
+    },
+    {
+      "category": "validation",
+      "effect": "model differs from the reference by more than 10 %",
+      "id": "A060",
+      "item": "motor_electrical kv700_11.1v_12x4cf_100pct:voltage: error -11.02 %",
+      "source_type": "MEASURED_DEVIATION",
+      "where": "validation_report.json"
+    },
+    {
+      "category": "validation",
+      "effect": "model differs from the reference by more than 10 %",
+      "id": "A061",
+      "item": "motor_electrical kv700_11.1v_13x4.4cf_100pct:voltage: error -12.42 %",
+      "source_type": "MEASURED_DEVIATION",
+      "where": "validation_report.json"
+    },
+    {
+      "category": "validation",
+      "effect": "model differs from the reference by more than 10 %",
+      "id": "A062",
+      "item": "motor_electrical kv700_14.8v_11x3.7cf_100pct:voltage: error -11.78 %",
+      "source_type": "MEASURED_DEVIATION",
+      "where": "validation_report.json"
+    },
+    {
+      "category": "validation",
+      "effect": "model differs from the reference by more than 10 %",
+      "id": "A063",
+      "item": "motor_electrical kv700_14.8v_12x4cf_100pct:voltage: error -13.98 %",
+      "source_type": "MEASURED_DEVIATION",
+      "where": "validation_report.json"
+    },
+    {
+      "category": "validation",
+      "effect": "model differs from the reference by more than 10 %",
+      "id": "A064",
+      "item": "uiuc_propeller static@1046.667rpm:ct: error +27.84 %",
+      "source_type": "MEASURED_DEVIATION",
+      "where": "validation_report.json"
+    },
+    {
+      "category": "validation",
+      "effect": "model differs from the reference by more than 10 %",
+      "id": "A065",
+      "item": "uiuc_propeller static@1520rpm:ct: error +10.34 %",
+      "source_type": "MEASURED_DEVIATION",
+      "where": "validation_report.json"
+    }
+  ],
+  "banners": [
+    {
+      "id": "smoke",
+      "level": "danger",
+      "text": "SMOKE test definitions (1.1.0-smoke): short durations and a nearly empty battery. NOT FOR ENGINEERING USE."
+    },
+    {
+      "id": "no_cfd",
+      "level": "warn",
+      "text": "No CFD: body drag uses the legacy analytic model."
+    },
+    {
+      "id": "turbulence",
+      "level": "warn",
+      "text": "Turbulence: Dryden, unverified."
+    },
+    {
+      "id": "speed_drag",
+      "level": "warn",
+      "text": "Speed results (max speed, FPV sprint, FPV punch-out) use the legacy analytic drag, which under-predicts forward speed and sinks when pitched: they are not vehicle limits."
+    },
+    {
+      "id": "unverified_parts",
+      "level": "warn",
+      "text": "6 of 6 parts are not human-verified: ref_battery_generic_4s_5000, tmotor_air_40a_2_6s, ref_frame_quad_400, tmotor_mn3508_kv700, apc_12x6e, ref_avionics_wiring_lump"
+    },
+    {
+      "id": "validation",
+      "level": "warn",
+      "text": "6 validation rows differ from their reference by more than 10 %."
+    },
+    {
+      "id": "assumed_inputs",
+      "level": "warn",
+      "text": "The powertrain model contains ASSUMED inputs (see Assumptions)."
+    }
+  ],
+  "build": "reference_quad",
+  "cfd": {
+    "drag_model": "analytic_legacy",
+    "statement": "No CFD result is used. Body drag comes from the legacy analytic model, which does not see the vehicle's shape.",
+    "status": "no CFD run"
+  },
+  "conditions": {
+    "all": {
+      "smoke": {
+        "ambient_c": 20,
+        "battery_soc": 0.05,
+        "battery_temp_c": null,
+        "condition_set": "smoke",
+        "gust_level": 0,
+        "payload_kg": 0,
+        "payload_position_m": [
+          0,
+          0,
+          0
+        ],
+        "seed": 1,
+        "site_altitude_m": 0,
+        "temp_offset_c": 5,
+        "turbulence": "dryden",
+        "wind_from_deg": 270,
+        "wind_speed_mps": 0
+      }
+    },
+    "selected": "smoke",
+    "values": {
+      "ambient_c": 20,
+      "battery_soc": 0.05,
+      "battery_temp_c": null,
+      "condition_set": "smoke",
+      "gust_level": 0,
+      "payload_kg": 0,
+      "payload_position_m": [
+        0,
+        0,
+        0
+      ],
+      "seed": 1,
+      "site_altitude_m": 0,
+      "temp_offset_c": 5,
+      "turbulence": "dryden",
+      "wind_from_deg": 270,
+      "wind_speed_mps": 0
+    }
+  },
+  "endurance": {
+    "duration_s": 70.32,
+    "energy_used_wh": 2.37132598,
+    "final_soc": 0.0137446459,
+    "mean_power_w": 121.398941,
+    "notes": [
+      "ended by battery cutoff (pack voltage below cells x cutoff, confirmed)",
+      "battery discharge curve and thermal inputs are ASSUMED: the endurance number is indicative"
+    ]
+  },
+  "envelope": [
+    {
+      "condition_set": "smoke",
+      "conditions": {
+        "ambient_c": 20,
+        "battery_soc": 0.05,
+        "battery_temp_c": null,
+        "condition_set": "smoke",
+        "gust_level": 0,
+        "payload_kg": 0,
+        "payload_position_m": [
+          0,
+          0,
+          0
+        ],
+        "seed": 1,
+        "site_altitude_m": 0,
+        "temp_offset_c": 5,
+        "turbulence": "dryden",
+        "wind_from_deg": 270,
+        "wind_speed_mps": 0
+      },
+      "headline": {
+        "climb_time_s": 3.842,
+        "endurance_s": 70.32,
+        "energy_wh": 2.37132598,
+        "limiting_margin": 0.959518648,
+        "mass_kg": 1.536,
+        "max_payload_kg": 2.5,
+        "max_speed_mps": 12,
+        "max_wind_mps": 12.5,
+        "min_thrust_reserve": 1.869377,
+        "peak_battery_c": 20.5898913,
+        "peak_esc_c": 22.0746927,
+        "peak_winding_c": 23.2158681,
+        "price_usd": null
+      },
+      "limiting": {
+        "label": "Motor current",
+        "margin": 0.959518648,
+        "slot": "motor_current"
+      },
+      "outcomes": {
+        "climb": "COMPLETED",
+        "endurance": "COMPLETED",
+        "fpv_punchout": "COMPLETED",
+        "fpv_sprint": "COMPLETED",
+        "hover_payload": "BREAKING_POINT_FOUND",
+        "max_speed": "NOT_REACHED_WITHIN_BOUND",
+        "thermal_soak": "STEADY_STATE",
+        "wind_gust": "BREAKING_POINT_FOUND"
+      }
+    }
+  ],
+  "events": [
+    {
+      "activations": 1,
+      "active_steps": 778,
+      "event": "prop_outside_table",
+      "first_t_s": 0.004,
+      "last_t_s": 1.558,
+      "test": "climb"
+    },
+    {
+      "activations": 13,
+      "active_steps": 628,
+      "event": "battery_cutoff",
+      "first_t_s": 30.2,
+      "last_t_s": 72.32,
+      "test": "endurance"
+    },
+    {
+      "activations": 29,
+      "active_steps": 12174,
+      "event": "prop_outside_table",
+      "first_t_s": 0.004,
+      "last_t_s": 71.73,
+      "test": "endurance"
+    },
+    {
+      "activations": 28,
+      "active_steps": 192,
+      "event": "axis_saturated",
+      "first_t_s": 2.002,
+      "last_t_s": 71.336,
+      "test": "endurance"
+    },
+    {
+      "activations": 14,
+      "active_steps": 47,
+      "event": "collective_limited",
+      "first_t_s": 4.526,
+      "last_t_s": 71.326,
+      "test": "endurance"
+    },
+    {
+      "activations": 1,
+      "active_steps": 1,
+      "event": "motor_over_current",
+      "first_t_s": 2.002,
+      "last_t_s": 2.002,
+      "test": "fpv_punchout"
+    },
+    {
+      "activations": 1,
+      "active_steps": 751,
+      "event": "battery_cutoff",
+      "first_t_s": 2.002,
+      "last_t_s": 3.502,
+      "test": "fpv_punchout"
+    },
+    {
+      "activations": 2,
+      "active_steps": 1529,
+      "event": "prop_outside_table",
+      "first_t_s": 0.004,
+      "last_t_s": 3.502,
+      "test": "fpv_punchout"
+    },
+    {
+      "activations": 2,
+      "active_steps": 796,
+      "event": "prop_outside_table",
+      "first_t_s": 0.004,
+      "last_t_s": 2.036,
+      "test": "fpv_sprint"
+    },
+    {
+      "activations": 1,
+      "active_steps": 7,
+      "event": "axis_saturated",
+      "first_t_s": 2.002,
+      "last_t_s": 2.014,
+      "test": "fpv_sprint"
+    },
+    {
+      "activations": 1,
+      "active_steps": 5268,
+      "event": "battery_cutoff",
+      "first_t_s": 0.466,
+      "last_t_s": 11,
+      "test": "hover_payload"
+    },
+    {
+      "activations": 1,
+      "active_steps": 1541,
+      "event": "prop_outside_table",
+      "first_t_s": 0.004,
+      "last_t_s": 3.084,
+      "test": "hover_payload"
+    },
+    {
+      "activations": 1,
+      "active_steps": 2216,
+      "event": "altitude_hold_lost",
+      "first_t_s": 1.024,
+      "last_t_s": 5.454,
+      "test": "hover_payload"
+    },
+    {
+      "activations": 1,
+      "active_steps": 24,
+      "event": "prop_outside_table",
+      "first_t_s": 0.002,
+      "last_t_s": 0.048,
+      "test": "max_speed"
+    },
+    {
+      "activations": 1,
+      "active_steps": 7,
+      "event": "axis_saturated",
+      "first_t_s": 0.002,
+      "last_t_s": 0.014,
+      "test": "max_speed"
+    },
+    {
+      "activations": 1,
+      "active_steps": 775,
+      "event": "prop_outside_table",
+      "first_t_s": 0.004,
+      "last_t_s": 1.552,
+      "test": "thermal_soak"
+    },
+    {
+      "activations": 2,
+      "active_steps": 4,
+      "event": "prop_outside_table",
+      "first_t_s": 1.906,
+      "last_t_s": 1.92,
+      "test": "wind_gust"
+    },
+    {
+      "activations": 1,
+      "active_steps": 1138,
+      "event": "altitude_hold_lost",
+      "first_t_s": 5.606,
+      "last_t_s": 7.88,
+      "test": "wind_gust"
+    }
+  ],
+  "key_moments": [
+    {
+      "moment": "winding temperature peak",
+      "t_s": 5.842,
+      "test": "climb",
+      "value": 20.8486832
+    },
+    {
+      "moment": "ESC temperature peak",
+      "t_s": 5.842,
+      "test": "climb",
+      "value": 20.4151478
+    },
+    {
+      "moment": "battery temperature peak",
+      "t_s": 5.842,
+      "test": "climb",
+      "value": 20.0417776
+    },
+    {
+      "moment": "lowest pack voltage (sag)",
+      "t_s": 5.842,
+      "test": "climb",
+      "value": 13.5022473
+    },
+    {
+      "moment": "pack current peak",
+      "t_s": 2.966,
+      "test": "climb",
+      "value": 14.8119266
+    },
+    {
+      "moment": "motor current peak",
+      "t_s": 2.966,
+      "test": "climb",
+      "value": 7.0875893
+    },
+    {
+      "moment": "winding temperature peak",
+      "t_s": 55.99,
+      "test": "endurance",
+      "value": 21.1332874
+    },
+    {
+      "moment": "ESC temperature peak",
+      "t_s": 72.32,
+      "test": "endurance",
+      "value": 21.5626055
+    },
+    {
+      "moment": "battery temperature peak",
+      "t_s": 72.32,
+      "test": "endurance",
+      "value": 20.2522024
+    },
+    {
+      "moment": "lowest pack voltage (sag)",
+      "t_s": 71.322,
+      "test": "endurance",
+      "value": 12.9400059
+    },
+    {
+      "moment": "pack current peak",
+      "t_s": 4.526,
+      "test": "endurance",
+      "value": 23.7871359
+    },
+    {
+      "moment": "motor current peak",
+      "t_s": 4.526,
+      "test": "endurance",
+      "value": 20.455526
+    },
+    {
+      "moment": "winding temperature peak",
+      "t_s": 3.502,
+      "test": "fpv_punchout",
+      "value": 22.7111212
+    },
+    {
+      "moment": "ESC temperature peak",
+      "t_s": 3.502,
+      "test": "fpv_punchout",
+      "value": 20.7486033
+    },
+    {
+      "moment": "battery temperature peak",
+      "t_s": 3.502,
+      "test": "fpv_punchout",
+      "value": 20.4488459
+    },
+    {
+      "moment": "lowest pack voltage (sag)",
+      "t_s": 2.002,
+      "test": "fpv_punchout",
+      "value": 11.8097402
+    },
+    {
+      "moment": "pack current peak",
+      "t_s": 2.002,
+      "test": "fpv_punchout",
+      "value": 100.927799
+    },
+    {
+      "moment": "motor current peak",
+      "t_s": 2.002,
+      "test": "fpv_punchout",
+      "value": 23.9703523
+    },
+    {
+      "moment": "winding temperature peak",
+      "t_s": 6.002,
+      "test": "fpv_sprint",
+      "value": 20.6440172
+    },
+    {
+      "moment": "ESC temperature peak",
+      "t_s": 6.002,
+      "test": "fpv_sprint",
+      "value": 20.3247664
+    },
+    {
+      "moment": "battery temperature peak",
+      "t_s": 6.002,
+      "test": "fpv_sprint",
+      "value": 20.0255028
+    },
+    {
+      "moment": "lowest pack voltage (sag)",
+      "t_s": 2.002,
+      "test": "fpv_sprint",
+      "value": 13.5464864
+    },
+    {
+      "moment": "pack current peak",
+      "t_s": 2.002,
+      "test": "fpv_sprint",
+      "value": 14.0904929
+    },
+    {
+      "moment": "motor current peak",
+      "t_s": 2.002,
+      "test": "fpv_sprint",
+      "value": 10.2062347
+    },
+    {
+      "moment": "winding temperature peak",
+      "t_s": 11,
+      "test": "hover_payload",
+      "value": 23.2158681
+    },
+    {
+      "moment": "ESC temperature peak",
+      "t_s": 11,
+      "test": "hover_payload",
+      "value": 22.0746927
+    },
+    {
+      "moment": "battery temperature peak",
+      "t_s": 11,
+      "test": "hover_payload",
+      "value": 20.5898913
+    },
+    {
+      "moment": "lowest pack voltage (sag)",
+      "t_s": 11,
+      "test": "hover_payload",
+      "value": 12.8691769
+    },
+    {
+      "moment": "pack current peak",
+      "t_s": 0.83,
+      "test": "hover_payload",
+      "value": 36.0761389
+    },
+    {
+      "moment": "motor current peak",
+      "t_s": 0.83,
+      "test": "hover_payload",
+      "value": 12.0941126
+    },
+    {
+      "moment": "winding temperature peak",
+      "t_s": 6,
+      "test": "max_speed",
+      "value": 20.6037299
+    },
+    {
+      "moment": "ESC temperature peak",
+      "t_s": 6,
+      "test": "max_speed",
+      "value": 20.3194472
+    },
+    {
+      "moment": "battery temperature peak",
+      "t_s": 6,
+      "test": "max_speed",
+      "value": 20.0262858
+    },
+    {
+      "moment": "lowest pack voltage (sag)",
+      "t_s": 0.002,
+      "test": "max_speed",
+      "value": 13.5779321
+    },
+    {
+      "moment": "pack current peak",
+      "t_s": 0.002,
+      "test": "max_speed",
+      "value": 13.1033954
+    },
+    {
+      "moment": "motor current peak",
+      "t_s": 0.002,
+      "test": "max_speed",
+      "value": 9.85833687
+    },
+    {
+      "moment": "winding temperature peak",
+      "t_s": 21,
+      "test": "thermal_soak",
+      "value": 21.0488536
+    },
+    {
+      "moment": "ESC temperature peak",
+      "t_s": 21,
+      "test": "thermal_soak",
+      "value": 20.896924
+    },
+    {
+      "moment": "battery temperature peak",
+      "t_s": 21,
+      "test": "thermal_soak",
+      "value": 20.0615092
+    },
+    {
+      "moment": "lowest pack voltage (sag)",
+      "t_s": 1.208,
+      "test": "thermal_soak",
+      "value": 13.6656661
+    },
+    {
+      "moment": "pack current peak",
+      "t_s": 1.208,
+      "test": "thermal_soak",
+      "value": 8.71669479
+    },
+    {
+      "moment": "motor current peak",
+      "t_s": 1.208,
+      "test": "thermal_soak",
+      "value": 4.99303956
+    },
+    {
+      "moment": "winding temperature peak",
+      "t_s": 12.206,
+      "test": "wind_gust",
+      "value": 20.8242955
+    },
+    {
+      "moment": "ESC temperature peak",
+      "t_s": 13,
+      "test": "wind_gust",
+      "value": 20.5612725
+    },
+    {
+      "moment": "battery temperature peak",
+      "t_s": 13,
+      "test": "wind_gust",
+      "value": 20.0558814
+    },
+    {
+      "moment": "lowest pack voltage (sag)",
+      "t_s": 11.756,
+      "test": "wind_gust",
+      "value": 13.5523812
+    },
+    {
+      "moment": "pack current peak",
+      "t_s": 4.656,
+      "test": "wind_gust",
+      "value": 10.7043181
+    },
+    {
+      "moment": "motor current peak",
+      "t_s": 4.612,
+      "test": "wind_gust",
+      "value": 5.7826379
+    }
+  ],
+  "limiting": {
+    "label": "Motor current",
+    "margin": 0.959518648,
+    "slot": "motor_current"
+  },
+  "margins": [
+    {
+      "basis": "limit / peak",
+      "label": "Motor current",
+      "limit": 23.0,
+      "margin": 0.959518648,
+      "no_heating": false,
+      "peak": 23.9703523,
+      "peak_t_s": 2.002,
+      "peak_test": "fpv_punchout",
+      "slot": "motor_current",
+      "unit": "A"
+    },
+    {
+      "basis": "limit / peak",
+      "label": "Battery pack current",
+      "limit": 125.0,
+      "margin": 1.23850912,
+      "no_heating": false,
+      "peak": 100.927799,
+      "peak_t_s": 2.002,
+      "peak_test": "fpv_punchout",
+      "slot": "pack_current",
+      "unit": "A"
+    },
+    {
+      "basis": "limit / peak",
+      "label": "ESC current",
+      "limit": 40.0,
+      "margin": 1.66872808,
+      "no_heating": false,
+      "peak": 23.9703523,
+      "peak_t_s": 2.002,
+      "peak_test": "fpv_punchout",
+      "slot": "esc_current",
+      "unit": "A"
+    },
+    {
+      "basis": "lowest recorded ratio / 1.0",
+      "label": "Thrust reserve (max thrust / weight)",
+      "limit": 1.0,
+      "margin": 1.869377,
+      "no_heating": false,
+      "peak": 1.869377,
+      "peak_t_s": 10.502,
+      "peak_test": "hover_payload",
+      "slot": "thrust_reserve",
+      "unit": "ratio"
+    },
+    {
+      "basis": "(limit - ambient) / (peak - ambient), ambient 20 deg C",
+      "label": "Motor winding temperature",
+      "limit": 120.0,
+      "margin": 31.0958027,
+      "no_heating": false,
+      "peak": 23.2158681,
+      "peak_t_s": 11,
+      "peak_test": "hover_payload",
+      "slot": "winding_temp",
+      "unit": "deg C"
+    },
+    {
+      "basis": "(limit - ambient) / (peak - ambient), ambient 20 deg C",
+      "label": "ESC temperature",
+      "limit": 100.0,
+      "margin": 38.5599283,
+      "no_heating": false,
+      "peak": 22.0746927,
+      "peak_t_s": 11,
+      "peak_test": "hover_payload",
+      "slot": "esc_temp",
+      "unit": "deg C"
+    },
+    {
+      "basis": "(limit - ambient) / (peak - ambient), ambient 20 deg C",
+      "label": "Battery temperature",
+      "limit": 60.0,
+      "margin": 67.8091065,
+      "no_heating": false,
+      "peak": 20.5898913,
+      "peak_t_s": 11,
+      "peak_test": "hover_payload",
+      "slot": "battery_temp",
+      "unit": "deg C"
+    }
+  ],
+  "not_built": [],
+  "plot_source": "endurance/timeseries_endurance.csv",
+  "power": {
+    "esc_loss_w": 6.14110394,
+    "loss_total_w": 24.3511552,
+    "motor_copper_w": 7.61708642,
+    "motor_noload_w": 10.5929649,
+    "other_w": 0.0,
+    "pack_w": 122.822079,
+    "percent_of_pack": {
+      "esc_loss": 5.0,
+      "loss_total": 19.8263663,
+      "motor_copper": 6.20172407,
+      "motor_noload": 8.62464222,
+      "other": 0.0,
+      "shaft": 80.1736337
+    },
+    "rows": 37,
+    "shaft_w": 98.4709236,
+    "source": "endurance/timeseries_endurance.csv",
+    "window_s": [
+      0.002,
+      72.002
+    ]
+  },
+  "reproducibility": {
+    "commands": [
+      "python tools/report/make_report.py --build tools/parts/builds/reference_quad --campaign tools/parts/builds/reference_quad/campaign_smoke --validation tools/parts/builds/reference_quad/validation_report.json"
+    ],
+    "conditions": {
+      "smoke": {
+        "ambient_c": 20,
+        "battery_soc": 0.05,
+        "battery_temp_c": null,
+        "condition_set": "smoke",
+        "gust_level": 0,
+        "payload_kg": 0,
+        "payload_position_m": [
+          0,
+          0,
+          0
+        ],
+        "seed": 1,
+        "site_altitude_m": 0,
+        "temp_offset_c": 5,
+        "turbulence": "dryden",
+        "wind_from_deg": 270,
+        "wind_speed_mps": 0
+      }
+    },
+    "controller_config_version": 1,
+    "core_interface_version": 14,
+    "definitions_set_version": "1.1.0-smoke",
+    "drag_model": "analytic_legacy",
+    "git_hash": "golden",
+    "input_sha256": {
+      "build/assembly.json": "b325275d6ac7a4edeb4c3d1ec2fc3c50bc3f689e384581d7f4764af76b97fc9a",
+      "build/controller_config.json": "332aaf5e20a8e16ce8f71934ae40f289861df7510e816d9a2fcc4799388cd7d0",
+      "build/powertrain_config.json": "53c85bc573c4b3045a9140c90517676fba1489db7da8ffa0e4e643ebaaebfc9c",
+      "build/vehicle_build.json": "a4652534b2044c3c1d3e1cbbb4f3a0c1405f6f4716c5307068b2176b1bd703e5",
+      "build/vehicle_config.json": "b3dbfd2126d0f9c9d23ffe752c2843a2c0ed3eec8325e979a714fdcd45ae522b",
+      "campaign/smoke/campaign_result.json": "661871d2017466e7d25b8cb151bfafca0d23bb850d9dbb796697dfb747bc6a22",
+      "campaign/smoke/climb/events.json": "bcf04cfb094d873956490d70865ebdc4dd164de1858400eb56d8a048b7681e0a",
+      "campaign/smoke/climb/manifest.json": "685ec81b49abfffafa790a02d385c871156142686958b705d9ae76a79ee8aecc",
+      "campaign/smoke/climb/result.json": "6e8cd640ff2fd973fbc11bc6fe8e7dcfa4e77907cf57ca310858f9232e12c82a",
+      "campaign/smoke/climb/timeseries_climb.csv": "ee715df75bb5121f9ba8db8c340c008f913753ad80955d2bab8ee053c7800d03",
+      "campaign/smoke/endurance/events.json": "4b21988fffde1a9daeeb7f2f8e78674fa5a162e42aa05f36d06d1eab2a03a2f1",
+      "campaign/smoke/endurance/manifest.json": "488fb9165c7ca6ebd285784431f530e170b72879b7753ad85b89903ea70750e1",
+      "campaign/smoke/endurance/result.json": "ef8a79d8263ac7835787546e3e8c4d0353bcff64c0ccbe5d30a747a3d67f899d",
+      "campaign/smoke/endurance/timeseries_endurance.csv": "bffb4dd041343f0a390ece772d9ab4b45a4ba4c824188ec4bdcfda8991368c66",
+      "campaign/smoke/fpv_punchout/events.json": "07cf689b9b4cdd2ece92b80a3ff22cfd18d9d4d791dece82e388c8ab8e1ccc3e",
+      "campaign/smoke/fpv_punchout/manifest.json": "0c30349930fa44221b610f0c5749e723fe335e134c4012890d319b7307f4e9d7",
+      "campaign/smoke/fpv_punchout/result.json": "15b4e49376e40bc2c3fd965f3ac8c9bd4f643d990b3b0d078124f5e7b2ecf001",
+      "campaign/smoke/fpv_punchout/timeseries_punchout.csv": "85d14914acba8efe9ef1c6542b3f490fc21bdb5003fa947ca3d8c2908265fb4b",
+      "campaign/smoke/fpv_sprint/events.json": "4dd47ffc9eb2af96c4fc6622b1aa70bf3dd1f92549dff1a64b9f2800f6ce8bfc",
+      "campaign/smoke/fpv_sprint/manifest.json": "33410d2991cb048dde425715265b8fb53b712b15770571cd28f69c4fb1d732bc",
+      "campaign/smoke/fpv_sprint/result.json": "de74d7e0155667f14e04418b401046a52a1c25c5ff65bdb7d48de31e6199a92c",
+      "campaign/smoke/fpv_sprint/timeseries_sprint.csv": "c5c6a1891465cf80788677f8c116201a25caed408ab96302d1c3696b9703d60e",
+      "campaign/smoke/hover_payload/events.json": "9af5536ef8862b8d7c00665f3750fc2288a3380839dddb2733b6a63ec6ad5e79",
+      "campaign/smoke/hover_payload/manifest.json": "4935661f7fa27cd5bd0c6bfebbacfaad96f35cf7658fd81f3164d551f9e393c5",
+      "campaign/smoke/hover_payload/result.json": "2f5c7898fa341a999b7ed2c8100bf88f363652e02d9ff803165aebd43a258476",
+      "campaign/smoke/hover_payload/timeseries_fail_3.000kg.csv": "60dea5919309d56e2c1dbf30e5cd55d8d1c463c07594aaa43eb61a63afa11d9c",
+      "campaign/smoke/hover_payload/timeseries_pass_2.500kg.csv": "f6ff88b03c4f3c2a5036c306f7d795ca2149266e501e2350664c0fffa0da2798",
+      "campaign/smoke/max_speed/events.json": "43fe7ebc9abac636248afddbdff1035d2e2754cc427374b932c75467e351a0aa",
+      "campaign/smoke/max_speed/manifest.json": "c95f57109870832ab7db05414fd317a744fec802511cc90975458b91dacb0cb9",
+      "campaign/smoke/max_speed/result.json": "306c6929e2f4fa5edc33ac540154969b27017e1920e42088a21c814566cbcd37",
+      "campaign/smoke/max_speed/timeseries_pass_12.00mps.csv": "e8d05357c3239863b69bdfb3754b9d592376178631ddf2dca4faa34c63fc6516",
+      "campaign/smoke/summary.csv": "ab6c1eec7179e9567dcd4555de93f4fc0a627f6d2550ed7f116a790f4c6dceeb",
+      "campaign/smoke/thermal_soak/events.json": "17b1654d2d68a0ff327541cb95233dc9d73a879e6bc9cf002d2a3fb2d6ffcad2",
+      "campaign/smoke/thermal_soak/manifest.json": "adaf66d9f10ba6f2231d4b99cab87a3ec1145bee11c55729500081b0f2eda4e8",
+      "campaign/smoke/thermal_soak/result.json": "685ece74fee5f740b87237918565703f6c704e0fc4b67cdbe3929de662d9c2dc",
+      "campaign/smoke/thermal_soak/timeseries_thermal_soak.csv": "2e337ad3cad220965078f1cb7304badb01e50e2526387b150cec17e30d79e7b6",
+      "campaign/smoke/wind_gust/events.json": "d8ec83c6f5291d5042df0f21b34db8d8e0ea8decb759f13ffd4949d587114fb4",
+      "campaign/smoke/wind_gust/manifest.json": "6493ff1988b6ba5dac25b48e7df8063999b30d10c7422d3696d1c2fd23ddb537",
+      "campaign/smoke/wind_gust/result.json": "780c6228a02b0dba4239874c9304e923bdac3f7e3b7392a1cc6d3f1ba487fc91",
+      "campaign/smoke/wind_gust/timeseries_fail_13.75mps.csv": "6ec2488ce4941eab61d798ba329b84b06290ffc00b5fbbf936104cb0b4884b71",
+      "campaign/smoke/wind_gust/timeseries_pass_12.50mps.csv": "5f31d588b0686845765be2e6af47ba3b41dcf73908068fc849b0be9c5b4273a7",
+      "validation_report.json": "de98792c552a8851e04ccc22a749e8b4f0b72db92ccc70d502243396655e270f"
+    },
+    "parts_db_version": "0.1.0",
+    "seeds": {
+      "smoke": 1
+    },
+    "step_s": 0.002,
+    "turbulence": "Dryden (MIL-HDBK-1797 low-altitude form), UNVERIFIED"
+  },
+  "schema_version": 1,
+  "summary": [
+    {
+      "detail": "margin 0.96 (limit / peak)",
+      "label": "Limiting component",
+      "value": "Motor current"
+    },
+    {
+      "detail": "between 2.5 and 3 kg (criterion altitude_hold, resolution 0.5)",
+      "label": "Max hover payload",
+      "unit": "kg",
+      "value": 2.5
+    },
+    {
+      "detail": "between 12.5 and 13.75 m/s (criterion position_error, resolution 1.25)",
+      "label": "Max wind held",
+      "unit": "m/s",
+      "value": 12.5
+    },
+    {
+      "detail": "",
+      "label": "Climb time to target",
+      "unit": "s",
+      "value": 3.842
+    },
+    {
+      "detail": "",
+      "label": "Endurance",
+      "unit": "s",
+      "value": 70.32
+    },
+    {
+      "detail": "",
+      "label": "Energy used (endurance run)",
+      "unit": "Wh",
+      "value": 2.37132598
+    },
+    {
+      "detail": "LIMIT-BOUND: the class speed limit ended the search, not the vehicle",
+      "label": "Max speed (commanded, passing)",
+      "unit": "m/s",
+      "value": 12
+    },
+    {
+      "detail": "",
+      "label": "FPV sprint terminal speed",
+      "unit": "m/s",
+      "value": 11.8618211
+    },
+    {
+      "detail": "",
+      "label": "FPV punch-out climb rate",
+      "unit": "m/s",
+      "value": 16.1704404
+    },
+    {
+      "detail": "shaft 80.2 % of pack power",
+      "label": "Mean pack power (endurance run)",
+      "unit": "W",
+      "value": 122.822079
+    }
+  ],
+  "tests": [
+    {
+      "breaking_point": null,
+      "definition_version": "1",
+      "evaluations_note": "searches run many simulations; the series and events are of the reported run",
+      "metrics": [
+        {
+          "name": "time_to_target_s",
+          "value": 3.842
+        },
+        {
+          "name": "sustained_climb_rate_mps",
+          "value": 4.52573514
+        },
+        {
+          "name": "max_climb_rate_mps",
+          "value": 4.91143751
+        },
+        {
+          "name": "climb_saturated_percent",
+          "value": 0
+        },
+        {
+          "name": "climb_min_thrust_reserve_ratio",
+          "value": 5.37583238
+        }
+      ],
+      "notes": [
+        "class climb / acceleration limits replaced for this test: 8 m/s, 8 m/s^2"
+      ],
+      "outcome": "COMPLETED",
+      "steps_simulated": 2921,
+      "test": "climb"
+    },
+    {
+      "breaking_point": null,
+      "definition_version": "1",
+      "evaluations_note": "searches run many simulations; the series and events are of the reported run",
+      "metrics": [
+        {
+          "name": "duration_s",
+          "value": 70.32
+        },
+        {
+          "name": "energy_used_wh",
+          "value": 2.37132598
+        },
+        {
+          "name": "mean_power_w",
+          "value": 121.398941
+        },
+        {
+          "name": "final_soc",
+          "value": 0.0137446459
+        },
+        {
+          "name": "loops_completed",
+          "value": 6
+        },
+        {
+          "name": "distance_flown_m",
+          "value": 248.222385
+        },
+        {
+          "name": "final_cutoff_run_s",
+          "value": 1
+        }
+      ],
+      "notes": [
+        "ended by battery cutoff (pack voltage below cells x cutoff, confirmed)",
+        "battery discharge curve and thermal inputs are ASSUMED: the endurance number is indicative"
+      ],
+      "outcome": "COMPLETED",
+      "steps_simulated": 36160,
+      "test": "endurance"
+    },
+    {
+      "breaking_point": null,
+      "definition_version": "1",
+      "evaluations_note": "searches run many simulations; the series and events are of the reported run",
+      "metrics": [
+        {
+          "name": "peak_tilt_deg",
+          "value": 0
+        },
+        {
+          "name": "final_climb_rate_mps",
+          "value": 16.1704404
+        },
+        {
+          "name": "peak_climb_rate_mps",
+          "value": 16.2359428
+        },
+        {
+          "name": "altitude_gain_m",
+          "value": 18.7181273
+        },
+        {
+          "name": "time_to_gain_target_s",
+          "value": 0.624
+        }
+      ],
+      "notes": [
+        "speed results use the legacy analytic drag, which is known to under-predict forward speed and to sink when pitched (the FPV sprint reaches about 20 of 35 m/s): not a vehicle limit",
+        "a time of -1 means the 5 m gain was never reached",
+        "full throttle in acro mode with the sticks centred: attitude is held only by the rate loop, so a small tilt drift is expected and reported"
+      ],
+      "outcome": "COMPLETED",
+      "steps_simulated": 1751,
+      "test": "fpv_punchout"
+    },
+    {
+      "breaking_point": null,
+      "definition_version": "1",
+      "evaluations_note": "searches run many simulations; the series and events are of the reported run",
+      "metrics": [
+        {
+          "name": "peak_tilt_deg",
+          "value": 27.4090723
+        },
+        {
+          "name": "speed_demand_mps",
+          "value": 12
+        },
+        {
+          "name": "terminal_speed_mps",
+          "value": 11.8618211
+        },
+        {
+          "name": "peak_speed_mps",
+          "value": 12.0408382
+        },
+        {
+          "name": "time_to_10_mps_s",
+          "value": 2.456
+        },
+        {
+          "name": "time_to_20_mps_s",
+          "value": -1
+        },
+        {
+          "name": "time_to_30_mps_s",
+          "value": -1
+        },
+        {
+          "name": "altitude_sink_m",
+          "value": 1.57225995
+        }
+      ],
+      "notes": [
+        "speed results use the legacy analytic drag, which is known to under-predict forward speed and to sink when pitched (the FPV sprint reaches about 20 of 35 m/s): not a vehicle limit",
+        "a time of -1 means the speed was never reached",
+        "the demand is the class horizontal speed limit (12 m/s) in velocity mode"
+      ],
+      "outcome": "COMPLETED",
+      "steps_simulated": 3001,
+      "test": "fpv_sprint"
+    },
+    {
+      "breaking_point": {
+        "criterion": "altitude_hold",
+        "evaluations": 6,
+        "first_fail": 3,
+        "last_pass": 2.5,
+        "quantity": "payload_mass",
+        "resolution": 0.5,
+        "unit": "kg"
+      },
+      "definition_version": "1",
+      "evaluations_note": "searches run many simulations; the series and events are of the reported run",
+      "metrics": [
+        {
+          "name": "passing_payload_kg",
+          "value": 2.5
+        },
+        {
+          "name": "window_max_alt_err_m",
+          "value": 0.131237472
+        },
+        {
+          "name": "window_min_thrust_reserve_ratio",
+          "value": 1.869377
+        },
+        {
+          "name": "window_collective_capped_percent",
+          "value": 0
+        }
+      ],
+      "notes": [],
+      "outcome": "BREAKING_POINT_FOUND",
+      "steps_simulated": 27948,
+      "test": "hover_payload"
+    },
+    {
+      "breaking_point": null,
+      "definition_version": "1",
+      "evaluations_note": "searches run many simulations; the series and events are of the reported run",
+      "metrics": [
+        {
+          "name": "max_passing_speed_mps",
+          "value": 12
+        },
+        {
+          "name": "window_mean_speed_mps",
+          "value": 12.0273149
+        },
+        {
+          "name": "window_max_altitude_error_m",
+          "value": 1.94761467
+        },
+        {
+          "name": "window_min_thrust_reserve_ratio",
+          "value": 5.47840964
+        },
+        {
+          "name": "class_speed_limit_mps",
+          "value": 12
+        }
+      ],
+      "notes": [
+        "the largest commanded_speed tried still passes: the limit is beyond the search range",
+        "LIMIT-BOUND: every level up to 12 m/s (the lower of the definition's maximum and the class speed limit 12 m/s) passed; the vehicle was not the limit",
+        "speed results use the legacy analytic drag, which is known to under-predict forward speed and to sink when pitched (the FPV sprint reaches about 20 of 35 m/s): not a vehicle limit"
+      ],
+      "outcome": "NOT_REACHED_WITHIN_BOUND",
+      "steps_simulated": 9000,
+      "test": "max_speed"
+    },
+    {
+      "breaking_point": null,
+      "definition_version": "1",
+      "evaluations_note": "searches run many simulations; the series and events are of the reported run",
+      "metrics": [
+        {
+          "name": "winding_limit_c",
+          "value": 120
+        },
+        {
+          "name": "time_to_winding_limit_s",
+          "value": -1
+        },
+        {
+          "name": "esc_limit_c",
+          "value": 100
+        },
+        {
+          "name": "time_to_esc_limit_s",
+          "value": -1
+        },
+        {
+          "name": "battery_limit_c",
+          "value": 60
+        },
+        {
+          "name": "time_to_battery_limit_s",
+          "value": -1
+        },
+        {
+          "name": "peak_winding_c",
+          "value": 21.0488536
+        },
+        {
+          "name": "peak_winding_time_s",
+          "value": 21
+        },
+        {
+          "name": "peak_esc_c",
+          "value": 20.896924
+        },
+        {
+          "name": "peak_battery_c",
+          "value": 20.0615092
+        },
+        {
+          "name": "final_max_temperature_rate_k_per_min",
+          "value": 2.77705896
+        },
+        {
+          "name": "duration_s",
+          "value": 21
+        }
+      ],
+      "notes": [
+        "a time of -1 means the limit was never crossed",
+        "state of charge held constant to isolate the thermal behaviour (see endurance for discharge)"
+      ],
+      "outcome": "STEADY_STATE",
+      "steps_simulated": 10500,
+      "test": "thermal_soak"
+    },
+    {
+      "breaking_point": {
+        "criterion": "position_error",
+        "evaluations": 6,
+        "first_fail": 13.75,
+        "last_pass": 12.5,
+        "quantity": "mean_wind_speed",
+        "resolution": 1.25,
+        "unit": "m/s"
+      },
+      "definition_version": "1",
+      "evaluations_note": "searches run many simulations; the series and events are of the reported run",
+      "metrics": [
+        {
+          "name": "passing_wind_mps",
+          "value": 12.5
+        },
+        {
+          "name": "window_max_horizontal_error_m",
+          "value": 0.0552213044
+        },
+        {
+          "name": "window_saturated_percent",
+          "value": 0
+        }
+      ],
+      "notes": [
+        "turbulence model: Dryden (MIL-HDBK-1797 low-altitude form), UNVERIFIED"
+      ],
+      "outcome": "BREAKING_POINT_FOUND",
+      "steps_simulated": 39000,
+      "test": "wind_gust"
+    }
+  ],
+  "title": "Engineer's report: reference_quad",
+  "upgrades": {
+    "statement": "No upgrade study was run: give --study to compare single-part swaps by campaign results.",
+    "status": "not run"
+  },
+  "validation": {
+    "core_interface_version": 14,
+    "flag_percent": 10.0,
+    "flagged": [
+      {
+        "band_percent": 20,
+        "id": "kv700_11.1v_12x4cf_100pct:voltage",
+        "outside_band": false,
+        "percent_error": -11.0157014,
+        "quantity": "motor_voltage",
+        "section": "motor_electrical"
+      },
+      {
+        "band_percent": 20,
+        "id": "kv700_11.1v_13x4.4cf_100pct:voltage",
+        "outside_band": false,
+        "percent_error": -12.4221364,
+        "quantity": "motor_voltage",
+        "section": "motor_electrical"
+      },
+      {
+        "band_percent": 20,
+        "id": "kv700_14.8v_11x3.7cf_100pct:voltage",
+        "outside_band": false,
+        "percent_error": -11.7752896,
+        "quantity": "motor_voltage",
+        "section": "motor_electrical"
+      },
+      {
+        "band_percent": 20,
+        "id": "kv700_14.8v_12x4cf_100pct:voltage",
+        "outside_band": false,
+        "percent_error": -13.9822394,
+        "quantity": "motor_voltage",
+        "section": "motor_electrical"
+      },
+      {
+        "band_percent": 10,
+        "id": "static@1046.667rpm:ct",
+        "outside_band": true,
+        "percent_error": 27.8417355,
+        "quantity": "uiuc_ct",
+        "section": "uiuc_propeller"
+      },
+      {
+        "band_percent": 10,
+        "id": "static@1520rpm:ct",
+        "outside_band": true,
+        "percent_error": 10.3388852,
+        "quantity": "uiuc_ct",
+        "section": "uiuc_propeller"
+      }
+    ],
+    "reference_files": [
+      {
+        "label": "tmotor_mn3508_kv700_table.json",
+        "origin": "https://store.tmotor.com/goods-354-MN3508.html sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688"
+      },
+      {
+        "label": "offline_pipeline/props/apce_12x6.json",
+        "origin": "UIUC propeller database (Selig), see the file's citation"
+      },
+      {
+        "label": "parts/battery/ref_battery_generic_4s_5000.json",
+        "origin": "battery part record (cited fields)"
+      },
+      {
+        "label": "acceptance_bands.json",
+        "origin": "ASSUMED bands"
+      }
+    ],
+    "sections": [
+      {
+        "name": "motor_electrical",
+        "note": "Prop-independent. The voltage residual is the ESC / wiring / supply drop and the meaning of 'throttle' on the page, which the model does not know. Thrust and efficiency are NOT validated (the carbon propellers have no Ct/Cp data); derived Ct / Cp are informational.",
+        "rows": [
+          {
+            "abs_error": 0.0441714286,
+            "band_percent": 20,
+            "id": "kv700_11.1v_12x4cf_50pct:voltage",
+            "model": 5.59417143,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.795881596,
+            "quantity": "motor_voltage",
+            "reference": 5.55,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": -3.55271368e-15,
+            "band_percent": 1,
+            "id": "kv700_11.1v_12x4cf_50pct:power",
+            "model": 25.53,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -1.39158389e-14,
+            "quantity": "motor_power_self_consistency",
+            "reference": 25.53,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": 0.109,
+            "band_percent": 20,
+            "id": "kv700_11.1v_12x4cf_65pct:voltage",
+            "model": 7.324,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 1.51074151,
+            "quantity": "motor_voltage",
+            "reference": 7.215,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": -7.10542736e-15,
+            "band_percent": 1,
+            "id": "kv700_11.1v_12x4cf_65pct:power",
+            "model": 49.95,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -1.42250798e-14,
+            "quantity": "motor_power_self_consistency",
+            "reference": 49.95,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -0.299971429,
+            "band_percent": 20,
+            "id": "kv700_11.1v_12x4cf_75pct:voltage",
+            "model": 8.02502857,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -3.6032604,
+            "quantity": "motor_voltage",
+            "reference": 8.325,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": -1.42108547e-14,
+            "band_percent": 1,
+            "id": "kv700_11.1v_12x4cf_75pct:power",
+            "model": 69.93,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -2.03215426e-14,
+            "quantity": "motor_power_self_consistency",
+            "reference": 69.93,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -0.258771429,
+            "band_percent": 20,
+            "id": "kv700_11.1v_12x4cf_85pct:voltage",
+            "model": 9.17622857,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -2.74267545,
+            "quantity": "motor_voltage",
+            "reference": 9.435,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 1,
+            "id": "kv700_11.1v_12x4cf_85pct:power",
+            "model": 93.24,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "motor_power_self_consistency",
+            "reference": 93.24,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -1.22274286,
+            "band_percent": 20,
+            "id": "kv700_11.1v_12x4cf_100pct:voltage",
+            "model": 9.87725714,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -11.0157014,
+            "quantity": "motor_voltage",
+            "reference": 11.1,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": -1.42108547e-14,
+            "band_percent": 1,
+            "id": "kv700_11.1v_12x4cf_100pct:power",
+            "model": 113.22,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -1.2551541e-14,
+            "quantity": "motor_power_self_consistency",
+            "reference": 113.22,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -0.219942857,
+            "band_percent": 20,
+            "id": "kv700_11.1v_13x4.4cf_50pct:voltage",
+            "model": 5.33005714,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -3.96293436,
+            "quantity": "motor_voltage",
+            "reference": 5.55,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 1,
+            "id": "kv700_11.1v_13x4.4cf_50pct:power",
+            "model": 28.86,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "motor_power_self_consistency",
+            "reference": 28.86,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -0.269171429,
+            "band_percent": 20,
+            "id": "kv700_11.1v_13x4.4cf_65pct:voltage",
+            "model": 6.94582857,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -3.73071973,
+            "quantity": "motor_voltage",
+            "reference": 7.215,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 1,
+            "id": "kv700_11.1v_13x4.4cf_65pct:power",
+            "model": 57.72,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "motor_power_self_consistency",
+            "reference": 57.72,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -0.220771429,
+            "band_percent": 20,
+            "id": "kv700_11.1v_13x4.4cf_75pct:voltage",
+            "model": 8.10422857,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -2.65190905,
+            "quantity": "motor_voltage",
+            "reference": 8.325,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 1,
+            "id": "kv700_11.1v_13x4.4cf_75pct:power",
+            "model": 82.14,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "motor_power_self_consistency",
+            "reference": 82.14,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -0.443685714,
+            "band_percent": 20,
+            "id": "kv700_11.1v_13x4.4cf_85pct:voltage",
+            "model": 8.99131429,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -4.70255129,
+            "quantity": "motor_voltage",
+            "reference": 9.435,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 1,
+            "id": "kv700_11.1v_13x4.4cf_85pct:power",
+            "model": 108.78,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "motor_power_self_consistency",
+            "reference": 108.78,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -1.37885714,
+            "band_percent": 20,
+            "id": "kv700_11.1v_13x4.4cf_100pct:voltage",
+            "model": 9.72114286,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -12.4221364,
+            "quantity": "motor_voltage",
+            "reference": 11.1,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 1,
+            "id": "kv700_11.1v_13x4.4cf_100pct:power",
+            "model": 133.2,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "motor_power_self_consistency",
+            "reference": 133.2,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": 0.394628571,
+            "band_percent": 20,
+            "id": "kv700_14.8v_11x3.7cf_50pct:voltage",
+            "model": 7.79462857,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 5.33281853,
+            "quantity": "motor_voltage",
+            "reference": 7.4,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 1,
+            "id": "kv700_14.8v_11x3.7cf_50pct:power",
+            "model": 45.88,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "motor_power_self_consistency",
+            "reference": 45.88,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": 0.0689142857,
+            "band_percent": 20,
+            "id": "kv700_14.8v_11x3.7cf_65pct:voltage",
+            "model": 9.68891429,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.716364716,
+            "quantity": "motor_voltage",
+            "reference": 9.62,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 1,
+            "id": "kv700_14.8v_11x3.7cf_65pct:power",
+            "model": 82.88,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "motor_power_self_consistency",
+            "reference": 82.88,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -0.245485714,
+            "band_percent": 20,
+            "id": "kv700_14.8v_11x3.7cf_75pct:voltage",
+            "model": 10.8545143,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -2.21158301,
+            "quantity": "motor_voltage",
+            "reference": 11.1,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 1.42108547e-14,
+            "band_percent": 1,
+            "id": "kv700_14.8v_11x3.7cf_75pct:power",
+            "model": 116.92,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 1.21543403e-14,
+            "quantity": "motor_power_self_consistency",
+            "reference": 116.92,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -0.395428571,
+            "band_percent": 20,
+            "id": "kv700_14.8v_11x3.7cf_85pct:voltage",
+            "model": 12.1845714,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -3.14331138,
+            "quantity": "motor_voltage",
+            "reference": 12.58,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 1,
+            "id": "kv700_14.8v_11x3.7cf_85pct:power",
+            "model": 155.4,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "motor_power_self_consistency",
+            "reference": 155.4,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -1.74274286,
+            "band_percent": 20,
+            "id": "kv700_14.8v_11x3.7cf_100pct:voltage",
+            "model": 13.0572571,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -11.7752896,
+            "quantity": "motor_voltage",
+            "reference": 14.8,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 1,
+            "id": "kv700_14.8v_11x3.7cf_100pct:power",
+            "model": 187.96,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "motor_power_self_consistency",
+            "reference": 187.96,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -0.412114286,
+            "band_percent": 20,
+            "id": "kv700_14.8v_12x4cf_50pct:voltage",
+            "model": 6.98788571,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -5.56911197,
+            "quantity": "motor_voltage",
+            "reference": 7.4,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 1,
+            "id": "kv700_14.8v_12x4cf_50pct:power",
+            "model": 56.24,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "motor_power_self_consistency",
+            "reference": 56.24,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -0.0872,
+            "band_percent": 20,
+            "id": "kv700_14.8v_12x4cf_65pct:voltage",
+            "model": 9.5328,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.906444906,
+            "quantity": "motor_voltage",
+            "reference": 9.62,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 1.42108547e-14,
+            "band_percent": 1,
+            "id": "kv700_14.8v_12x4cf_65pct:power",
+            "model": 109.52,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 1.29755795e-14,
+            "quantity": "motor_power_self_consistency",
+            "reference": 109.52,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -0.522857143,
+            "band_percent": 20,
+            "id": "kv700_14.8v_12x4cf_75pct:voltage",
+            "model": 10.5771429,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -4.71042471,
+            "quantity": "motor_voltage",
+            "reference": 11.1,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 1,
+            "id": "kv700_14.8v_12x4cf_75pct:power",
+            "model": 148,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "motor_power_self_consistency",
+            "reference": 148,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -0.893714286,
+            "band_percent": 20,
+            "id": "kv700_14.8v_12x4cf_85pct:voltage",
+            "model": 11.6862857,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -7.1042471,
+            "quantity": "motor_voltage",
+            "reference": 12.58,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 1,
+            "id": "kv700_14.8v_12x4cf_85pct:power",
+            "model": 199.8,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "motor_power_self_consistency",
+            "reference": 199.8,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          },
+          {
+            "abs_error": -2.06937143,
+            "band_percent": 20,
+            "id": "kv700_14.8v_12x4cf_100pct:voltage",
+            "model": 12.7306286,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -13.9822394,
+            "quantity": "motor_voltage",
+            "reference": 14.8,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "V"
+          },
+          {
+            "abs_error": 2.84217094e-14,
+            "band_percent": 1,
+            "id": "kv700_14.8v_12x4cf_100pct:power",
+            "model": 238.28,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 1.19278619e-14,
+            "quantity": "motor_power_self_consistency",
+            "reference": 238.28,
+            "source": "T-Motor store page, sha256 26fd3dd123aeb84c807cd773de9dd05b8061170e230787ce06fbe6f435a8b688",
+            "unit": "W"
+          }
+        ],
+        "status": "OK",
+        "summary": {
+          "max_abs_percent": 13.9822394,
+          "mean_abs_percent": 2.56475866,
+          "n": 40,
+          "n_outside_band": 0,
+          "n_with_percent": 40,
+          "rms_percent": 4.58319097,
+          "worst_row_id": "kv700_14.8v_12x4cf_100pct:voltage"
+        }
+      },
+      {
+        "name": "uiuc_propeller",
+        "note": "Run points are evaluated at the run's NOMINAL rpm (from the file name); the table curves sit at the mean rpm of merged runs, so small differences are expected. Rows with outside_data = true are held edge values.",
+        "rows": [
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#0:ct",
+            "model": 0.080788,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.080788,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#0:cp",
+            "model": 0.032338,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.032338,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#1:ct",
+            "model": 0.073512,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.073512,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#1:cp",
+            "model": 0.031502,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.031502,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#2:ct",
+            "model": 0.065819,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.065819,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#2:cp",
+            "model": 0.029895,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.029895,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#3:ct",
+            "model": 0.057809,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.057809,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#3:cp",
+            "model": 0.027921,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.027921,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#4:ct",
+            "model": 0.050904,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.050904,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#4:cp",
+            "model": 0.026055,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.026055,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#5:ct",
+            "model": 0.043995,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.043995,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#5:cp",
+            "model": 0.024092,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.024092,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#6:ct",
+            "model": 0.038552,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.038552,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#6:cp",
+            "model": 0.022531,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.022531,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#7:ct",
+            "model": 0.031906,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.031906,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#7:cp",
+            "model": 0.020363,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.020363,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#8:ct",
+            "model": 0.025301,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.025301,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#8:cp",
+            "model": 0.018264,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.018264,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#9:ct",
+            "model": 0.015565,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.015565,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#9:cp",
+            "model": 0.014908,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.014908,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#10:ct",
+            "model": 0.009785,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.009785,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#10:cp",
+            "model": 0.012824,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.012824,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -3.25260652e-19,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#11:ct",
+            "model": -0.000401,
+            "outside_band": null,
+            "outside_data": true,
+            "percent_error": null,
+            "quantity": "uiuc_ct",
+            "reference": -0.000401,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#11:cp",
+            "model": 0.009052,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.009052,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#12:ct",
+            "model": -0.007085,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": -0.007085,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#12:cp",
+            "model": 0.006255,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.006255,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#13:ct",
+            "model": -0.007148,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": -0.007148,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0630od_3040.txt#13:cp",
+            "model": 0.006297,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.006297,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#0:ct",
+            "model": 0.094848,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.094848,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#0:cp",
+            "model": 0.033717,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.033717,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#1:ct",
+            "model": 0.091298,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.091298,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#1:cp",
+            "model": 0.034028,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.034028,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#2:ct",
+            "model": 0.085856,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.085856,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#2:cp",
+            "model": 0.033796,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.033796,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#3:ct",
+            "model": 0.080034,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.080034,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#3:cp",
+            "model": 0.033159,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.033159,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#4:ct",
+            "model": 0.07338,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.07338,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#4:cp",
+            "model": 0.032065,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.032065,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#5:ct",
+            "model": 0.06634,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.06634,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#5:cp",
+            "model": 0.030603,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.030603,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#6:ct",
+            "model": 0.059225,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.059225,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#6:cp",
+            "model": 0.028794,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.028794,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#7:ct",
+            "model": 0.054125,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.054125,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#7:cp",
+            "model": 0.027521,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.027521,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#8:ct",
+            "model": 0.048336,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.048336,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#8:cp",
+            "model": 0.025778,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.025778,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#9:ct",
+            "model": 0.04236,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.04236,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#9:cp",
+            "model": 0.023878,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.023878,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#10:ct",
+            "model": 0.036611,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.036611,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#10:cp",
+            "model": 0.022032,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.022032,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#11:ct",
+            "model": 0.031168,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.031168,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#11:cp",
+            "model": 0.02019,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.02019,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#12:ct",
+            "model": 0.026371,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.026371,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#12:cp",
+            "model": 0.018549,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.018549,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#13:ct",
+            "model": 0.020152,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.020152,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#13:cp",
+            "model": 0.016488,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.016488,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#14:ct",
+            "model": 0.015063,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.015063,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#14:cp",
+            "model": 0.014621,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.014621,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#15:ct",
+            "model": 0.008429,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.008429,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#15:cp",
+            "model": 0.012206,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.012206,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 4.33680869e-19,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#16:ct",
+            "model": 0.002396,
+            "outside_band": null,
+            "outside_data": false,
+            "percent_error": null,
+            "quantity": "uiuc_ct",
+            "reference": 0.002396,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0631od_4030.txt#16:cp",
+            "model": 0.009808,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.009808,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -4.69686137e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#0:ct",
+            "model": 0.0975350314,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.0481324565,
+            "quantity": "uiuc_ct",
+            "reference": 0.097582,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -2.81509213e-06,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#0:cp",
+            "model": 0.0338491849,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.00831588126,
+            "quantity": "uiuc_cp",
+            "reference": 0.033852,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -5.35851686e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#1:ct",
+            "model": 0.0951504148,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.056284577,
+            "quantity": "uiuc_ct",
+            "reference": 0.095204,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -3.19229707e-06,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#1:cp",
+            "model": 0.0341308077,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.00935225015,
+            "quantity": "uiuc_cp",
+            "reference": 0.034134,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -8.81246131e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#2:ct",
+            "model": 0.0925638754,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.0951135572,
+            "quantity": "uiuc_ct",
+            "reference": 0.092652,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -1.43374167e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#2:cp",
+            "model": 0.0346726626,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.0413336889,
+            "quantity": "uiuc_cp",
+            "reference": 0.034687,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.00010455904,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#3:ct",
+            "model": 0.089055441,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.117271243,
+            "quantity": "uiuc_ct",
+            "reference": 0.08916,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -1.98953426e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#3:cp",
+            "model": 0.0346181047,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.0574379081,
+            "quantity": "uiuc_cp",
+            "reference": 0.034638,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000108496085,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#4:ct",
+            "model": 0.0837045039,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.129450187,
+            "quantity": "uiuc_ct",
+            "reference": 0.083813,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -2.50472483e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#4:cp",
+            "model": 0.0341649528,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.073258989,
+            "quantity": "uiuc_cp",
+            "reference": 0.03419,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.00012159153,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#5:ct",
+            "model": 0.0793494085,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.153001132,
+            "quantity": "uiuc_ct",
+            "reference": 0.079471,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -3.27837859e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#5:cp",
+            "model": 0.0337252162,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.0971141237,
+            "quantity": "uiuc_cp",
+            "reference": 0.033758,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000131283502,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#6:ct",
+            "model": 0.0743997165,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.17614617,
+            "quantity": "uiuc_ct",
+            "reference": 0.074531,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -3.94049794e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#6:cp",
+            "model": 0.032954595,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.119430743,
+            "quantity": "uiuc_cp",
+            "reference": 0.032994,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000121765442,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#7:ct",
+            "model": 0.0682352346,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.178131636,
+            "quantity": "uiuc_ct",
+            "reference": 0.068357,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -4.10802778e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#7:cp",
+            "model": 0.0316499197,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.129627584,
+            "quantity": "uiuc_cp",
+            "reference": 0.031691,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000111805057,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#8:ct",
+            "model": 0.0632761949,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.176382054,
+            "quantity": "uiuc_ct",
+            "reference": 0.063388,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -4.15252618e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#8:cp",
+            "model": 0.0305654747,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.135672434,
+            "quantity": "uiuc_cp",
+            "reference": 0.030607,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -8.06860144e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#9:ct",
+            "model": 0.057609314,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.139861353,
+            "quantity": "uiuc_ct",
+            "reference": 0.05769,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -3.17303702e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#9:cp",
+            "model": 0.0289852696,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.109350967,
+            "quantity": "uiuc_cp",
+            "reference": 0.029017,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -8.1407503e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#10:ct",
+            "model": 0.0526835925,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.154283148,
+            "quantity": "uiuc_ct",
+            "reference": 0.052765,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -3.35345467e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#10:cp",
+            "model": 0.0275874655,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.121409604,
+            "quantity": "uiuc_cp",
+            "reference": 0.027621,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -7.0363677e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#11:ct",
+            "model": 0.0475896363,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.147636754,
+            "quantity": "uiuc_ct",
+            "reference": 0.04766,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -3.09572505e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#11:cp",
+            "model": 0.0260200427,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.118833252,
+            "quantity": "uiuc_cp",
+            "reference": 0.026051,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -6.40378049e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#12:ct",
+            "model": 0.0426579622,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.149894211,
+            "quantity": "uiuc_ct",
+            "reference": 0.042722,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -2.92159254e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#12:cp",
+            "model": 0.0244567841,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.119316856,
+            "quantity": "uiuc_cp",
+            "reference": 0.024486,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 5.72173935e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#13:ct",
+            "model": 0.0377572174,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.151770275,
+            "quantity": "uiuc_ct",
+            "reference": 0.0377,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 1.81813121e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#13:cp",
+            "model": 0.0228111813,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.0797670867,
+            "quantity": "uiuc_cp",
+            "reference": 0.022793,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000132638702,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#14:ct",
+            "model": 0.0328526387,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.405375005,
+            "quantity": "uiuc_ct",
+            "reference": 0.03272,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 4.13984867e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#14:cp",
+            "model": 0.0210963985,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.196620692,
+            "quantity": "uiuc_cp",
+            "reference": 0.021055,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000129619899,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#15:ct",
+            "model": 0.0281776199,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.462135976,
+            "quantity": "uiuc_ct",
+            "reference": 0.028048,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 6.20570808e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0632od_5007.txt#15:cp",
+            "model": 0.0194920571,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.319387961,
+            "quantity": "uiuc_cp",
+            "reference": 0.01943,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000258704856,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#0:ct",
+            "model": 0.0428267049,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.607744916,
+            "quantity": "uiuc_ct",
+            "reference": 0.042568,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000157479617,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#0:cp",
+            "model": 0.0245434796,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.645778795,
+            "quantity": "uiuc_cp",
+            "reference": 0.024386,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -4.40705823e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#1:ct",
+            "model": 0.0376859294,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.116805148,
+            "quantity": "uiuc_ct",
+            "reference": 0.03773,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -8.58287566e-06,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#1:cp",
+            "model": 0.0228174171,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.0376013128,
+            "quantity": "uiuc_cp",
+            "reference": 0.022826,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000102341808,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#2:ct",
+            "model": 0.0329103418,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.311941624,
+            "quantity": "uiuc_ct",
+            "reference": 0.032808,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 5.83503816e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#2:cp",
+            "model": 0.0211443504,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.276725702,
+            "quantity": "uiuc_cp",
+            "reference": 0.021086,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000161013841,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#3:ct",
+            "model": 0.0282460138,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.57330903,
+            "quantity": "uiuc_ct",
+            "reference": 0.028085,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 7.73842492e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#3:cp",
+            "model": 0.0195433842,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.397535442,
+            "quantity": "uiuc_cp",
+            "reference": 0.019466,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000145853517,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#4:ct",
+            "model": 0.0235298535,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.623732112,
+            "quantity": "uiuc_ct",
+            "reference": 0.023384,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 7.09327046e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#4:cp",
+            "model": 0.0179059327,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.397716314,
+            "quantity": "uiuc_cp",
+            "reference": 0.017835,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000136967535,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#5:ct",
+            "model": 0.0182609675,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.755724645,
+            "quantity": "uiuc_ct",
+            "reference": 0.018124,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 6.76576438e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#5:cp",
+            "model": 0.0159296576,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.426539174,
+            "quantity": "uiuc_cp",
+            "reference": 0.015862,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000111225405,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#6:ct",
+            "model": 0.0140182254,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.799780006,
+            "quantity": "uiuc_ct",
+            "reference": 0.013907,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 5.52529743e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#6:cp",
+            "model": 0.014395253,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.385306655,
+            "quantity": "uiuc_cp",
+            "reference": 0.01434,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 9.77200178e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#7:ct",
+            "model": 0.00899172002,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 1.09871844,
+            "quantity": "uiuc_ct",
+            "reference": 0.008894,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 4.85314046e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#7:cp",
+            "model": 0.0123955314,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.393062319,
+            "quantity": "uiuc_cp",
+            "reference": 0.012347,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 9.29821652e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#8:ct",
+            "model": 0.00417198217,
+            "outside_band": null,
+            "outside_data": false,
+            "percent_error": null,
+            "quantity": "uiuc_ct",
+            "reference": 0.004079,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 4.44434375e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#8:cp",
+            "model": 0.0104254434,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.428122892,
+            "quantity": "uiuc_cp",
+            "reference": 0.010381,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000100234072,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#9:ct",
+            "model": -0.00124976593,
+            "outside_band": null,
+            "outside_data": false,
+            "percent_error": null,
+            "quantity": "uiuc_ct",
+            "reference": -0.00135,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 4.47836863e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#9:cp",
+            "model": 0.00816078369,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.55179505,
+            "quantity": "uiuc_cp",
+            "reference": 0.008116,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 9.24105439e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#10:ct",
+            "model": -0.00120258946,
+            "outside_band": null,
+            "outside_data": false,
+            "percent_error": null,
+            "quantity": "uiuc_ct",
+            "reference": -0.001295,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 4.05290261e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0633od_5042.txt#10:cp",
+            "model": 0.00822352903,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.495283223,
+            "quantity": "uiuc_cp",
+            "reference": 0.008183,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000238015662,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#0:ct",
+            "model": 0.107419984,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.221084975,
+            "quantity": "uiuc_ct",
+            "reference": 0.107658,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -8.22941536e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#0:cp",
+            "model": 0.0367357058,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.223516089,
+            "quantity": "uiuc_cp",
+            "reference": 0.036818,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000248004166,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#1:ct",
+            "model": 0.106986996,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.231271661,
+            "quantity": "uiuc_ct",
+            "reference": 0.107235,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000100263338,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#1:cp",
+            "model": 0.0376617367,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.265513846,
+            "quantity": "uiuc_cp",
+            "reference": 0.037762,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000267150023,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#2:ct",
+            "model": 0.10571485,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.252071128,
+            "quantity": "uiuc_ct",
+            "reference": 0.105982,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000104493859,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#2:cp",
+            "model": 0.0380595061,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.273802168,
+            "quantity": "uiuc_cp",
+            "reference": 0.038164,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000272728456,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#3:ct",
+            "model": 0.103940272,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.261702912,
+            "quantity": "uiuc_ct",
+            "reference": 0.104213,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000102603145,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#3:cp",
+            "model": 0.0383823969,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.266605547,
+            "quantity": "uiuc_cp",
+            "reference": 0.038485,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000292981152,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#4:ct",
+            "model": 0.101931019,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.286607012,
+            "quantity": "uiuc_ct",
+            "reference": 0.102224,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000105974782,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#4:cp",
+            "model": 0.0386860252,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.273187209,
+            "quantity": "uiuc_cp",
+            "reference": 0.038792,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.00031242174,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#5:ct",
+            "model": 0.0993415783,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.313506472,
+            "quantity": "uiuc_ct",
+            "reference": 0.099654,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000113342149,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#5:cp",
+            "model": 0.0388016579,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.291255683,
+            "quantity": "uiuc_cp",
+            "reference": 0.038915,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000338379551,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#6:ct",
+            "model": 0.0963476204,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.349977816,
+            "quantity": "uiuc_ct",
+            "reference": 0.096686,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.00012251175,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#6:cp",
+            "model": 0.0388114882,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.314665203,
+            "quantity": "uiuc_cp",
+            "reference": 0.038934,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000349400628,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#7:ct",
+            "model": 0.0928765994,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.374788823,
+            "quantity": "uiuc_ct",
+            "reference": 0.093226,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000125666921,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#7:cp",
+            "model": 0.0385443331,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.324972643,
+            "quantity": "uiuc_cp",
+            "reference": 0.03867,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000351154143,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#8:ct",
+            "model": 0.0888508459,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.393661737,
+            "quantity": "uiuc_ct",
+            "reference": 0.089202,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000126653236,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#8:cp",
+            "model": 0.0379563468,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.332571582,
+            "quantity": "uiuc_cp",
+            "reference": 0.038083,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000365757175,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#9:ct",
+            "model": 0.0842762428,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.432122557,
+            "quantity": "uiuc_ct",
+            "reference": 0.084642,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000134351487,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#9:cp",
+            "model": 0.0372216485,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.359651694,
+            "quantity": "uiuc_cp",
+            "reference": 0.037356,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000381040909,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#10:ct",
+            "model": 0.0804289591,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.471526926,
+            "quantity": "uiuc_ct",
+            "reference": 0.08081,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.00014460073,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#10:cp",
+            "model": 0.0366593993,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.392894061,
+            "quantity": "uiuc_cp",
+            "reference": 0.036804,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000389486429,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#11:ct",
+            "model": 0.0759945136,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.509905778,
+            "quantity": "uiuc_ct",
+            "reference": 0.076384,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000148410157,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#11:cp",
+            "model": 0.0356335898,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.41476205,
+            "quantity": "uiuc_cp",
+            "reference": 0.035782,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000384522881,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#12:ct",
+            "model": 0.0709524771,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.539023061,
+            "quantity": "uiuc_ct",
+            "reference": 0.071337,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000157824651,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#12:cp",
+            "model": 0.0345251753,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.455049017,
+            "quantity": "uiuc_cp",
+            "reference": 0.034683,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.00037691239,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#13:ct",
+            "model": 0.0663080876,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.565213151,
+            "quantity": "uiuc_ct",
+            "reference": 0.066685,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000168817153,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#13:cp",
+            "model": 0.0331901828,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.506061792,
+            "quantity": "uiuc_cp",
+            "reference": 0.033359,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.00034624283,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#14:ct",
+            "model": 0.0613832428,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.567267117,
+            "quantity": "uiuc_ct",
+            "reference": 0.061037,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000212146686,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#14:cp",
+            "model": 0.0317111467,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.673502925,
+            "quantity": "uiuc_cp",
+            "reference": 0.031499,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000985438677,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#15:ct",
+            "model": 0.0558715613,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -1.73318796,
+            "quantity": "uiuc_ct",
+            "reference": 0.056857,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.00031744218,
+            "band_percent": 10,
+            "id": "apce_12x6_0634od_5993.txt#15:cp",
+            "model": 0.0301025578,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -1.04353117,
+            "quantity": "uiuc_cp",
+            "reference": 0.03042,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.00015491247,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#0:ct",
+            "model": 0.0714980875,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -0.216198164,
+            "quantity": "uiuc_ct",
+            "reference": 0.071653,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000208077312,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#0:cp",
+            "model": 0.0347180773,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0.602947877,
+            "quantity": "uiuc_cp",
+            "reference": 0.03451,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000248727057,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#1:ct",
+            "model": 0.0655212729,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -0.378177067,
+            "quantity": "uiuc_ct",
+            "reference": 0.06577,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000103256334,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#1:cp",
+            "model": 0.0329917437,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -0.311999801,
+            "quantity": "uiuc_cp",
+            "reference": 0.033095,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.00034742816,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#2:ct",
+            "model": 0.0615445718,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -0.561345828,
+            "quantity": "uiuc_ct",
+            "reference": 0.061892,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000183709813,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#2:cp",
+            "model": 0.0318072902,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -0.574254673,
+            "quantity": "uiuc_cp",
+            "reference": 0.031991,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 1.7818663e-05,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#3:ct",
+            "model": 0.0566188187,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0.0314811805,
+            "quantity": "uiuc_ct",
+            "reference": 0.056601,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 4.1820691e-06,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#3:cp",
+            "model": 0.0303721821,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0.0137713023,
+            "quantity": "uiuc_cp",
+            "reference": 0.030368,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#4:ct",
+            "model": 0.051841,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.051841,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#4:cp",
+            "model": 0.028904,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.028904,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#5:ct",
+            "model": 0.046902,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.046902,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#5:cp",
+            "model": 0.027258,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.027258,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#6:ct",
+            "model": 0.042453,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.042453,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#6:cp",
+            "model": 0.025746,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.025746,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#7:ct",
+            "model": 0.037347,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.037347,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#7:cp",
+            "model": 0.023903,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.023903,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#8:ct",
+            "model": 0.032514,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.032514,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#8:cp",
+            "model": 0.022177,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.022177,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#9:ct",
+            "model": 0.027579,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.027579,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#9:cp",
+            "model": 0.02035,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.02035,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#10:ct",
+            "model": 0.023112,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.023112,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#10:cp",
+            "model": 0.01863,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.01863,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#11:ct",
+            "model": 0.018253,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.018253,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#11:cp",
+            "model": 0.016692,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.016692,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#12:ct",
+            "model": 0.013719,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.013719,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#12:cp",
+            "model": 0.014801,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.014801,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#13:ct",
+            "model": 0.009348,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_ct",
+            "reference": 0.009348,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#13:cp",
+            "model": 0.0129,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.0129,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#14:ct",
+            "model": 0.004821,
+            "outside_band": null,
+            "outside_data": true,
+            "percent_error": null,
+            "quantity": "uiuc_ct",
+            "reference": 0.004821,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#14:cp",
+            "model": 0.010874,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.010874,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 3.52365706e-19,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#15:ct",
+            "model": -0.000128,
+            "outside_band": null,
+            "outside_data": true,
+            "percent_error": null,
+            "quantity": "uiuc_ct",
+            "reference": -0.000128,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#15:cp",
+            "model": 0.008654,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.008654,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#16:ct",
+            "model": -0.005244,
+            "outside_band": null,
+            "outside_data": true,
+            "percent_error": null,
+            "quantity": "uiuc_ct",
+            "reference": -0.005244,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#16:cp",
+            "model": 0.006368,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.006368,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#17:ct",
+            "model": -0.005268,
+            "outside_band": null,
+            "outside_data": true,
+            "percent_error": null,
+            "quantity": "uiuc_ct",
+            "reference": -0.005268,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 10,
+            "id": "apce_12x6_0635od_6044.txt#17:cp",
+            "model": 0.006382,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0,
+            "quantity": "uiuc_cp",
+            "reference": 0.006382,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.02143925,
+            "band_percent": 10,
+            "id": "static@1046.667rpm:ct",
+            "model": 0.09844325,
+            "outside_band": true,
+            "outside_data": true,
+            "percent_error": 27.8417355,
+            "quantity": "uiuc_ct",
+            "reference": 0.077004,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.0014225,
+            "band_percent": 10,
+            "id": "static@1046.667rpm:cp",
+            "model": 0.0319385,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -4.26396091,
+            "quantity": "uiuc_cp",
+            "reference": 0.033361,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.00922425,
+            "band_percent": 10,
+            "id": "static@1520rpm:ct",
+            "model": 0.09844325,
+            "outside_band": true,
+            "outside_data": true,
+            "percent_error": 10.3388852,
+            "quantity": "uiuc_ct",
+            "reference": 0.089219,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.0020425,
+            "band_percent": 10,
+            "id": "static@1520rpm:cp",
+            "model": 0.0319385,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -6.01071187,
+            "quantity": "uiuc_cp",
+            "reference": 0.033981,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.00588325,
+            "band_percent": 10,
+            "id": "static@1980rpm:ct",
+            "model": 0.09844325,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 6.35614736,
+            "quantity": "uiuc_ct",
+            "reference": 0.09256,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.0002705,
+            "band_percent": 10,
+            "id": "static@1980rpm:cp",
+            "model": 0.0319385,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -0.839827377,
+            "quantity": "uiuc_cp",
+            "reference": 0.032209,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.00213525,
+            "band_percent": 10,
+            "id": "static@2520rpm:ct",
+            "model": 0.09844325,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 2.21710554,
+            "quantity": "uiuc_ct",
+            "reference": 0.096308,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.0003095,
+            "band_percent": 10,
+            "id": "static@2520rpm:cp",
+            "model": 0.0319385,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -0.959749442,
+            "quantity": "uiuc_cp",
+            "reference": 0.032248,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.00014925,
+            "band_percent": 10,
+            "id": "static@2980rpm:ct",
+            "model": 0.09844325,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": 0.151840397,
+            "quantity": "uiuc_ct",
+            "reference": 0.098294,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -2.05e-05,
+            "band_percent": 10,
+            "id": "static@2980rpm:cp",
+            "model": 0.0319385,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -0.0641446854,
+            "quantity": "uiuc_cp",
+            "reference": 0.031959,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000354963285,
+            "band_percent": 10,
+            "id": "static@3460rpm:ct",
+            "model": 0.0991330367,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.35679005,
+            "quantity": "uiuc_ct",
+            "reference": 0.099488,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 4.47461335e-05,
+            "band_percent": 10,
+            "id": "static@3460rpm:cp",
+            "model": 0.0318397461,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.140733239,
+            "quantity": "uiuc_cp",
+            "reference": 0.031795,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000111211376,
+            "band_percent": 10,
+            "id": "static@3960rpm:ct",
+            "model": 0.0999542114,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.111386252,
+            "quantity": "uiuc_ct",
+            "reference": 0.099843,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 9.91820066e-05,
+            "band_percent": 10,
+            "id": "static@3960rpm:cp",
+            "model": 0.031722182,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.313638828,
+            "quantity": "uiuc_cp",
+            "reference": 0.031623,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000349169918,
+            "band_percent": 10,
+            "id": "static@4453.333rpm:ct",
+            "model": 0.10108783,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.344223427,
+            "quantity": "uiuc_ct",
+            "reference": 0.101437,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000216231914,
+            "band_percent": 10,
+            "id": "static@4453.333rpm:cp",
+            "model": 0.0319897681,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.671402578,
+            "quantity": "uiuc_cp",
+            "reference": 0.032206,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000169034025,
+            "band_percent": 10,
+            "id": "static@4953.333rpm:ct",
+            "model": 0.102290966,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.164975625,
+            "quantity": "uiuc_ct",
+            "reference": 0.10246,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -5.07453624e-05,
+            "band_percent": 10,
+            "id": "static@4953.333rpm:cp",
+            "model": 0.0323252546,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.156737591,
+            "quantity": "uiuc_cp",
+            "reference": 0.032376,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000205162756,
+            "band_percent": 10,
+            "id": "static@5500rpm:ct",
+            "model": 0.102271837,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -0.20020371,
+            "quantity": "uiuc_ct",
+            "reference": 0.102477,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 0.000170383584,
+            "band_percent": 10,
+            "id": "static@5500rpm:cp",
+            "model": 0.0325233836,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.526639212,
+            "quantity": "uiuc_cp",
+            "reference": 0.032353,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 6.86523083e-05,
+            "band_percent": 10,
+            "id": "static@6000rpm:ct",
+            "model": 0.102071652,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.0673042051,
+            "quantity": "uiuc_ct",
+            "reference": 0.102003,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": 9.50956095e-06,
+            "band_percent": 10,
+            "id": "static@6000rpm:cp",
+            "model": 0.0326815096,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0.0291061488,
+            "quantity": "uiuc_cp",
+            "reference": 0.032672,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.00150575453,
+            "band_percent": 10,
+            "id": "static@6473.333rpm:ct",
+            "model": 0.102064245,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -1.45385202,
+            "quantity": "uiuc_ct",
+            "reference": 0.10357,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000377639778,
+            "band_percent": 10,
+            "id": "static@6473.333rpm:cp",
+            "model": 0.0326873602,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -1.14211335,
+            "quantity": "uiuc_cp",
+            "reference": 0.033065,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.00225875453,
+            "band_percent": 10,
+            "id": "static@6966.667rpm:ct",
+            "model": 0.102064245,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -2.16515489,
+            "quantity": "uiuc_ct",
+            "reference": 0.104323,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000618639778,
+            "band_percent": 10,
+            "id": "static@6966.667rpm:cp",
+            "model": 0.0326873602,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -1.85744244,
+            "quantity": "uiuc_cp",
+            "reference": 0.033306,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.00339575453,
+            "band_percent": 10,
+            "id": "static@7546.667rpm:ct",
+            "model": 0.102064245,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -3.21994551,
+            "quantity": "uiuc_ct",
+            "reference": 0.10546,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          },
+          {
+            "abs_error": -0.000955639778,
+            "band_percent": 10,
+            "id": "static@7546.667rpm:cp",
+            "model": 0.0326873602,
+            "outside_band": false,
+            "outside_data": true,
+            "percent_error": -2.8405308,
+            "quantity": "uiuc_cp",
+            "reference": 0.033643,
+            "source": "https://m-selig.ae.illinois.edu/props/volume-4/propDB-volume-4.html",
+            "unit": "1"
+          }
+        ],
+        "status": "OK",
+        "summary": {
+          "max_abs_percent": 27.8417355,
+          "mean_abs_percent": 0.518282012,
+          "n": 212,
+          "n_outside_band": 2,
+          "n_with_percent": 203,
+          "rms_percent": 2.25365996,
+          "worst_row_id": "static@1046.667rpm:ct"
+        }
+      },
+      {
+        "name": "battery_cited_points",
+        "note": "Cited points only. The nominal voltage is a mid-discharge average, so a difference at 50 % SOC is expected. The discharge curve itself is in battery_curve.",
+        "rows": [
+          {
+            "abs_error": 0,
+            "band_percent": 5,
+            "id": "ocv_full",
+            "model": 16.8,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "battery_ocv",
+            "reference": 16.8,
+            "source": "battery record ref_battery_generic_4s_5000 (CITED fields)",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0.48,
+            "band_percent": 5,
+            "id": "ocv_mid_vs_nominal",
+            "model": 15.28,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 3.24324324,
+            "quantity": "battery_ocv",
+            "reference": 14.8,
+            "source": "battery record ref_battery_generic_4s_5000 (CITED fields)",
+            "unit": "V"
+          },
+          {
+            "abs_error": 0,
+            "band_percent": 5,
+            "id": "ocv_empty_vs_cutoff",
+            "model": 13.2,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": 0,
+            "quantity": "battery_ocv",
+            "reference": 13.2,
+            "source": "battery record ref_battery_generic_4s_5000 (CITED fields)",
+            "unit": "V"
+          },
+          {
+            "abs_error": -7.21644966e-16,
+            "band_percent": 5,
+            "id": "sag_at_10a",
+            "model": 0.2,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -3.60822483e-13,
+            "quantity": "battery_sag",
+            "reference": 0.2,
+            "source": "battery record ref_battery_generic_4s_5000 (CITED fields)",
+            "unit": "V"
+          },
+          {
+            "abs_error": -2.22044605e-15,
+            "band_percent": 1,
+            "id": "soc_after_charge",
+            "model": 0.799999405,
+            "outside_band": false,
+            "outside_data": false,
+            "percent_error": -2.77555963e-13,
+            "quantity": "battery_soc",
+            "reference": 0.799999405,
+            "source": "battery record ref_battery_generic_4s_5000 (CITED fields)",
+            "unit": "1"
+          }
+        ],
+        "status": "OK",
+        "summary": {
+          "max_abs_percent": 3.24324324,
+          "mean_abs_percent": 0.648648649,
+          "n": 5,
+          "n_outside_band": 0,
+          "n_with_percent": 5,
+          "rms_percent": 1.45042247,
+          "worst_row_id": "ocv_mid_vs_nominal"
+        }
+      },
+      {
+        "name": "battery_curve",
+        "note": "no published discharge curve is stored; the OCV curve in the database is an ASSUMED generic shape. Supply parts_db/validation/battery_curve_<battery id>.csv",
+        "rows": [],
+        "status": "NO_PUBLISHED_DATA",
+        "summary": {
+          "max_abs_percent": 0,
+          "mean_abs_percent": 0,
+          "n": 0,
+          "n_outside_band": 0,
+          "n_with_percent": 0,
+          "rms_percent": 0,
+          "worst_row_id": null
+        }
+      }
+    ],
+    "status": "provided"
+  },
+  "vehicle": {
+    "bom": [
+      {
+        "manufacturer": "generic",
+        "mass_kg": 0.45,
+        "mass_source": "ASSUMED",
+        "model": "4S LiPo 5000 mAh",
+        "part_id": "ref_battery_generic_4s_5000",
+        "price_usd": null,
+        "provenance_counts": {
+          "ASSUMED": 13
+        },
+        "role": "battery",
+        "verification": "Unverified"
+      },
+      {
+        "manufacturer": "T-Motor",
+        "mass_kg": 0.03,
+        "mass_source": "ASSUMED",
+        "model": "AIR 40A 2-6S NO BEC ESC",
+        "part_id": "tmotor_air_40a_2_6s",
+        "price_usd": 39.99,
+        "provenance_counts": {
+          "ASSUMED": 5,
+          "CITED": 5
+        },
+        "role": "esc",
+        "verification": "Unverified"
+      },
+      {
+        "manufacturer": "generic",
+        "mass_kg": 0.35,
+        "mass_source": "ASSUMED",
+        "model": "reference quad frame 400 mm",
+        "part_id": "ref_frame_quad_400",
+        "price_usd": null,
+        "provenance_counts": {
+          "ASSUMED": 12,
+          "CALCULATED": 3
+        },
+        "role": "frame",
+        "verification": "Unverified"
+      },
+      {
+        "manufacturer": "T-Motor",
+        "mass_kg": 0.104,
+        "mass_source": "CITED",
+        "model": "MN3508 KV700",
+        "part_id": "tmotor_mn3508_kv700",
+        "price_usd": 69.9,
+        "provenance_counts": {
+          "ASSUMED": 3,
+          "CITED": 16
+        },
+        "role": "motor",
+        "verification": "Unverified"
+      },
+      {
+        "manufacturer": "APC",
+        "mass_kg": 0.02,
+        "mass_source": "ASSUMED",
+        "model": "Thin Electric 12x6 (12x6E)",
+        "part_id": "apc_12x6e",
+        "price_usd": null,
+        "provenance_counts": {
+          "ASSUMED": 4,
+          "CALCULATED": 3,
+          "CITED": 1
+        },
+        "role": "propeller",
+        "verification": "Unverified"
+      },
+      {
+        "manufacturer": "generic",
+        "mass_kg": 0.12,
+        "mass_source": "ASSUMED",
+        "model": "reference avionics and wiring allowance (lump)",
+        "part_id": "ref_avionics_wiring_lump",
+        "price_usd": null,
+        "provenance_counts": {
+          "ASSUMED": 1
+        },
+        "role": "wiring",
+        "verification": "Unverified"
+      }
+    ],
+    "class": "quad_standard",
+    "findings": [
+      {
+        "message": "estimated full-throttle current 27.4 A exceeds the motor's 23.0 A rating",
+        "parts": [
+          "tmotor_mn3508_kv700"
+        ],
+        "rule": "W-FULL-I-MOTOR",
+        "severity": "warning"
+      },
+      {
+        "message": "tmotor_mn3508_kv700: thermal_time_constant_s 150.0 s (record) vs R x C 28.1 s (mass-based) differ by a factor 5.3; the mass-based capacity is used",
+        "parts": [
+          "tmotor_mn3508_kv700"
+        ],
+        "rule": "W-THERMAL-TAU",
+        "severity": "warning"
+      },
+      {
+        "message": "24 ASSUMED input values influence this result (listed in the sidecar)",
+        "parts": [],
+        "rule": "I-ASSUMED-COUNT",
+        "severity": "info"
+      }
+    ],
+    "inertia_kgm2": [
+      0.030135,
+      0.03081,
+      0.055933
+    ],
+    "mass_kg": 1.536,
+    "mass_properties": {
+      "cg_from_frame_centre_m": [
+        0.0,
+        0.0,
+        0.0100260417
+      ],
+      "core_limitation": "the core takes only the diagonal; the off-diagonal products above are dropped",
+      "frame_split": {
+        "arm_mass_each_kg": 0.0309224967,
+        "body_mass_kg": 0.226310013,
+        "density_kgpm3": 1600.0
+      },
+      "inertia_tensor_about_cg_kgm2": [
+        [
+          0.0301351936,
+          -2.16840434e-19,
+          -2.16840434e-19
+        ],
+        [
+          -2.16840434e-19,
+          0.0308097561,
+          0.0
+        ],
+        [
+          -2.16840434e-19,
+          0.0,
+          0.0559327642
+        ]
+      ]
+    }
+  }
+}
