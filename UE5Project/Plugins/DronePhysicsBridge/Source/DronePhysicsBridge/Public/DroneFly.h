@@ -140,6 +140,9 @@ struct WindPanel
         return true;
     }
     void GustNow() { GustNowTimerS = kStepGustS; }
+    // Meteorological convention in the UI: DirectionDeg is where the wind comes FROM (0 = from the north, blows toward the south).
+    // The demo wind generator and EnvironmentInput take where it blows TOWARD (NED: north = cos, east = sin).
+    double TowardDeg() const { const double D = DirectionDeg + 180.0; return D >= 360.0 ? D - 360.0 : D; }
     // Steady wind including a running step gust, never above the core's range.
     double EffectiveSteadyMps() const { return std::min(kMaxSpeedMps, SpeedMps + (GustNowTimerS > 0.0 ? kStepGustMps : 0.0)); }
     // Parameters of the demo wind generator (the same one the physics step reads).
@@ -147,7 +150,7 @@ struct WindPanel
     {
         DroneWind::Params P;
         P.SteadySpeedMps = EffectiveSteadyMps();
-        P.SteadyDirectionDeg = DirectionDeg;
+        P.SteadyDirectionDeg = TowardDeg();
         P.GustSigmaMps = GustSigmaMps;
         P.bGustsEnabled = GustSigmaMps > 0.0;
         P.GustCorrelationTimeS = GustIntervalS;

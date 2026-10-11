@@ -203,6 +203,21 @@ int main(int argc, char** argv)
     Check(M.Prog.RecordingsAvailable && !M.Prog.CampaignDone && !M.Prog.ReportDone && M.Queue.empty(), "after Cancel: recordings replayable, no report job queued");
     Check(!HasText(M, "Cancel"), "no Cancel button when nothing runs");
 
+    // state machine: idle -> working -> failed, each change asks for a repaint without any input
+    M.TakeRepaint();
+    Check(!M.TakeRepaint(), "repaint flag is consumed once");
+    M.Click(Act::SetProfile, "full");
+    M.Click(Act::RunTests, "");
+    M.TakeRepaint();
+    M.Tick(0.1);
+    Check(M.Busy() && M.TakeRepaint(), "working: a running job keeps asking for repaints");
+    IO.Parser.Feed(Line("test", "tick", "climb", 0, 1, 5.0, 5.0, 1.0, "null", ""));
+    IO.Ended = true;
+    IO.ExitCode = 1;   // failed: the helper's exit code ends the job and the chain
+    M.Tick(0.1);
+    Check(!M.Busy() && M.MessageIsError && M.TakeRepaint() && !M.TakeRepaint(), "failed on process exit: error message, repaint requested once, no input needed");
+    M.Click(Act::Navigate, "Conditions");
+    Check(M.TakeRepaint(), "navigation asks for a repaint");
     // a finished chain says Done
     M.Click(Act::SetProfile, "quick");
     Check(M.QuickProfile, "the profile selector works while idle");

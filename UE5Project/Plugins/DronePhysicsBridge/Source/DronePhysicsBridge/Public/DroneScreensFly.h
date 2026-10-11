@@ -15,10 +15,10 @@ namespace Screens
 // Compass with the direction the wind blows TOWARD (north up), speed number and a gust bar. Wind in NED m/s; Gust in m/s.
 inline void WindRose(DrawList& L, float Cx, float Cy, float R, const double WindNed[3], double GustMps)
 {
-    constexpr float kPi = 3.14159265f;
+    constexpr float kTwoPiF = static_cast<float>(2.0 * kPi);   // DroneApp::kPi (DroneReplay.h), not a local copy
     L.Fill(Cx - R - 18.0f, Cy - R - 26.0f, 2.0f * R + 36.0f, 2.0f * R + 96.0f, Palette::Solid());
     std::vector<Pt> Ring;
-    for (int I = 0; I <= 32; ++I) Ring.push_back(Pt{Cx + R * std::sin(2.0f * kPi * static_cast<float>(I) / 32.0f), Cy - R * std::cos(2.0f * kPi * static_cast<float>(I) / 32.0f)});
+    for (int I = 0; I <= 32; ++I) Ring.push_back(Pt{Cx + R * std::sin(kTwoPiF * static_cast<float>(I) / 32.0f), Cy - R * std::cos(kTwoPiF * static_cast<float>(I) / 32.0f)});
     L.Poly(Ring, Palette::Ink46(), 1.5f);
     L.Text(Cx - 8.0f, Cy - R - 24.0f, 16.0f, "N", 14.0f, Palette::Ink70());
     const double Speed = std::sqrt(WindNed[0] * WindNed[0] + WindNed[1] * WindNed[1]);
@@ -58,7 +58,8 @@ inline void FlyScreen(DrawList& L, const AppModel& M)
         L.Text(X, Hgt - 114.0f, 170.0f, C.second, 28.0f, Palette::Ink(), Weight::Light);
         X += 180.0f;
     }
-    L.Text(52.0f, Hgt - 66.0f, 700.0f, std::string("Mode  ") + Fly::ModeName(M.FlyModeSel) + "     " + T.StateText, 16.0f, Palette::Ink70());
+    L.Text(420.0f, Hgt - 66.0f, 360.0f, "rpm FR/FL/RR/RL  " + Fmt("%.0f", T.Rpm[0]) + " / " + Fmt("%.0f", T.Rpm[1]) + " / " + Fmt("%.0f", T.Rpm[2]) + " / " + Fmt("%.0f", T.Rpm[3]), 14.0f, Palette::Ink70(), Weight::Regular, Align::Right);
+    L.Text(52.0f, Hgt - 66.0f, 360.0f, std::string("Mode  ") + Fly::ModeName(M.FlyModeSel) + "     " + T.StateText, 16.0f, Palette::Ink70());
     if (T.Crashed) L.Text(52.0f, Hgt - 44.0f, 700.0f, "Crashed on ground contact: press X (or Y on the gamepad) to reset", 15.0f, Palette::Crit(), Weight::Medium);
     else L.Text(52.0f, Hgt - 44.0f, 700.0f, "W/S pitch  A/D roll  Q/E yaw  Space/R up  Shift/F down  T takeoff  G land  X reset", 14.0f, Palette::Ink46());
 
@@ -67,7 +68,7 @@ inline void FlyScreen(DrawList& L, const AppModel& M)
     L.Fill(Px, Top + 8.0f, Pw, 470.0f, Palette::Solid());
     L.Text(Px + 20.0f, Top + 20.0f, 300.0f, "Live wind", 18.0f, Palette::Ink(), Weight::Medium);
     struct Row { const char* Label; const char* Unit; const char* Id; const std::string* Text; };
-    const Row Rows[] = {{"Wind speed", "m/s", "speed", &M.WindP.SpeedText}, {"Direction (toward)", "deg", "dir", &M.WindP.DirText},
+    const Row Rows[] = {{"Wind speed", "m/s", "speed", &M.WindP.SpeedText}, {"Wind from", "deg", "dir", &M.WindP.DirText},
                         {"Gust amplitude", "m/s", "gust", &M.WindP.GustText}, {"Gust interval", "s", "interval", &M.WindP.IntervalText},
                         {"Air temperature", "C", "temp", &M.WindP.TempText}, {"Payload mass", "kg", "payload", &M.WindP.PayloadText}};
     float Y = Top + 60.0f;

@@ -67,6 +67,26 @@ int main(int argc, char** argv)
     W.PayloadText = "3";
     Check(!W.Commit("payload") && W.PayloadKg == 0.5, "payload above 2 kg refused");
     Check(Near(W.ToParams().SteadySpeedMps, 6.0, 0) && Near(W.ToParams().GustCorrelationTimeS, 4.0, 0) && Near(W.ToParams().GustSigmaMps, 2.0, 0), "panel values become the demo wind parameters");
+    // "from" end to end: the panel's direction is where the wind comes FROM; the generator gets TOWARD and its NED vector points away from it
+    Check(Near(W.DirectionDeg, 90.0, 1e-9) && Near(W.TowardDeg(), 270.0, 1e-9) && Near(W.ToParams().SteadyDirectionDeg, 270.0, 1e-9), "panel direction is FROM, the params are TOWARD (+180)");
+    {
+        DroneWind::Params NoGust = W.ToParams();
+        NoGust.bGustsEnabled = false;
+        for (const double From : {0.0, 90.0, 180.0, 270.0})
+        {
+            Fly::WindPanel Q;
+            Q.SpeedMps = 6.0; Q.DirectionDeg = From; Q.GustSigmaMps = 0.0;
+            DroneWind::Params Pm = Q.ToParams();
+            Pm.bGustsEnabled = false;
+            DroneWind::Generator G(1);
+            DroneWind::Sample Sm;
+            G.Step(Pm, 0.002, &Sm);
+            // wind FROM north (0): toward south, NED x = -6; FROM east (90): toward west, NED y = -6; FROM south: x = +6; FROM west: y = +6
+            const double Ex = -6.0 * std::cos(From * 3.14159265358979323846 / 180.0), Ey = -6.0 * std::sin(From * 3.14159265358979323846 / 180.0);
+            Check(Near(Sm.Total[0], Ex, 1e-9) && Near(Sm.Total[1], Ey, 1e-9), "wind from <deg> gives the NED vector -v (cos, sin)(from)");
+        }
+        (void)NoGust;
+    }
     W.GustNow();
     Check(Near(W.ToParams().SteadySpeedMps, 11.0, 0), "Gust now adds a 5 m/s step");
     W.SpeedMps = 14.0;

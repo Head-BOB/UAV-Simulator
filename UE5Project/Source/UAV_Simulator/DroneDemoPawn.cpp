@@ -1155,7 +1155,8 @@ void ADroneDemoPawn::ResetFlight()
 
 void ADroneDemoPawn::ApplyFlyPanel(const DroneApp::Fly::WindPanel& P)
 {
-	const double Key[6] = {P.EffectiveSteadyMps(), P.DirectionDeg, P.GustSigmaMps, P.GustIntervalS, P.AirTempC, P.PayloadKg};
+	const double Key[6] = {P.EffectiveSteadyMps(), P.TowardDeg(),   // the panel says FROM; the physics wants TOWARD
+		 P.GustSigmaMps, P.GustIntervalS, P.AirTempC, P.PayloadKg};
 	bool bSame = true;
 	for (int I = 0; I < 6; ++I) bSame = bSame && Key[I] == LastPanelKey[I];
 	if (bSame) return;

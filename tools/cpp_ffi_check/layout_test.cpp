@@ -175,6 +175,34 @@ int main(int argc, char** argv)
     for (const auto& I : L.Items) if (I.K == Item::Kind::Text && I.X > 480.0f && I.Y < 400.0f && I.Y > 60.0f && I.Text != "Parts") MinRow = std::fmin(MinRow, I.Px);
     Check(MinRow >= 17.0f, "build: parts list text is 17 px or larger");
 
+    // Parts list scrolling: thumb on overflow, clamp at both ends, reset on screen change, hit regions follow the scroll
+    {
+        M.Current = Screen::Parts;
+        M.CategoryFilter = "";
+        M.ListScroll = 0;
+        const auto Vis = M.VisibleParts();
+        Check(Vis.size() > 15, "enough parts to overflow the list");
+        auto FirstRow = [&](std::string& Id) {
+            DrawList Ls;
+            BuildScreen(Ls, M);
+            const Hit* Best = nullptr;
+            for (const auto& Ht : Ls.Hits) if (Ht.A == Act::PickPart && (Best == nullptr || Ht.Y < Best->Y)) Best = &Ht;
+            Id = Best ? Best->Arg : "";
+            bool Thumb = false;
+            for (const auto& I : Ls.Items) Thumb = Thumb || (I.K == Item::Kind::Rect && I.W == 4.0f && I.X > 850.0f && I.X < 870.0f);
+            return Thumb;
+        };
+        std::string Id;
+        Check(FirstRow(Id) && Id == Vis[0]->Id, "scrollbar thumb is drawn on overflow; the first hit row is the first part");
+        M.Click(Act::ScrollList, "100000");
+        Check(FirstRow(Id) && Id == Vis[Vis.size() - 15]->Id, "scrolling far past the end clamps to the last full page");
+        M.Click(Act::ScrollList, "-100000");
+        Check(FirstRow(Id) && Id == Vis[0]->Id, "scrolling past the top clamps to 0");
+        M.Click(Act::ScrollList, "7");
+        M.Click(Act::Navigate, "Vehicle");
+        Check(M.ListScroll == 0, "scroll resets on screen change");
+    }
+
     if (g_failures == 0) std::printf("layout_test: all checks passed\n");
     return g_failures == 0 ? 0 : 1;
 }

@@ -160,6 +160,13 @@ inline void Parts(DrawList& L, const AppModel& M)
         Y += kRowH;
     }
     L.HLine(X, Y, 800.0f, Palette::Line());
+    if (static_cast<int>(Vis.size()) > kRows)
+    {
+        // scrollbar: track and thumb along the right edge of the list (the wheel and the arrows below scroll by whole rows)
+        const float Ty0 = Sy + 50.0f, Th = static_cast<float>(kRows) * kRowH, Total = static_cast<float>(Vis.size());
+        L.Fill(X + 812.0f, Ty0, 4.0f, Th, Palette::Line());
+        L.Fill(X + 812.0f, Ty0 + Th * static_cast<float>(Start) / Total, 4.0f, Th * static_cast<float>(kRows) / Total, Palette::Ink70());
+    }
     if (Vis.empty()) L.Text(X, 180.0f, 700.0f, "No part matches. Clear the search or the manufacturer filter.", 18.0f, Palette::Ink70());
     L.Text(X, 1000.0f, 500.0f, std::to_string(Vis.size()) + " parts" + (Start > 0 || static_cast<int>(Vis.size()) > Start + kRows ? "   (mouse wheel scrolls)" : ""), 14.0f, Palette::Ink46());
     if (Start > 0) L.AddHit(X, 150.0f, 800.0f, 18.0f, Act::ScrollList, "-" + std::to_string(kRows));

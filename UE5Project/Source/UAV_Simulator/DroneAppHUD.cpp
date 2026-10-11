@@ -124,6 +124,7 @@ void ADroneAppHUD::UpdateScene(float DeltaSeconds)
 		auto& T = Model->FlyT;
 		T.AltitudeM = Raw.AltitudeM;
 		T.SpeedMps = Raw.SpeedMps;
+		for (int I = 0; I < 4; ++I) T.Rpm[I] = Raw.Rpm[I];
 		T.RpmMean = (Raw.Rpm[0] + Raw.Rpm[1] + Raw.Rpm[2] + Raw.Rpm[3]) * 0.25;
 		T.SocFraction = FMath::Clamp(1.0 - Raw.BatteryUsedFraction, 0.0, 1.0);
 		Pawn->GetWindForHud(T.WindNed, T.GustMps);
@@ -180,7 +181,7 @@ void ADroneAppHUD::Tick(float DeltaSeconds)
 	DataAccumS += static_cast<double>(DeltaSeconds);
 	const bool bMoving = (Model->Current == DroneApp::Screen::Run && Model->Rep.Playing()) || Model->Busy();
 	if (Model->Current != LastScreen || Before != Model->Current) { bDirty = true; LastScreen = Model->Current; }
-	if (Model->Busy() != bLastBusy) { bDirty = true; bLastBusy = Model->Busy(); }
+	if (Model->TakeRepaint()) bDirty = true;   // a helper ended / said something / the message changed: repaint without waiting for input
 	if (bDirty || (bMoving && DataAccumS >= kDataPeriodS))
 	{
 		Rebuild();

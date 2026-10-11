@@ -4759,6 +4759,91 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn test_camp_hover_in_a_north_wind_leans_into_the_wind_and_the_downwind_motors_work_harder() {
+        // Wind FROM the north (wind_from_deg 0) blows TOWARD the south: NED vector (-8, 0, 0), checked first. Holding position, the
+        // vehicle (nose north, yaw 0) must tilt its thrust vector toward the UPWIND side (north = forward) to cancel the drag: nose
+        // DOWN, i.e. pitch < 0 (aerospace ZYX, + = nose up), roll ~ 0. A nose-down moment needs the REAR (downwind) motors to thrust
+        // more: RR, RL (indices 2, 3 in the mixer order FR, FL, RR, RL) spin faster than FR, FL (0, 1).
+        // Force balance (hand): T cos(tilt) = m g and T sin(tilt) = D, so total thrust = m g / cos(tilt) and tan(tilt) = D / (m g).
+        let build = ref_build();
+        let mut cond = std_conditions();
+        cond.wind_speed_mps = 8.0;
+        cond.wind_from_deg = 0.0;
+        let w = cond.mean_wind_ned(8.0);
+        assert!(
+            w[0] == -8.0 && w[1].abs() < 1e-12,
+            "wind from north is a -x (toward south) vector"
+        );
+        let mut sim = Sim::new(&build, &cond, 20.0, 0, None).unwrap();
+        let sp = Setpoint::Position {
+            ned_m: [0.0, 0.0, -20.0],
+            yaw_rad: 0.0,
+        };
+        let steps = 20_000; // 40 s: the position loop has settled
+        let (mut tilt, mut pitch, mut roll, mut thrust) = (0.0, 0.0, 0.0, 0.0);
+        let (mut rpm, mut n) = ([0.0_f64; 4], 0.0);
+        let mut peak_rear_minus_front = f64::MIN; // rpm, over the first 8 s (the transient that tips the vehicle)
+        for k in 0..steps {
+            let f = sim.step(&sp).unwrap();
+            if k < 4000 {
+                let d = 0.5
+                    * (f.tel.motor_rpm[2] + f.tel.motor_rpm[3]
+                        - f.tel.motor_rpm[0]
+                        - f.tel.motor_rpm[1]);
+                peak_rear_minus_front = peak_rear_minus_front.max(d);
+            }
+            if k >= steps - 500 {
+                tilt += f.tilt_rad;
+                pitch += f.pitch_rad;
+                roll += f.roll_rad;
+                thrust += f.tel.motor_thrust_n.iter().sum::<f64>();
+                for (a, b) in rpm.iter_mut().zip(f.tel.motor_rpm.iter()) {
+                    *a += *b;
+                }
+                n += 1.0;
+            }
+        }
+        let (tilt, pitch, roll, thrust) = (tilt / n, pitch / n, roll / n, thrust / n);
+        let rpm = rpm.map(|r| r / n);
+        let weight_n = build.vehicle.mass_kg * 9.80665;
+        // tilt sign and size: leaning into the wind, more than a degree and less than the 30 deg class limit
+        assert!(pitch < 0.0, "nose down into a north wind, pitch {pitch}");
+        assert!(
+            roll.abs() < 0.2 * pitch.abs(),
+            "no sideways lean for a head-on wind, roll {roll}"
+        );
+        assert!(
+            tilt > 1.0_f64.to_radians() && tilt < 30.0_f64.to_radians(),
+            "tilt {tilt}"
+        );
+        // force balance with the model's own thrust: T cos(tilt) = m g (1 %: the loop is settled, not exactly still)
+        assert!(
+            (thrust * tilt.cos() - weight_n).abs() < 0.01 * weight_n,
+            "thrust {thrust} N, tilt {tilt} rad, weight {weight_n} N"
+        );
+        // the drag the model applied is T sin(tilt): tan(tilt) = D / (m g)
+        let drag_n = thrust * tilt.sin();
+        assert!((drag_n / weight_n - tilt.tan()).abs() < 0.02 * tilt.tan());
+        // motor order. The tipping moment is only needed while the vehicle PITCHES DOWN: during that transient the rear (downwind) motors
+        // spin faster than the front ones. Once the tilt is held the moments balance and the four rpm are nearly equal (the drag acts
+        // close to the centre of gravity), so the steady-state ordering is not asserted beyond "not reversed".
+        assert!(
+            peak_rear_minus_front > 10.0,
+            "rear - front peak {peak_rear_minus_front} rpm"
+        );
+        assert!(
+            rpm[2] + rpm[3] >= rpm[0] + rpm[1] - 1e-6,
+            "steady-state rpm FR FL RR RL = {rpm:?}"
+        );
+        println!(
+            "wind test: pitch {:.2} deg, roll {:.2} deg, tilt {:.2} deg, T {thrust:.2} N, W {weight_n:.2} N, D {drag_n:.2} N, rpm {rpm:?}, transient rear-front peak {peak_rear_minus_front:.1} rpm",
+            pitch.to_degrees(),
+            roll.to_degrees(),
+            tilt.to_degrees()
+        );
+    }
+
+    #[test]
     fn test_camp_planned_sim_time_is_the_upper_bound_of_each_tests_runs() {
         // Hand values from campaign/test_definitions.json (the denominator of the progress percentage; not a result):
         // hover: (settle 10 + hold 30) s x (ceil(log2(8 / 0.02)) = 9, + 2) = 40 x 11 = 440

@@ -146,6 +146,7 @@ public:
     // Fly mode (the live physics pawn flies; the UE layer fills FlyT each frame and reads WindP / FlyModeSel).
     struct FlyTelemetry
     {
+        double Rpm[4] = {0.0, 0.0, 0.0, 0.0};   // true per-motor rpm, order FR FL RR RL
         double AltitudeM = 0.0, SpeedMps = 0.0, RpmMean = 0.0, SocFraction = 1.0, GustMps = 0.0;
         double WindNed[3] = {0.0, 0.0, 0.0};   // the wind the physics step received
         bool Crashed = false;
@@ -163,6 +164,10 @@ public:
     bool QuickProfile = false;                // chosen on Conditions: shortened long tests (QuickOverrides)
     bool RunWasQuick = false;                 // the profile of the run on screen (the choice may change afterwards)
     bool Cancelled = false;
+    // Repaint request: the Slate canvas repaints on input only, so every state change that is not an input (a helper ended, said
+    // something, the message changed, a job started) sets this and the HUD takes it with TakeRepaint() every tick.
+    bool Repaint = true;
+    bool TakeRepaint() { const bool R = Repaint; Repaint = false; return R; }
     bool JobDoneOk = false;                   // the last job chain ended without error: the HUD says "Done"
     bool AutoNavigated = false;
     std::string LastLog;
@@ -190,7 +195,9 @@ public:
         const std::string Why = BlockedReason(S, Prog);
         if (!Why.empty()) { Say(Why, true); return; }
         Current = S;
+        ListScroll = 0;   // a scrolled list starts at the top again on a new screen
         Focus.clear();
+        Repaint = true;
         if (S == Screen::Run && Rep.TimeS() == 0.0) RefreshLive();
         Message.clear();
     }
@@ -282,7 +289,10 @@ public:
     {
         if (FlyMode) WindP.Advance(RealDt);
         const bool Was = Busy();
+        const unsigned LinesBefore = Live.Lines;
+        const std::string MessageBefore = Message;
         PollJobs();
+        if (Was != Busy() || LinesBefore != Live.Lines || MessageBefore != Message || Busy()) Repaint = true;
         if (Busy() && Queue.front().Handle >= 0) SinceProgressS += RealDt;
         if (Was || Busy()) AutoPlayStep();
         if (Current == Screen::Run && Rep.Playing()) { Rep.Advance(RealDt); RefreshLive(); }
