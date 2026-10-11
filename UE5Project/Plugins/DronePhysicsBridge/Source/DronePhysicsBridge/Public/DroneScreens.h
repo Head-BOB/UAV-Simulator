@@ -28,7 +28,6 @@ inline void BuildScreen(DrawList& L, const AppModel& M)
         case Screen::Conditions: Screens::Conditions(L, M); break;
         case Screen::Run: Screens::Run(L, M); break;
         case Screen::Results: Screens::Results(L, M); break;
-        case Screen::Compare: Screens::Compare(L, M); break;
         case Screen::Report: Screens::ReportScreen(L, M); break;
     }
     Screens::ProgressPanel(L, M);   // over every screen, drawn last so it is on top and its hit regions win

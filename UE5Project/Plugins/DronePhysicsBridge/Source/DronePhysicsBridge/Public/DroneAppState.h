@@ -7,12 +7,12 @@
 
 namespace DroneApp
 {
-enum class Screen { Vehicle = 0, Parts, Build, Conditions, Run, Results, Compare, Report };
-constexpr int kScreenCount = 8;
+enum class Screen { Vehicle = 0, Parts, Build, Conditions, Run, Results, Report };
+constexpr int kScreenCount = 7;
 
 inline const char* ScreenName(Screen S)
 {
-    static const char* Names[kScreenCount] = {"Vehicle", "Parts", "Build", "Conditions", "Run", "Results", "Compare", "Report"};
+    static const char* Names[kScreenCount] = {"Vehicle", "Parts", "Build", "Conditions", "Run", "Results", "Report"};
     const int I = static_cast<int>(S);
     return (I >= 0 && I < kScreenCount) ? Names[I] : "";
 }
@@ -41,7 +41,6 @@ inline std::string BlockedReason(Screen S, const Progress& P)
         case Screen::Conditions: return P.BuildDone ? "" : "Build the vehicle first.";
         case Screen::Run: return (P.CampaignDone || P.RecordingsAvailable) ? "" : "Run the tests first.";
         case Screen::Results: return P.CampaignDone ? "" : "Run the tests first.";
-        case Screen::Compare: return P.StudyDone ? "" : "Run an upgrade study first.";
         case Screen::Report: return P.ReportDone ? "" : "Run the tests first, then write the report.";
     }
     return "Unknown screen.";

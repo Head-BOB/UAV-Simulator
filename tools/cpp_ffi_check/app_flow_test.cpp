@@ -338,41 +338,7 @@ int main(int argc, char** argv)
         Check(L.FindText("Not implemented") == nullptr, "nothing is listed as not implemented any more (all eight tests exist)");
     }
 
-    // ---- 7 Compare (a hand-made study report: running a real study takes minutes) ----
-    M.Click(Act::Navigate, "Compare");
-    Check(M.Current == Screen::Results, "Compare is locked until a study exists");
-    {
-        std::string Study;
-        const std::string Smoke = Root + "/tools/parts/builds/reference_quad/report_smoke/report.json";
-        IO.ReadText(Smoke, Study);
-        const std::size_t P = Study.find("\"upgrades\":");
-        Check(P != std::string::npos, "smoke report has an upgrades member");
-        const std::size_t E = Study.find("\"validation\"", P);
-        const std::string Up = "\"upgrades\": {\"status\": \"run\", \"condition_set\": \"smoke\", \"limiting_slot\": \"motor_current\", \"notice\": \"SMOKE definitions: test\", \"baseline\": {\"limiting_margin\": 1.12},"
-                               " \"baseline_weakest\": {\"label\": \"Motor current\", \"margin\": 1.12, \"slot\": \"motor_current\"},"
-                               " \"metrics\": {\"limiting_margin\": {\"label\": \"Limiting margin\", \"unit\": \"ratio\", \"higher_is_better\": true}, \"max_payload_kg\": {\"label\": \"Max payload\", \"unit\": \"kg\", \"higher_is_better\": true}},"
-                               " \"entries\": [{\"id\": \"motor__a\", \"role\": \"motor\", \"part_id\": \"a\", \"status\": \"tested\", \"rank\": 1, \"rank_note\": \"\", \"warnings\": [], \"weakest\": {\"label\": \"Thrust reserve\", \"margin\": 1.3},"
-                               " \"deltas\": {\"limiting_margin\": {\"base\": 1.12, \"cand\": 1.5, \"delta\": 0.38, \"better\": true}, \"max_payload_kg\": {\"base\": 2.5, \"cand\": 2, \"delta\": -0.5, \"better\": false}}},"
-                               " {\"id\": \"esc__b\", \"role\": \"esc\", \"part_id\": \"b\", \"status\": \"rejected\", \"rank\": null, \"rank_note\": \"not compatible: E-ESC-I\", \"deltas\": null, \"weakest\": null}]}, ";
-        // the validation member follows upgrades in sorted key order, so the splice keeps the JSON valid
-        const std::string Spliced = Study.substr(0, P) + Up + Study.substr(E);
-        std::string Err;
-        Check(ParseReport(Spliced, M.StudyReport, Err), ("spliced study report parses: " + Err).c_str());
-    }
-    M.Prog.StudyDone = true;
-    M.Click(Act::Navigate, "Compare");
-    Check(M.Current == Screen::Compare, "Compare opens once a study exists");
-    CheckLayout(M, "compare");
-    {
-        DrawList L;
-        BuildScreen(L, M);
-        Check(L.FindText("Ranked by the change") && L.FindText("+0.38") && L.FindText("-0.5") && L.FindText("not compatible: E-ESC-I"), "deltas with signs and the rejection reason");
-        const Item* Gain = L.FindText("+0.38");
-        const Item* Cost = L.FindText("-0.5");
-        Check(Gain && Cost && Gain->C.G > Gain->C.R && Cost->C.R > Cost->C.G, "gain is green, cost is red");
-    }
-
-    // ---- 8 Report ----
+    // ---- 7 Report ----
     M.Click(Act::Navigate, "Report");
     CheckLayout(M, "report");
     {

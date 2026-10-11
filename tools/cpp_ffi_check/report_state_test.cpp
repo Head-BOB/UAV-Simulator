@@ -112,7 +112,7 @@ static void TestAppState()
 {
     Progress P;
     Check(CanOpen(Screen::Vehicle, P) && !CanOpen(Screen::Parts, P) && BlockedReason(Screen::Parts, P) == "Choose a vehicle first.", "only the vehicle screen at the start");
-    for (Screen S : {Screen::Build, Screen::Conditions, Screen::Run, Screen::Results, Screen::Compare, Screen::Report}) Check(!CanOpen(S, P), "later screens blocked at the start");
+    for (Screen S : {Screen::Build, Screen::Conditions, Screen::Run, Screen::Results, Screen::Report}) Check(!CanOpen(S, P), "later screens blocked at the start");
     P.VehicleClassChosen = true;
     Check(CanOpen(Screen::Parts, P) && !CanOpen(Screen::Build, P) && BlockedReason(Screen::Build, P).find("required parts") != std::string::npos, "parts open after a vehicle, build needs all parts");
     P.PartsComplete = true;
@@ -120,7 +120,7 @@ static void TestAppState()
     P.BuildDone = true;
     Check(CanOpen(Screen::Conditions, P) && !CanOpen(Screen::Run, P) && !CanOpen(Screen::Results, P), "conditions open, run and results need tests");
     P.CampaignDone = true;
-    Check(CanOpen(Screen::Run, P) && CanOpen(Screen::Results, P) && !CanOpen(Screen::Compare, P) && !CanOpen(Screen::Report, P), "run and results open; compare and report need more");
+    Check(CanOpen(Screen::Run, P) && CanOpen(Screen::Results, P) && !CanOpen(Screen::Report, P), "run and results open; report needs more");
     P.ReportDone = true;
     P.StudyDone = true;
     for (int I = 0; I < kScreenCount; ++I) Check(CanOpen(static_cast<Screen>(I), P), "everything open when everything exists");

@@ -134,6 +134,6 @@ int main(int argc, char** argv)
         for (char& C : Name) C = static_cast<char>(std::tolower(static_cast<unsigned char>(C)));
         Write(L, Out + "/" + Name + ".svg");
     }
-    std::printf("wrote 8 svg files to %s\n", Out.c_str());
+    std::printf("wrote %d svg files to %s\n", kScreenCount, Out.c_str());
     return 0;
 }

@@ -92,7 +92,7 @@ static void CheckScreen(const DrawList& L, const AppModel& M, Size S, const std:
     Check(Hits, What + ": hit regions are inside the viewport and map back to themselves");
     if (M.Current != Screen::Run)
     {
-        // the step bar: all eight labels are present and their boxes are visible
+        // the step bar: all seven labels are present and their boxes are visible
         bool Bar = true;
         for (int I = 0; I < kScreenCount; ++I)
         {
@@ -100,7 +100,7 @@ static void CheckScreen(const DrawList& L, const AppModel& M, Size S, const std:
             const Item* T = L.FindText(Label);
             Bar = Bar && T != nullptr && Y(T->Y) >= -Eps && Y(T->Y + T->Px) <= Y(Ui::kTopBarHeightPx) + Eps && X(T->X) >= -Eps;
         }
-        Check(Bar, What + ": the step bar 1 .. 8 is fully visible");
+        Check(Bar, What + ": the step bar 1 .. 7 is fully visible");
     }
 }
 
