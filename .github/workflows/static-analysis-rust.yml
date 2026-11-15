@@ -16,7 +16,7 @@ jobs:
       run:
         working-directory: physics_core
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.96.0
@@ -34,7 +34,7 @@ jobs:
       run:
         working-directory: physics_core
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@miri
       - name: Run miri
         run: cargo miri test
@@ -46,7 +46,7 @@ jobs:
       run:
         working-directory: physics_core
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.96.0
