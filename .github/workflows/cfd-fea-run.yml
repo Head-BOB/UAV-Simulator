@@ -27,7 +27,7 @@ jobs:
           # python offline_pipeline/cfd/run_case.py --set ${{ github.event.inputs.case_set }}
 
       - name: Upload case results
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: cfd-fea-results-${{ github.run_id }}
           path: offline_pipeline/**/results/

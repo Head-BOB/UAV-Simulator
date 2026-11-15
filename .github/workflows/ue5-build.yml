@@ -37,7 +37,7 @@ jobs:
           -build -cook -stage -package 
 
       - name: Upload build output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ue5-build-output
           path: UE5Project/Saved/StagedBuilds/

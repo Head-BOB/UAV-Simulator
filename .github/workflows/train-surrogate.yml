@@ -32,7 +32,7 @@ jobs:
           python offline_pipeline/fea/train_fea.py
 
       - name: Upload Trained Models
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: trained-surrogates
           path: offline_pipeline/trained_models/
